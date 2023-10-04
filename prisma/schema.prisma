@@ -1,0 +1,168 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  user
+  dosen
+}
+
+model User {
+  id                Int            @id @default(autoincrement())
+  name              String
+  email             String         @unique
+  email_verified_at DateTime?
+  password          String
+  avatar            String?
+  role              Role
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @updatedAt
+  lecture           Lecture?
+  RefreshToken      RefreshToken[]
+  Course            Course[]
+
+  @@map("users")
+}
+
+model Lecture {
+  id         Int      @id @default(autoincrement())
+  nip        String
+  user_id    Int      @unique
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("lectures")
+}
+
+model RefreshToken {
+  id         Int      @id @default(autoincrement())
+  token      String   @unique
+  user_id    Int
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  expired_at DateTime
+  user_agent String?
+  ip_address String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("refresh_tokens")
+}
+
+model Department {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  slug               String   @unique
+  description        String?  @db.Text
+  participant_note   String?  @db.Text
+  benefits_note      String?  @db.Text
+  opportunities_note String?  @db.Text
+  icon               String?
+  courses            Course[]
+  is_active          Boolean  @default(true)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  @@map("departments")
+}
+
+enum GradeLevel {
+  beginner
+  intermediate
+  advanced
+}
+
+model Course {
+  id            Int          @id @default(autoincrement())
+  name          String
+  slug          String       @unique
+  description   String?
+  price         Float?
+  is_free       Boolean
+  is_certified  Boolean      @default(false)
+  grade_level   GradeLevel?
+  start_date    DateTime?
+  end_date      DateTime?
+  max_students  Int?
+  thumbnail     String?
+  department    Department?  @relation(fields: [department_id], references: [id], onDelete: SetNull)
+  department_id Int?
+  user_id       Int?
+  user          User?        @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  is_active     Boolean      @default(true)
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
+  curriculums   Curriculum[]
+
+  @@map("courses")
+}
+
+model Curriculum {
+  id             String         @id @default(uuid()) @db.Uuid
+  slug           String         @unique
+  title          String
+  description    String?
+  course         Course         @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  course_id      Int
+  week           Int
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
+  video_contents VideoContent[]
+  file_contents  FileContent[]
+  live_classes   LiveClass[]
+
+  @@map("curriculums")
+}
+
+model VideoContent {
+  id            String     @id @default(uuid()) @db.Uuid
+  title         String
+  description   String?
+  url           String
+  duration      String?
+  curriculum    Curriculum @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
+  curriculum_id String     @db.Uuid
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+
+  @@map("video_contents")
+}
+
+model FileContent {
+  id            String     @id @default(uuid()) @db.Uuid
+  title         String
+  description   String?
+  url           String
+  file_type     String
+  curriculum    Curriculum @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
+  curriculum_id String     @db.Uuid
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+
+  @@map("file_contents")
+}
+
+model LiveClass {
+  id            String     @id @default(uuid()) @db.Uuid
+  title         String
+  description   String?
+  url           String
+  start_date    DateTime?
+  end_date      DateTime?
+  is_open       Boolean    @default(false)
+  curriculum    Curriculum @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
+  curriculum_id String     @db.Uuid
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+
+  @@map("live_classes")
+}
