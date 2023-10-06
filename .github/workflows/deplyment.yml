@@ -1,0 +1,30 @@
+name: Online Classroom PENS V1 Deployment
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Git pull on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{secrets.SSH_PASSWORD}}
+          script: |
+            cd ${{ secrets.SSH_PATH }}
+            git reset --hard HEAD
+            git pull
+
+            docker-compose down
+            docker-compose up -d --build
+
+            docker exec -it backend-penscourse-app pnpm prisma migrate deploy
