@@ -65,6 +65,7 @@ export class CoursesController {
   }
 
   @AllowUnauthorizedRequest()
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Find All Courses' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'name', required: false })
@@ -81,6 +82,7 @@ export class CoursesController {
   }
 
   @AllowUnauthorizedRequest()
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get Course By Slug' })
   @ApiOkResponse()
   @HttpCode(200)

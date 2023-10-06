@@ -47,6 +47,28 @@ export class CurriculumsController {
     };
   }
 
+  @ApiOperation({ summary: 'Find All Curriculums With Subjects' })
+  @ApiParam({
+    name: 'slug',
+    required: true,
+    type: 'string',
+    description: 'Course Slug',
+  })
+  @ApiBearerAuth()
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Get(':slug/curriculums')
+  async findAll(@Param('slug') slug: string) {
+    const data = await this.curriculumsService.findAllWithSubjects({
+      slugCourse: slug,
+    });
+
+    return {
+      message: 'Successfully retrieved all curriculums',
+      data,
+    };
+  }
+
   @ApiOperation({ summary: 'Find One Curriculum by UUID' })
   @ApiParam({
     name: 'uuid',

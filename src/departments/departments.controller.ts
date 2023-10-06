@@ -10,9 +10,10 @@ import {
   Post,
   Query,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
   ApiConsumes,
@@ -36,12 +37,19 @@ export class DepartmentsController {
   @ApiBearerAuth()
   @ApiCreatedResponse()
   @HttpCode(201)
-  @UseInterceptors(FileInterceptor('icon'))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'icon', maxCount: 1 },
+      { name: 'participant_thumbnail', maxCount: 1 },
+      { name: 'benefits_thumbnail', maxCount: 1 },
+      { name: 'opportunities_thumbnail', maxCount: 1 },
+    ]),
+  )
   @ApiConsumes('multipart/form-data')
   @Post('create')
   async create(
     @Body() createDepartmentDto: CreateDepartmentDto,
-    @UploadedFile(
+    @UploadedFiles(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
           fileType: 'image',
@@ -54,12 +62,17 @@ export class DepartmentsController {
           fileIsRequired: true,
         }),
     )
-    icon: Express.Multer.File,
+    files: {
+      icon: Express.Multer.File;
+      participant_thumbnail: Express.Multer.File;
+      benefits_thumbnail: Express.Multer.File;
+      opportunities_thumbnail: Express.Multer.File;
+    },
   ) {
-    const data = await this.departmentsService.create(
+    const data = await this.departmentsService.create({
       createDepartmentDto,
-      icon,
-    );
+      file: files,
+    });
 
     return {
       message: 'Successfully created department',
@@ -124,7 +137,14 @@ export class DepartmentsController {
   @ApiOperation({ summary: 'Update Department' })
   @ApiBearerAuth()
   @ApiOkResponse()
-  @UseInterceptors(FileInterceptor('icon'))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'icon', maxCount: 1 },
+      { name: 'participant_thumbnail', maxCount: 1 },
+      { name: 'benefits_thumbnail', maxCount: 1 },
+      { name: 'opportunities_thumbnail', maxCount: 1 },
+    ]),
+  )
   @ApiConsumes('multipart/form-data')
   @HttpCode(200)
   @Patch(':slug/update')
@@ -144,13 +164,18 @@ export class DepartmentsController {
           fileIsRequired: false,
         }),
     )
-    icon: Express.Multer.File,
+    files: {
+      icon: Express.Multer.File;
+      participant_thumbnail: Express.Multer.File;
+      benefits_thumbnail: Express.Multer.File;
+      opportunities_thumbnail: Express.Multer.File;
+    },
   ) {
-    const data = await this.departmentsService.update(
+    const data = await this.departmentsService.update({
       slug,
       updateDepartmentDto,
-      icon,
-    );
+      file: files,
+    });
 
     return {
       message: 'Successfully updated department',

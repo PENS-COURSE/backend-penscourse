@@ -15,7 +15,7 @@ export class AddVideoContentDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  video_url: any;
+  video_url: string;
 
   @ApiPropertyOptional()
   @IsOptional()

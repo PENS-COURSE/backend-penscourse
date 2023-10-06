@@ -31,7 +31,28 @@ export class CreateDepartmentDto {
   @ApiProperty({
     type: 'string',
     format: 'binary',
-    description: 'Ext Icon (jpg, png, svg, webp)',
+    description: 'Ext Icon (jpg, png, svg)',
   })
-  icon: string;
+  icon: any;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Ext participant_thumbnail (jpg, png, svg)',
+  })
+  participant_thumbnail: any;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Ext benefits_thumbnail (jpg, png, svg)',
+  })
+  benefits_thumbnail: any;
+
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    description: 'Ext opportunities_thumbnail (jpg, png, svg)',
+  })
+  opportunities_thumbnail: any;
 }

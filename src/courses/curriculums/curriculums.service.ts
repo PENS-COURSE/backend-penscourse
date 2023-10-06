@@ -24,6 +24,33 @@ export class CurriculumsService {
     });
   }
 
+  async findAllWithSubjects({ slugCourse }: { slugCourse: string }) {
+    const course = await this.coursesService.findOneBySlug(slugCourse);
+
+    const data = await this.prisma.curriculum.findMany({
+      where: { course_id: course.id },
+      include: {
+        file_contents: true,
+        live_classes: true,
+        video_contents: true,
+      },
+    });
+
+    return data.map((curriculum) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { file_contents, live_classes, video_contents, ...rest } =
+        curriculum;
+      return {
+        ...rest,
+        subjects: {
+          file_contents: curriculum.file_contents,
+          live_classes: curriculum.live_classes,
+          video_contents: curriculum.video_contents,
+        },
+      };
+    });
+  }
+
   async findOneByUUID(uuid: string, slugCourse: string, throwException = true) {
     const course = await this.coursesService.findOneBySlug(slugCourse);
 
