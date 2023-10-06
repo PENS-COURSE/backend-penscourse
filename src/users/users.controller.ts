@@ -7,11 +7,14 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -19,6 +22,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
 
 @ApiTags('Users')
+@ApiBearerAuth()
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -31,20 +35,21 @@ export class UsersController {
     const data = await this.usersService.create(createUserDto);
 
     return {
-      message: '',
+      message: 'Successfully created user',
       data,
     };
   }
 
   @ApiOperation({ summary: 'Find all users' })
+  @ApiQuery({ name: 'page', required: false })
   @ApiOkResponse()
   @HttpCode(200)
   @Get()
-  async findAll() {
-    const data = await this.usersService.findAll();
+  async findAll(@Query('page') page: string) {
+    const data = await this.usersService.findAll({ page: +page });
 
     return {
-      message: '',
+      message: 'Successfully retrieved users',
       data,
     };
   }
@@ -57,7 +62,7 @@ export class UsersController {
     const data = await this.usersService.findOneByID(+id);
 
     return {
-      message: '',
+      message: 'Successfully retrieved user',
       data,
     };
   }
@@ -70,7 +75,7 @@ export class UsersController {
     const data = await this.usersService.update(+id, updateUserDto);
 
     return {
-      message: '',
+      message: 'Successfully updated user',
       data,
     };
   }
@@ -83,7 +88,7 @@ export class UsersController {
     const data = await this.usersService.remove(+id);
 
     return {
-      message: '',
+      message: 'Successfully removed user',
       data,
     };
   }

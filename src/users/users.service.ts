@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { HashHelpers } from '../utils/hash.utils';
+import { createPaginator } from '../utils/pagination.utils';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
@@ -41,9 +42,15 @@ export class UsersService {
     return new UserEntity(data);
   }
 
-  async findAll() {
-    const users = await this.prisma.user.findMany({});
-    return users;
+  async findAll({ page = 1 }: { page: number }) {
+    const pagination = createPaginator({ perPage: 25 });
+    return await pagination({
+      model: this.prisma.user,
+      options: {
+        page,
+      },
+      map: async (data) => data.map((user) => new UserEntity(user)),
+    });
   }
 
   async findOneByID(id: number, throwException = true) {

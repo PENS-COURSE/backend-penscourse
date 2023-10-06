@@ -6,17 +6,24 @@ export class UserEntity implements User {
     Object.assign(this, partial);
   }
 
-  @Exclude()
   id: number;
+
   name: string;
+
   email: string;
+
   email_verified_at: Date;
+
   @Exclude()
   password: string;
+
   avatar: string;
+
   role: $Enums.Role;
+
   @Exclude()
   created_at: Date;
+
   @Exclude()
   updated_at: Date;
 }
