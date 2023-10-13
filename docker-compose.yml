@@ -1,6 +1,7 @@
 version: '3.8'
 services:
   app:
+    container_name: online_classroom_pens_api
     env_file:
       - .env
     build:
@@ -20,6 +21,7 @@ services:
   #     - app
 
   postgresql:
+    container_name: online_classroom_pens_db
     image: postgres:16.0-alpine3.18
     env_file:
       - .env
