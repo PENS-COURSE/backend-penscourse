@@ -27,4 +27,4 @@ jobs:
             docker compose down
             docker compose up -d --build
 
-            docker exec -it backend-penscourse-app pnpm prisma migrate deploy
+            docker exec -it online_classroom_pens_api pnpm prisma migrate deploy

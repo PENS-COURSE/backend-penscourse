@@ -20,6 +20,18 @@ services:
   #   depends_on:
   #     - app
 
+  nginx_proxy_manager:
+    container_name: online_classroom_pens_nginx_proxy_manager
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+
   postgresql:
     container_name: online_classroom_pens_db
     image: postgres:16.0-alpine3.18
