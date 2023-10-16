@@ -1,4 +1,4 @@
-FROM node:current-alpine3.17
+FROM node:lts-bullseye
 
 WORKDIR /usr/src/app
 
