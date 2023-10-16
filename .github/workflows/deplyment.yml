@@ -24,7 +24,6 @@ jobs:
             git reset --hard HEAD
             git pull
 
-            docker compose down
-            docker compose up -d --build
+            docker compose restart
 
             docker exec -it online_classroom_pens_api pnpm prisma migrate deploy

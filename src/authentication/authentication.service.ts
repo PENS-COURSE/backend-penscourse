@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
+import { HashHelpers } from '../utils/hash.utils';
 import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
 
@@ -38,6 +39,12 @@ export class AuthenticationService {
   async loginUser(payload: LoginDto) {
     const user = await this.usersService.findOneByEmail(payload.email, false);
     if (!user) throw new ForbiddenException('Invalid credentials');
+
+    const isPasswordValid = await HashHelpers.comparePassword(
+      payload.password,
+      user.password,
+    );
+    if (!isPasswordValid) throw new ForbiddenException('Invalid credentials');
 
     const token = await this.generateJwtToken(user);
 

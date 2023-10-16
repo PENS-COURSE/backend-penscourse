@@ -17,6 +17,11 @@ async function bootstrap() {
     }),
   );
 
+  // CORS
+  app.enableCors({
+    origin: '*',
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Online Classroom PENS V1')
     .setVersion('1.0')
