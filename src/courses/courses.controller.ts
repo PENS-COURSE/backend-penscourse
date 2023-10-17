@@ -22,6 +22,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unauthorized-request.decorator';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
@@ -40,6 +41,7 @@ export class CoursesController {
   @ApiConsumes('multipart/form-data')
   @Post('create')
   async create(
+    @CurrentUser() user: any,
     @Body() createCourseDto: CreateCourseDto,
     @UploadedFile(
       new ParseFilePipeBuilder()
@@ -56,7 +58,11 @@ export class CoursesController {
     )
     thumbnail: Express.Multer.File,
   ) {
-    const data = await this.coursesService.create(createCourseDto, thumbnail);
+    const data = await this.coursesService.create({
+      user,
+      createCourseDto,
+      thumbnail,
+    });
 
     return {
       message: 'Successfully created course',
@@ -74,6 +80,31 @@ export class CoursesController {
   @Get()
   async findAll(@Query('page') page: number, @Query('name') name: string) {
     const data = await this.coursesService.findAll({ page, name });
+
+    return {
+      message: 'Successfully retrieved courses',
+      data,
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Find All Course By Publisher (DOSEN / ADMIN)' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'name', required: false })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Get('admins')
+  async findAllByDosen(
+    @CurrentUser() user: any,
+    @Query('page') page: number,
+    @Query('name') name: string,
+  ) {
+    const data = await this.coursesService.findAll({
+      page,
+      name,
+      user,
+      onlyPublisher: true,
+    });
 
     return {
       message: 'Successfully retrieved courses',
@@ -104,6 +135,7 @@ export class CoursesController {
   @ApiConsumes('multipart/form-data')
   @Patch(':slug/update')
   async update(
+    @CurrentUser() user: any,
     @Param('slug') slug: string,
     @Body() updateCourseDto: UpdateCourseDto,
     @UploadedFile(
@@ -121,11 +153,12 @@ export class CoursesController {
     )
     thumbnail: Express.Multer.File,
   ) {
-    const data = await this.coursesService.update(
+    const data = await this.coursesService.update({
+      user,
       slug,
       updateCourseDto,
       thumbnail,
-    );
+    });
 
     return {
       message: 'Successfully updated course',
@@ -138,8 +171,8 @@ export class CoursesController {
   @ApiOkResponse()
   @HttpCode(200)
   @Delete(':slug/remove')
-  async remove(@Param('slug') slug: string) {
-    const data = await this.coursesService.remove(slug);
+  async remove(@Param('slug') slug: string, @CurrentUser() user: any) {
+    const data = await this.coursesService.remove({ slug, user });
 
     return {
       message: 'Successfully removed course',

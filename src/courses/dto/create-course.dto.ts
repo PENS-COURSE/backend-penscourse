@@ -75,8 +75,9 @@ export class CreateCourseDto {
   @Transform(({ value }) => Number(value))
   department_id: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsNumber()
   @Transform(({ value }) => Number(value))
-  user_id: number;
+  user_id?: number;
 }
