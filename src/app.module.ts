@@ -11,6 +11,7 @@ import { DepartmentsModule } from './departments/departments.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProfileModule } from './profile/profile.module';
 import { UsersModule } from './users/users.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { UsersModule } from './users/users.module';
     ProfileModule,
     DepartmentsModule,
     CoursesModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [

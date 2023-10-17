@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
-import { UserEntity } from '../users/entities/user.entity';
+import { UserEntity } from '../entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { HashHelpers } from '../utils/hash.utils';
 import { ChangePasswordDto } from './dto/change-password.dto';
