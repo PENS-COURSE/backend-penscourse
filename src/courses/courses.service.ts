@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
@@ -186,5 +187,36 @@ export class CoursesService {
     });
 
     return null;
+  }
+
+  async enrollCourse({ slug, user }: { slug: string; user: User }) {
+    const course = await this.findOneBySlug(slug);
+
+    if (!course.is_active) {
+      throw new ForbiddenException();
+    }
+
+    if (!course.is_free) {
+      throw new BadRequestException('This course is not free');
+    }
+
+    const isEnrolled = await this.prisma.enrollment.findFirst({
+      where: {
+        course_id: course.id,
+        user_id: user.id,
+      },
+    });
+    if (isEnrolled) {
+      throw new BadRequestException('You have already enrolled this course');
+    }
+
+    const data = await this.prisma.enrollment.create({
+      data: {
+        course_id: course.id,
+        user_id: user.id,
+      },
+    });
+
+    return data;
   }
 }
