@@ -31,6 +31,7 @@ model User {
   courses           Course[]
   orders            Order[]
   Notification      Notification[]
+  Enrollment        Enrollment[]
 
   @@map("users")
 }
@@ -108,6 +109,7 @@ model Course {
   updated_at    DateTime     @updatedAt
   curriculums   Curriculum[]
   orders        Order[]
+  Enrollment    Enrollment[]
 
   @@map("courses")
 }
@@ -183,7 +185,7 @@ enum PaymentStatusType {
 }
 
 model Order {
-  id             Int      @id @default(autoincrement())
+  id             String   @unique @default(uuid()) @db.Uuid
   user_id        Int
   user           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   course_id      Int
@@ -198,8 +200,7 @@ model Order {
 }
 
 model Payment {
-  no_order        String            @unique @default(uuid()) @db.Uuid
-  order_id        Int               @unique
+  order_id        String            @unique @db.Uuid
   order           Order             @relation(fields: [order_id], references: [id], onDelete: Cascade)
   status          PaymentStatusType @default(pending)
   transaction_id  String
@@ -214,6 +215,18 @@ model Payment {
   updated_at      DateTime          @updatedAt
 
   @@map("payments")
+}
+
+model Enrollment {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course_id  Int
+  course     Course   @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("enrollments")
 }
 
 model Notification {
