@@ -5,6 +5,12 @@ import { AddFileContentDto } from './dto/add-file-content.dto';
 import { AddLiveClassDto } from './dto/add-live-class-content.dto';
 import { AddVideoContentDto } from './dto/add-video-content.dto';
 
+// TODO: Send Notification to all students when live class is open
+// TODO: Send Notification to all students when new file, video, live class is added
+// TODO: Update Course to Completed when all curriculums are completed
+// TODO: Generate Certificate when course is completed
+// TODO: Send Certificate to all students when course is completed (Email, Download)
+
 @Injectable()
 export class SubjectsService {
   constructor(

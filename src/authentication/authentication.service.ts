@@ -11,6 +11,8 @@ import { HashHelpers } from '../utils/hash.utils';
 import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
 
+// TODO: Login with Google
+
 @Injectable()
 export class AuthenticationService {
   constructor(
@@ -92,6 +94,23 @@ export class AuthenticationService {
     }
 
     return null;
+  }
+
+  async loginWithGoogleID({ google_id }: { google_id: string }) {
+    const user = await this.prisma.user.findUnique({
+      where: { google_id },
+    });
+
+    if (!user) throw new ForbiddenException('Invalid credentials');
+
+    const token = await this.generateJwtToken(user);
+
+    await this.updateRefreshToken(user, token.refresh_token);
+
+    return {
+      user: new UserEntity(user),
+      token: token,
+    };
   }
 
   private async updateRefreshToken(user: User, refreshToken: string) {

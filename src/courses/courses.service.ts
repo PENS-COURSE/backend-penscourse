@@ -14,6 +14,8 @@ import { StringHelper } from '../utils/slug.utils';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 
+// TODO: Filter Course (Done, Active, Inactive, On Progress, Completed)
+
 @Injectable()
 export class CoursesService {
   constructor(

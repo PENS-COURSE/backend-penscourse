@@ -21,6 +21,7 @@ model User {
   name              String
   email             String         @unique
   email_verified_at DateTime?
+  google_id         String?        @unique
   password          String
   avatar            String?
   role              Role

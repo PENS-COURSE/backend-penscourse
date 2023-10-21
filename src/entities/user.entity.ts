@@ -6,6 +6,8 @@ export class UserEntity implements User {
     Object.assign(this, partial);
   }
 
+  google_id: string;
+
   id: number;
 
   name: string;

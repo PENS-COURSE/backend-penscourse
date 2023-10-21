@@ -19,6 +19,7 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { AuthenticationService } from './authentication.service';
 import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
+import { GoogleGuard } from './guards/google.guard';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { AllowUnauthorizedRequest } from './metadata/allow-unauthorized-request.decorator';
 
@@ -89,5 +90,32 @@ export class AuthenticationController {
       message: 'Successfully logged out user',
       data,
     };
+  }
+
+  @AllowUnauthorizedRequest()
+  @UseGuards(GoogleGuard)
+  @ApiOperation({ summary: 'Google Callback' })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Get('login/google/callback')
+  async loginWithGoogleCallback(@Req() req: Request) {
+    const data = await this.authenticationService.loginWithGoogleID({
+      google_id: req.user['google_id'],
+    });
+
+    return {
+      message: 'Successfully logged in user',
+      data,
+    };
+  }
+
+  @UseGuards(GoogleGuard)
+  @AllowUnauthorizedRequest()
+  @ApiOperation({ summary: 'Login with Google' })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Get('login/google')
+  async loginWithGoogle() {
+    return 'OK';
   }
 }
