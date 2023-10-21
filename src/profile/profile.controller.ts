@@ -1,6 +1,16 @@
-import { Body, Controller, Get, HttpCode, Patch } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Patch,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
+  ApiConsumes,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -31,10 +41,12 @@ export class ProfileController {
   @ApiOperation({ summary: 'Update Profile User' })
   @ApiOkResponse()
   @HttpCode(200)
+  @UseInterceptors(FileInterceptor('avatar'))
+  @ApiConsumes('multipart/form-data')
   @Patch('update-profile')
   async updateProfile(
     @Body() payload: UpdateProfileDto,
-    avatar?: Express.Multer.File,
+    @UploadedFile() avatar?: Express.Multer.File,
   ) {
     const data = await this.profileService.updateProfile(payload, avatar);
 

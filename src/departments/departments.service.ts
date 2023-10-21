@@ -8,6 +8,7 @@ import { CoursesService } from '../courses/courses.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { createPaginator } from '../utils/pagination.utils';
 import { StringHelper } from '../utils/slug.utils';
+import { StorageHelpers } from '../utils/storage.utils';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 
@@ -141,7 +142,7 @@ export class DepartmentsService {
 
     if (file.icon) {
       if (department.icon) {
-        // TODO: Delete old icon
+        StorageHelpers.deleteFile(department.icon);
       }
 
       updateDepartmentDto.icon = file.icon?.path;
@@ -149,7 +150,7 @@ export class DepartmentsService {
 
     if (file.participant_thumbnail) {
       if (department.participant_thumbnail) {
-        // TODO: Delete old icon
+        StorageHelpers.deleteFile(department.participant_thumbnail);
       }
 
       updateDepartmentDto.participant_thumbnail =
@@ -158,7 +159,7 @@ export class DepartmentsService {
 
     if (file.benefits_thumbnail) {
       if (department.benefits_thumbnail) {
-        // TODO: Delete old icon
+        StorageHelpers.deleteFile(department.benefits_thumbnail);
       }
 
       updateDepartmentDto.benefits_thumbnail = file.benefits_thumbnail?.path;
@@ -166,7 +167,7 @@ export class DepartmentsService {
 
     if (file.opportunities_thumbnail) {
       if (department.opportunities_thumbnail) {
-        // TODO: Delete old icon
+        StorageHelpers.deleteFile(department.opportunities_thumbnail);
       }
 
       updateDepartmentDto.opportunities_thumbnail =
@@ -187,19 +188,19 @@ export class DepartmentsService {
     const department = await this.findOneBySlug(slug);
 
     if (department.icon) {
-      // TODO: Delete old icon
+      StorageHelpers.deleteFile(department.icon);
     }
 
     if (department.participant_thumbnail) {
-      // TODO: Delete old icon
+      StorageHelpers.deleteFile(department.participant_thumbnail);
     }
 
     if (department.benefits_thumbnail) {
-      // TODO: Delete old icon
+      StorageHelpers.deleteFile(department.benefits_thumbnail);
     }
 
     if (department.opportunities_thumbnail) {
-      // TODO: Delete old icon
+      StorageHelpers.deleteFile(department.opportunities_thumbnail);
     }
 
     await this.prisma.department.delete({

@@ -11,6 +11,7 @@ import { Request } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
 import { createPaginator } from '../utils/pagination.utils';
 import { StringHelper } from '../utils/slug.utils';
+import { StorageHelpers } from '../utils/storage.utils';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 
@@ -155,7 +156,7 @@ export class CoursesService {
 
     if (thumbnail) {
       if (course.thumbnail) {
-        // TODO: Delete old thumbnail
+        StorageHelpers.deleteFile(course.thumbnail);
       }
 
       updateCourseDto.thumbnail = thumbnail?.path;
@@ -181,7 +182,7 @@ export class CoursesService {
     }
 
     if (course.thumbnail) {
-      // TODO: Delete old thumbnail
+      StorageHelpers.deleteFile(course.thumbnail);
     }
 
     await this.prisma.course.delete({
