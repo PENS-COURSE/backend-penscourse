@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Department, Prisma } from '@prisma/client';
 import { CoursesService } from '../courses/courses.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { createPaginator } from '../utils/pagination.utils';
@@ -57,7 +56,7 @@ export class DepartmentsService {
   }) {
     const pagination = createPaginator({ perPage: 25, page: page });
 
-    return await pagination<Department, Prisma.DepartmentFindManyArgs>({
+    return await pagination({
       model: this.prisma.department,
       args: {
         where: {
