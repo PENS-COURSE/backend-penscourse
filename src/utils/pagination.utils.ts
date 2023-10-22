@@ -16,17 +16,17 @@ export type PaginateOptions = {
   page?: number | string;
   perPage?: number | string;
 };
-export type PaginateFunction = <T>({
+export type PaginateFunction = <T, A>({
   model,
   args,
   options,
   map,
 }: {
   model: T;
-  args?: Prisma.Args<T, 'findMany'>;
+  args?: Prisma.Exact<A, Prisma.Args<T, 'findMany'>>;
   options?: PaginateOptions;
-  map?: (data: Prisma.Result<T, null, 'findMany'>) => Promise<any[]>;
-}) => Promise<PaginatedResult<Prisma.Result<T, null, 'findMany'>>>;
+  map?: (data: Prisma.Result<T, A, 'findMany'>) => Promise<any[]>;
+}) => Promise<PaginatedResult<Prisma.Result<T, A, 'findMany'>>>;
 
 export const createPaginator = (
   defaultOptions: PaginateOptions,
