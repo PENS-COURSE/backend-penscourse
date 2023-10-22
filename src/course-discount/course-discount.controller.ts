@@ -40,7 +40,7 @@ export class CourseDiscountController {
   @ApiOkResponse()
   @Get()
   async findAll() {
-    const data = await this.courseDiscountService.findAll();
+    const data = await this.courseDiscountService.findAll({});
 
     return {
       message: 'Successfully retrieved all course discounts.',

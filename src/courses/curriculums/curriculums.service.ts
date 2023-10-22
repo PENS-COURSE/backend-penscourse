@@ -13,7 +13,9 @@ export class CurriculumsService {
   ) {}
 
   async create(payload: CreateCurriculumDto, slugCourse: string) {
-    const course = await this.coursesService.findOneBySlug(slugCourse);
+    const course = await this.coursesService.findOneBySlug({
+      slug: slugCourse,
+    });
 
     return await this.prisma.curriculum.create({
       data: {
@@ -25,7 +27,9 @@ export class CurriculumsService {
   }
 
   async findAllWithSubjects({ slugCourse }: { slugCourse: string }) {
-    const course = await this.coursesService.findOneBySlug(slugCourse);
+    const course = await this.coursesService.findOneBySlug({
+      slug: slugCourse,
+    });
 
     const data = await this.prisma.curriculum.findMany({
       where: { course_id: course.id },
@@ -52,7 +56,9 @@ export class CurriculumsService {
   }
 
   async findOneByUUID(uuid: string, slugCourse: string, throwException = true) {
-    const course = await this.coursesService.findOneBySlug(slugCourse);
+    const course = await this.coursesService.findOneBySlug({
+      slug: slugCourse,
+    });
 
     const data = await this.prisma.curriculum.findFirst({
       where: { id: uuid, course_id: course.id },

@@ -126,7 +126,7 @@ export class CoursesController {
   @HttpCode(200)
   @Get(':slug')
   async findOne(@Param('slug') slug: string) {
-    const data = await this.coursesService.findOneBySlug(slug);
+    const data = await this.coursesService.findOneBySlug({ slug });
 
     return {
       message: 'Successfully retrieved course',

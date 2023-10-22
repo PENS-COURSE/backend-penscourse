@@ -86,6 +86,9 @@ export class CoursesService {
     return await pagination({
       model: this.prisma.course,
       args: {
+        include: {
+          discount: true,
+        },
         where: {
           slug: {
             contains: name,

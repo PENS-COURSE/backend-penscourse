@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CoursesService } from '../courses/courses.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { createPaginator } from '../utils/pagination.utils';
 import { CreateCourseDiscountDto } from './dto/create-course-discount.dto';
 
 // TODO ADD SCHEDULER TO UPDATE DISCOUNTS
@@ -14,7 +15,9 @@ export class CourseDiscountService {
   ) {}
 
   async createCourseDiscount(payload: CreateCourseDiscountDto) {
-    const course = await this.courseService.findOneBySlug(payload.course_slug);
+    const course = await this.courseService.findOneBySlug({
+      slug: payload.course_slug,
+    });
 
     if (!course.is_free) {
       if (payload.discount_price >= course.price) {
@@ -36,14 +39,38 @@ export class CourseDiscountService {
     });
   }
 
-  async findAll() {
-    const discounts = await this.prisma.courseDiscount.findMany({});
+  async findAll({ page = 1 }: { page?: number }) {
+    const paginator = createPaginator({ perPage: 25 });
+    const discounts = await paginator({
+      model: this.prisma.courseDiscount,
+      args: {
+        orderBy: {
+          created_at: 'desc',
+        },
+        include: {
+          course: true,
+        },
+      },
+      options: {
+        page: page,
+      },
+      map: async (discounts) =>
+        discounts.map((discount) => {
+          const { course, ...rest } = discount;
+          return {
+            ...course,
+            discount: {
+              ...rest,
+            },
+          };
+        }),
+    });
 
     return discounts;
   }
 
   async findOne(courseSlug: string) {
-    const course = await this.courseService.findOneBySlug(courseSlug);
+    const course = await this.courseService.findOneBySlug({ slug: courseSlug });
 
     const discount = await this.prisma.courseDiscount.findUnique({
       where: {
@@ -58,7 +85,7 @@ export class CourseDiscountService {
   }
 
   async update(courseSlug: string, payload: CreateCourseDiscountDto) {
-    const course = await this.courseService.findOneBySlug(courseSlug);
+    const course = await this.courseService.findOneBySlug({ slug: courseSlug });
 
     if (!course.is_free) {
       if (payload.discount_price >= course.price) {
@@ -83,7 +110,7 @@ export class CourseDiscountService {
   }
 
   async remove(courseSlug: string) {
-    const course = await this.courseService.findOneBySlug(courseSlug);
+    const course = await this.courseService.findOneBySlug({ slug: courseSlug });
 
     const discount = await this.prisma.courseDiscount.delete({
       where: {
