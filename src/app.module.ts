@@ -13,6 +13,7 @@ import { ProfileModule } from './profile/profile.module';
 import { UsersModule } from './users/users.module';
 import { OrdersModule } from './orders/orders.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
+import { CourseDiscountModule } from './course-discount/course-discount.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { EnrollmentsModule } from './enrollments/enrollments.module';
     CoursesModule,
     OrdersModule,
     EnrollmentsModule,
+    CourseDiscountModule,
   ],
   controllers: [AppController],
   providers: [

@@ -89,28 +89,29 @@ enum GradeLevel {
 }
 
 model Course {
-  id            Int          @id @default(autoincrement())
+  id            Int             @id @default(autoincrement())
   name          String
-  slug          String       @unique
+  slug          String          @unique
   description   String?
   price         Float?
   is_free       Boolean
-  is_certified  Boolean      @default(false)
+  is_certified  Boolean         @default(false)
   grade_level   GradeLevel?
   start_date    DateTime?
   end_date      DateTime?
   max_students  Int?
   thumbnail     String?
-  department    Department?  @relation(fields: [department_id], references: [id], onDelete: SetNull)
+  department    Department?     @relation(fields: [department_id], references: [id], onDelete: SetNull)
   department_id Int?
   user_id       Int?
-  user          User?        @relation(fields: [user_id], references: [id], onDelete: SetNull)
-  is_active     Boolean      @default(true)
-  created_at    DateTime     @default(now())
-  updated_at    DateTime     @updatedAt
+  user          User?           @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  is_active     Boolean         @default(true)
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
   curriculums   Curriculum[]
   orders        Order[]
   Enrollment    Enrollment[]
+  discount      CourseDiscount?
 
   @@map("courses")
 }
@@ -228,6 +229,19 @@ model Enrollment {
   updated_at DateTime @updatedAt
 
   @@map("enrollments")
+}
+
+model CourseDiscount {
+  course_id      Int       @unique
+  course         Course    @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  discount_price Float
+  start_date     DateTime?
+  end_date       DateTime?
+  is_active      Boolean   @default(true)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  @@map("course_discounts")
 }
 
 model Notification {

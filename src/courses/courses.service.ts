@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
-import { Course, Prisma, User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { Request } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
 import { createPaginator } from '../utils/pagination.utils';
@@ -83,9 +83,12 @@ export class CoursesService {
       ],
     };
 
-    return await pagination<Course, Prisma.CourseFindManyArgs>({
+    return await pagination({
       model: this.prisma.course,
       args: {
+        include: {
+          discount: true,
+        },
         where: {
           slug: {
             contains: name,
@@ -119,13 +122,22 @@ export class CoursesService {
     return data;
   }
 
-  async findOneBySlug(slug: string, throwException = true) {
+  async findOneBySlug({
+    slug,
+    throwException = true,
+    include,
+  }: {
+    slug: string;
+    throwException?: boolean;
+    include?: Prisma.CourseInclude;
+  }) {
     const data = await this.prisma.course.findFirst({
       where: {
         slug,
       },
       include: {
         curriculums: true,
+        ...include,
       },
     });
 
@@ -146,7 +158,12 @@ export class CoursesService {
     thumbnail: Express.Multer.File;
     user?: User;
   }) {
-    const course = await this.findOneBySlug(slug);
+    const course = await this.findOneBySlug({
+      slug,
+      include: {
+        discount: true,
+      },
+    });
 
     if (user?.role != 'admin' && course.user_id != user?.id) {
       throw new BadRequestException(
@@ -162,18 +179,42 @@ export class CoursesService {
       updateCourseDto.thumbnail = thumbnail?.path;
     }
 
-    const data = await this.prisma.course.update({
-      where: { id: course.id },
-      data: {
-        ...updateCourseDto,
-      },
+    const data = await this.prisma.$transaction(async (tx) => {
+      const courseUpdate = await tx.course.update({
+        where: { id: course.id },
+        data: {
+          ...updateCourseDto,
+          user_id: user?.role == 'admin' ? updateCourseDto.user_id : user?.id,
+        },
+      });
+
+      if (
+        updateCourseDto.price != course.price ||
+        course.discount.discount_price == course.price
+      ) {
+        const discount = await tx.courseDiscount.findFirst({
+          where: {
+            course_id: course.id,
+          },
+        });
+
+        if (discount) {
+          await tx.courseDiscount.delete({
+            where: {
+              course_id: course.id,
+            },
+          });
+        }
+      }
+
+      return courseUpdate;
     });
 
     return data;
   }
 
   async remove({ slug, user }: { slug: string; user?: User }) {
-    const course = await this.findOneBySlug(slug);
+    const course = await this.findOneBySlug({ slug });
 
     if (user?.role != 'admin' && course.user_id != user?.id) {
       throw new BadRequestException(
@@ -193,7 +234,7 @@ export class CoursesService {
   }
 
   async enrollCourse({ slug, user }: { slug: string; user: User }) {
-    const course = await this.findOneBySlug(slug);
+    const course = await this.findOneBySlug({ slug });
 
     if (!course.is_active) {
       throw new ForbiddenException();
