@@ -7,12 +7,14 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { CourseDiscountService } from './course-discount.service';
@@ -38,9 +40,14 @@ export class CourseDiscountController {
 
   @HttpCode(200)
   @ApiOkResponse()
+  @ApiQuery({
+    name: 'page',
+    description: 'Page Number',
+    required: false,
+  })
   @Get()
-  async findAll() {
-    const data = await this.courseDiscountService.findAll({});
+  async findAll(@Query('page') page: number) {
+    const data = await this.courseDiscountService.findAll({ page });
 
     return {
       message: 'Successfully retrieved all course discounts.',

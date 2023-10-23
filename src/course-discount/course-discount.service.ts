@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CoursesService } from '../courses/courses.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { createPaginator } from '../utils/pagination.utils';
@@ -76,16 +80,22 @@ export class CourseDiscountService {
       where: {
         course_id: course.id,
       },
-      include: {
-        course: true,
-      },
     });
 
-    return discount;
+    if (!discount) {
+      throw new NotFoundException('Diskon tidak ditemukan');
+    }
+
+    return {
+      ...course,
+      discount: {
+        ...discount,
+      },
+    };
   }
 
   async update(courseSlug: string, payload: CreateCourseDiscountDto) {
-    const course = await this.courseService.findOneBySlug({ slug: courseSlug });
+    const course = await this.findOne(courseSlug);
 
     if (!course.is_free) {
       if (payload.discount_price >= course.price) {
@@ -110,7 +120,7 @@ export class CourseDiscountService {
   }
 
   async remove(courseSlug: string) {
-    const course = await this.courseService.findOneBySlug({ slug: courseSlug });
+    const course = await this.findOne(courseSlug);
 
     const discount = await this.prisma.courseDiscount.delete({
       where: {
