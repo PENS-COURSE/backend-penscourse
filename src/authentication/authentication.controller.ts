@@ -17,6 +17,11 @@ import {
 import { Request } from 'express';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { AuthenticationService } from './authentication.service';
+import {
+  ForgotPasswordRequestDto,
+  ForgotPasswordResetDto,
+  ForgotPasswordVerifyDto,
+} from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
 import { GoogleGuard } from './guards/google.guard';
@@ -117,5 +122,48 @@ export class AuthenticationController {
   @Get('login/google')
   async loginWithGoogle() {
     return 'OK';
+  }
+
+  @AllowUnauthorizedRequest()
+  @ApiOperation({ summary: 'Forgot Password Request' })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Post('forgot-password/request')
+  async forgotPasswordRequest(@Body() payload: ForgotPasswordRequestDto) {
+    const data =
+      await this.authenticationService.forgotPasswordRequest(payload);
+
+    return {
+      message: 'Successfully requested password reset',
+      data,
+    };
+  }
+
+  @AllowUnauthorizedRequest()
+  @ApiOperation({ summary: 'Forgot Password Verify' })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Post('forgot-password/verify')
+  async forgotPasswordVerify(@Body() payload: ForgotPasswordVerifyDto) {
+    const data = await this.authenticationService.forgotPasswordVerify(payload);
+
+    return {
+      message: 'Successfully verified OTP',
+      data,
+    };
+  }
+
+  @AllowUnauthorizedRequest()
+  @ApiOperation({ summary: 'Forgot Password Reset' })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Post('forgot-password/reset')
+  async forgotPasswordReset(@Body() payload: ForgotPasswordResetDto) {
+    const data = await this.authenticationService.forgotPasswordReset(payload);
+
+    return {
+      message: 'Successfully reset password, please login again',
+      data,
+    };
   }
 }

@@ -1,0 +1,61 @@
+---
+title: 'PENS Online Classroom: Kode OTP Anda'
+preheader: 'Kode Verifikasi (OTP) PENS Online Classroom kamu:'
+bodyClass: bg-slate-50
+---
+
+<x-main>
+  <div class="bg-slate-50 sm:px-4 font-sans">
+    <table align="center">
+      <tr>
+        <td class="w-[552px] max-w-full">
+          <div class="my-12 sm:my-8 text-center">
+            <a href="https://maizzle.com">
+              <img src="images/maizzle.png" width="70" alt="Maizzle" />
+            </a>
+          </div>
+
+          <table class="w-full">
+            <tr>
+              <td
+                class="p-12 sm:px-6 text-base text-slate-700 bg-white rounded shadow-sm"
+              >
+                <h1
+                  class="m-0 mb-6 text-2xl sm:leading-8 text-black font-semibold"
+                >
+                  Hello, @{{ name }}
+                </h1>
+
+                <p class="m-0 leading-6">
+                  Kode Verifikasi (OTP) PENS Online Classroom kamu:
+                </p>
+
+                <x-spacer height="24px" />
+
+                <div
+                  class="w-full bg-gray-100 rounded-lg flex items-center justify-center h-16"
+                >
+                  <span class="text-2xl font-semibold tracking-3"
+                    >@{{otp}}</span
+                  >
+                </div>
+
+                <x-divider space-y="32px" class="bg-slate-200" />
+
+                <p class="text-center mb-10">
+                  Berlaku selama 5 menit. JANGAN BERI kode ini ke siapa pun,
+                  TERMASUK PENS Online Classroom.
+                </p>
+                <p>
+                  Terima Kasih, <br /><span class="font-bold"
+                    >PENS Online Classroom</span
+                  >
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+</x-main>
