@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -144,7 +145,7 @@ export class CurriculumsController {
   @ApiBearerAuth()
   @ApiOkResponse()
   @HttpCode(200)
-  @Get(':slug/curriculums/:uuid')
+  @Delete(':slug/curriculums/:uuid')
   async remove(@Param('uuid') uuid: string, @Param('slug') slug: string) {
     const data = await this.curriculumsService.remove(uuid, slug);
 
