@@ -2,9 +2,7 @@ name: Online Classroom PENS V1 Deployment
 
 on:
   push:
-    branches: ['main']
-  pull_request:
-    branches: ['main']
+    branches: ['main', 'develop']
 
 jobs:
   deployment:
