@@ -16,4 +16,4 @@ RUN bun db:generate
 
 EXPOSE 3000
 
-CMD [ "bun", "dev" ]
+ENTRYPOINT [ "bun", "run", "./src/main.ts" ]
