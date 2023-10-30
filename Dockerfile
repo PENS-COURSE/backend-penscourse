@@ -13,7 +13,9 @@ COPY .env ./
 RUN npm install -g bun
 RUN bun add -g @nestjs/cli
 RUN bun install
-
+RUN bun add -g bcrypt
+RUN bun add -g node-gyp
+RUN bun add bcrypt
 RUN bun prisma generate
 
 EXPOSE 3000
