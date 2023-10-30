@@ -5,7 +5,14 @@ import { StringHelper } from '../src/utils/slug.utils';
 const prisma = new PrismaClient();
 
 const main = async () => {
-  await Promise.all([admin(), departments(), users(), courses()]);
+  await Promise.all([
+    admin(),
+    departments(),
+    users(),
+    courses(),
+    curriculums(),
+    subjects(),
+  ]);
 };
 
 const admin = async () => {
@@ -129,6 +136,81 @@ const courses = async () => {
         },
       });
     }
+  }
+};
+
+const curriculums = async () => {
+  const curriculums = await prisma.curriculum.findMany();
+  if (curriculums.length == 0) {
+    const courses = await prisma.course.findMany();
+
+    for (let i = 1; i < 50; i++) {
+      const name = faker.word.words();
+      await prisma.curriculum.create({
+        data: {
+          title: name,
+          slug: StringHelper.slug(name),
+          week: i,
+          course_id: faker.helpers.shuffle(courses)[0].id,
+        },
+      });
+    }
+
+    console.log(`Successfully created curriculums`);
+  }
+};
+
+const subjects = async () => {
+  const curriculums = await prisma.curriculum.findMany();
+  if (curriculums.length != 0) {
+    const liveClasses = [];
+    const videoContents = [];
+    const fileContents = [];
+
+    for (let i = 1; i < 10; i++) {
+      liveClasses.push({
+        title: faker.word.words(),
+        description: faker.lorem.paragraph(),
+        url: faker.internet.url(),
+      });
+
+      videoContents.push({
+        title: faker.word.words(),
+        description: faker.lorem.paragraph(),
+        url: faker.internet.url(),
+      });
+
+      fileContents.push({
+        title: faker.word.words(),
+        url: faker.internet.url(),
+        file_type: faker.helpers.shuffle(['pdf', 'docx', 'pptx'])[0] as any,
+      });
+    }
+
+    curriculums.forEach(async (curriculum) => {
+      await prisma.curriculum.update({
+        where: {
+          id: curriculum.id,
+        },
+        data: {
+          live_classes: {
+            createMany: {
+              data: liveClasses,
+            },
+          },
+          video_contents: {
+            createMany: {
+              data: videoContents,
+            },
+          },
+          file_contents: {
+            createMany: {
+              data: fileContents,
+            },
+          },
+        },
+      });
+    });
   }
 };
 

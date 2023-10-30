@@ -1,6 +1,7 @@
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { PrismaClient } from '@prisma/client';
 import * as Sentry from '@sentry/node';
 import { ProfilingIntegration } from '@sentry/profiling-node';
 import { AppModule } from './app.module';
@@ -12,7 +13,10 @@ async function bootstrap() {
 
   Sentry.init({
     dsn: 'https://18b885a3cd1b64525e52dd787bd51903@o4506136204541952.ingest.sentry.io/4506136210178048',
-    integrations: [new ProfilingIntegration()],
+    integrations: [
+      new ProfilingIntegration(),
+      new Sentry.Integrations.Prisma({ client: PrismaClient }),
+    ],
     // Performance Monitoring
     tracesSampleRate: 1.0,
     // Set sampling rate for profiling - this is relative to tracesSampleRate
