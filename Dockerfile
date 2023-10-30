@@ -18,9 +18,7 @@ RUN bun add -g node-gyp
 RUN bun add bcrypt
 RUN bun prisma generate
 
-RUN cd node_modules/bcrypt
-RUN node-pre-gyp install --fallback-to-build
-RUN cd ../..
+RUN npm rebuild bcrypt
 
 EXPOSE 3000
 
