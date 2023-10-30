@@ -14,6 +14,8 @@ RUN npm install -g bun
 RUN bun add -g @nestjs/cli
 RUN bun install
 
+RUN bun prisma generate
+
 EXPOSE 3000
 
 CMD [ "bun", "dev:migrate" ]
