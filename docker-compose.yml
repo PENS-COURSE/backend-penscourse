@@ -10,7 +10,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./:/usr/src/app
-      - ignore:/usr/local/apps/myapp/dev/node_modules/
+      - /usr/src/app/node_modules/
     ports:
       - 3000:3000
 
