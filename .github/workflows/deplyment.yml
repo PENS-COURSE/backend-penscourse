@@ -19,7 +19,9 @@ jobs:
           password: ${{secrets.SSH_PASSWORD}}
           script: |
             cd ${{ secrets.SSH_PATH }}
+            git checkout develop
             git reset --hard HEAD
             git pull
 
-            docker restart online_classroom_pens_api
+            docker compose down
+            docker compose up -d --build
