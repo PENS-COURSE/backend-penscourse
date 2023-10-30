@@ -18,6 +18,10 @@ RUN bun add -g node-gyp
 RUN bun add bcrypt
 RUN bun prisma generate
 
+RUN cd node_modules/bcrypt
+RUN node-pre-gyp install --fallback-to-build
+RUN cd ../..
+
 EXPOSE 3000
 
 CMD [ "bun", "dev:migrate" ]
