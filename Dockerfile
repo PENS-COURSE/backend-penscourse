@@ -1,20 +1,19 @@
 FROM node:lts-bullseye
 
-WORKDIR /usr/src/app
+WORKDIR /usr/local/apps/online-classroom/dev
 
 # Install OpenSSL
 RUN apt-get update && apt-get install -y openssl
 
-COPY package*.json pnpm-lock.yaml ./
+COPY package*.json bun.lockb ./
 
-RUN npm install -g pnpm
+RUN bun install
 
-COPY . .
+COPY ./ ./
+COPY .env ./
 
-RUN pnpm install
-
-RUN pnpm db:generate
+RUN bun db:generate
 
 EXPOSE 3000
 
-CMD [ "pnpm", "dev" ]
+CMD [ "bun", "dev" ]

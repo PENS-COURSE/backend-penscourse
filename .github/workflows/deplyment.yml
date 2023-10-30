@@ -23,6 +23,3 @@ jobs:
             cd ${{ secrets.SSH_PATH }}
             git reset --hard HEAD
             git pull
-
-            docker compose down
-            docker compose up -d --build
