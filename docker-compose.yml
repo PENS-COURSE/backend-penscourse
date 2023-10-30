@@ -9,10 +9,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - type: bind
-        source: .
-        target: /usr/src/app
-      - /usr/src/app/node_modules/
+      - ./public:/usr/src/app/public
     ports:
       - 3000:3000
 
@@ -54,6 +51,5 @@ services:
       - db-data:/var/lib/postgresql/data
 
 volumes:
-  ignore:
   db-data:
     driver: local
