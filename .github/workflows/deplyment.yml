@@ -19,7 +19,6 @@ jobs:
           password: ${{secrets.SSH_PASSWORD}}
           script: |
             cd ${{ secrets.SSH_PATH }}
-            git checkout develop
             git reset --hard HEAD
             git pull
 
