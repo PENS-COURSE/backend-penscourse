@@ -1,9 +1,6 @@
-FROM oven/bun:debian
+FROM oven/bun:latest
 
-WORKDIR /usr/local/apps/online-classroom/dev
-
-# Install OpenSSL
-RUN apt-get update && apt-get install -y openssl
+WORKDIR /usr/src/app
 
 COPY package*.json ./
 COPY bun.lockb ./
@@ -17,4 +14,4 @@ RUN bun db:generate
 
 EXPOSE 3000
 
-ENTRYPOINT [ "bun", "run", "./src/main.ts" ]
+CMD [ "bun", "dev" ]

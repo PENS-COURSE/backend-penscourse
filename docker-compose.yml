@@ -9,7 +9,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./:/usr/local/apps/online-classroom/dev
+      - ./:/usr/src/app
       - ignore:/usr/local/apps/myapp/dev/node_modules/
     ports:
       - 3000:3000
