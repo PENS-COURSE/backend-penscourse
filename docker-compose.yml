@@ -9,7 +9,8 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./public:/usr/src/app/public
+      - ./:/usr/local/apps/online-classroom/dev
+      - ignore:/usr/local/apps/myapp/dev/node_modules/
     ports:
       - 3000:3000
 
@@ -51,5 +52,6 @@ services:
       - db-data:/var/lib/postgresql/data
 
 volumes:
+  ignore:
   db-data:
     driver: local
