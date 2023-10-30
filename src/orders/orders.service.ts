@@ -68,7 +68,7 @@ export class OrdersService {
     user: User;
     payload: OrderCourseDto;
   }) {
-    const course = await this.course.findOneBySlug(courseSlug);
+    const course = await this.course.findOneBySlug({ slug: courseSlug });
 
     if (course.is_free) {
       throw new BadRequestException('Course is free');

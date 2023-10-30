@@ -19,6 +19,7 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
@@ -115,11 +116,17 @@ export class CoursesController {
   @AllowUnauthorizedRequest()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get Course By Slug' })
+  @ApiParam({
+    name: 'slug',
+    required: true,
+    type: 'string',
+    description: 'Course Slug',
+  })
   @ApiOkResponse()
   @HttpCode(200)
   @Get(':slug')
   async findOne(@Param('slug') slug: string) {
-    const data = await this.coursesService.findOneBySlug(slug);
+    const data = await this.coursesService.findOneBySlug({ slug });
 
     return {
       message: 'Successfully retrieved course',
@@ -128,6 +135,12 @@ export class CoursesController {
   }
 
   @ApiOperation({ summary: 'Update Course' })
+  @ApiParam({
+    name: 'slug',
+    required: true,
+    type: 'string',
+    description: 'Course Slug',
+  })
   @ApiBearerAuth()
   @ApiOkResponse()
   @HttpCode(200)
@@ -167,6 +180,12 @@ export class CoursesController {
   }
 
   @ApiOperation({ summary: 'Remove Course' })
+  @ApiParam({
+    name: 'slug',
+    required: true,
+    type: 'string',
+    description: 'Course Slug',
+  })
   @ApiBearerAuth()
   @ApiOkResponse()
   @HttpCode(200)
@@ -176,6 +195,26 @@ export class CoursesController {
 
     return {
       message: 'Successfully removed course',
+      data,
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Enroll Course Free' })
+  @ApiParam({
+    name: 'slug',
+    required: true,
+    type: 'string',
+    description: 'Course Slug',
+  })
+  @HttpCode(201)
+  @ApiCreatedResponse()
+  @Post(':slug/enroll')
+  async enrollCourse(@Param('slug') slug: string, @CurrentUser() user: any) {
+    const data = await this.coursesService.enrollCourse({ slug, user });
+
+    return {
+      message: 'Successfully enrolled course',
       data,
     };
   }

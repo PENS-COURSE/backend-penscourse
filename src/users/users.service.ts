@@ -8,6 +8,7 @@ import { UserEntity } from '../entities/user.entity';
 import { PrismaService } from '../prisma/prisma.service';
 import { HashHelpers } from '../utils/hash.utils';
 import { createPaginator } from '../utils/pagination.utils';
+import { StorageHelpers } from '../utils/storage.utils';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -84,7 +85,7 @@ export class UsersService {
 
     if (avatar) {
       if (user.avatar) {
-        // TODO Delete old avatar
+        StorageHelpers.deleteFile(user.avatar);
       }
 
       updateUserDto.avatar = avatar.path;
@@ -105,7 +106,7 @@ export class UsersService {
   async remove(id: number) {
     const user = await this.findOneByID(id);
     if (user.avatar) {
-      // TODO Delete old avatar
+      StorageHelpers.deleteFile(user.avatar);
     }
 
     return await this.prisma.user.delete({

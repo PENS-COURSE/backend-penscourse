@@ -46,13 +46,13 @@ export class CreateCourseDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsDate()
-  @Transform(({ value }) => (value != null ? new Date(value) : null))
+  @Transform(({ value }) => (value ? new Date(value) : undefined))
   start_date?: Date;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsDate()
-  @Transform(({ value }) => (value != null ? new Date(value) : null))
+  @Transform(({ value }) => (value ? new Date(value) : undefined))
   end_date?: Date;
 
   @ApiPropertyOptional()
@@ -64,7 +64,7 @@ export class CreateCourseDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @Transform(({ value }) => (value ? Number(value) : undefined))
   max_students?: number;
 
   @ApiProperty({ type: 'string', format: 'binary' })
@@ -72,12 +72,12 @@ export class CreateCourseDto {
 
   @ApiProperty()
   @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @Transform(({ value }) => (value ? Number(value) : undefined))
   department_id: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
-  @Transform(({ value }) => Number(value))
+  @Transform(({ value }) => (value ? Number(value) : undefined))
   user_id?: number;
 }
