@@ -10,6 +10,7 @@ COPY bun.lockb ./
 COPY ./ ./
 COPY .env ./
 
+RUN bun add -g @nestjs/cli
 RUN bun install
 
 RUN bun db:generate
