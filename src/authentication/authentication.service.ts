@@ -6,6 +6,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
+import { google } from 'googleapis';
 import * as moment from 'moment';
 import { UserEntity } from '../entities/user.entity';
 import { MailService } from '../mail/mail.service';
@@ -122,6 +123,32 @@ export class AuthenticationService {
       user: new UserEntity(user),
       token: token,
     };
+  }
+
+  async loginWithGoogleAccessToken({
+    access_token,
+    id_token,
+  }: {
+    access_token: string;
+    id_token: string;
+  }) {
+    const client = new google.auth.OAuth2({
+      clientId: this.configService.get<string>('GOOGLE_CLIENT_ID'),
+      clientSecret: this.configService.get<string>('GOOGLE_CLIENT_SECRET'),
+    });
+
+    client.setCredentials({ access_token, id_token });
+
+    const oauth2 = google.oauth2({
+      auth: client,
+      version: 'v2',
+    });
+
+    const { data } = await oauth2.userinfo.get();
+
+    const user = await this.loginWithGoogleID({ google_id: data.id });
+
+    return user;
   }
 
   private async updateRefreshToken(user: User, refreshToken: string) {

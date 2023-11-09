@@ -6,12 +6,12 @@ const prisma = new PrismaClient();
 
 const main = async () => {
   await Promise.all([
-    admin(),
-    departments(),
-    users(),
-    courses(),
-    curriculums(),
-    subjects(),
+    // admin(),
+    // departments(),
+    // users(),
+    // courses(),
+    // curriculums(),
+    // subjects(),
   ]);
 };
 
