@@ -97,16 +97,11 @@ export class AuthenticationService {
 
     if (!user || !oldToken) throw new ForbiddenException('Access Denied');
 
-    if (
-      !(await HashHelpers.comparePassword(refreshToken, oldToken.refresh_token))
-    ) {
-      throw new ForbiddenException('Access Denied');
-    }
-
     const token = await this.generateJwtToken(user);
 
     await this.updateRefreshToken({
       user,
+      oldRefreshToken: refreshToken,
       refreshToken: token.refresh_token,
       ipAddress: this.request.ip,
       userAgent: this.request.headers['user-agent'],
@@ -308,18 +303,20 @@ export class AuthenticationService {
 
   private async updateRefreshToken({
     user,
+    oldRefreshToken,
     refreshToken,
     ipAddress,
     userAgent,
   }: {
     user: User;
     refreshToken: string;
+    oldRefreshToken?: string;
     ipAddress?: string;
     userAgent?: string;
   }) {
     return await this.prisma.sessionLogin.upsert({
       where: {
-        refresh_token: refreshToken,
+        refresh_token: oldRefreshToken ?? refreshToken,
       },
       create: {
         user_id: user.id,
