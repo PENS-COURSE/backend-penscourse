@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { User } from '@prisma/client';
 import { CoursesService } from '../courses/courses.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { createPaginator } from '../utils/pagination.utils';
@@ -106,16 +107,19 @@ export class DepartmentsService {
     slug,
     page = 1,
     name = undefined,
+    user = undefined,
   }: {
     slug: string;
     page: number;
     name?: string;
+    user?: User;
   }) {
     const department = await this.findOneBySlug(slug);
 
     return await this.coursesServices.findAll({
       page,
       name,
+      user,
       where: {
         department_id: department.id,
         is_active: true,

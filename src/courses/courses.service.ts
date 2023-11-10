@@ -89,6 +89,13 @@ export class CoursesService {
         include: {
           discount: true,
         },
+        orderBy: {
+          enrollments: user
+            ? {
+                _count: 'asc',
+              }
+            : undefined,
+        },
         where: {
           slug: {
             contains: name,
@@ -103,6 +110,33 @@ export class CoursesService {
         },
       },
       options: { page },
+      map: (courses) => {
+        const mappedCourses = courses.map(async (course) => {
+          const isEnrolled =
+            user?.role == 'user' &&
+            (await this.prisma.enrollment.findFirst({
+              where: {
+                user_id: user?.id,
+                course_id: course.id,
+              },
+            }));
+
+          const data = {
+            ...course,
+            is_enrolled: isEnrolled ? true : false,
+          };
+
+          if (user && user?.role == 'user') {
+            return data;
+          }
+
+          delete data.is_enrolled;
+
+          return data;
+        });
+
+        return Promise.all(mappedCourses);
+      },
     });
   }
 
