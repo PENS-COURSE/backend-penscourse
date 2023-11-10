@@ -1,18 +1,50 @@
 import { fakerID_ID as faker } from '@faker-js/faker';
 import { PrismaClient } from '@prisma/client';
+import { ParseArgsConfig, parseArgs } from 'node:util';
 import { HashHelpers } from '../src/utils/hash.utils';
 import { StringHelper } from '../src/utils/slug.utils';
 const prisma = new PrismaClient();
 
+const options: ParseArgsConfig['options'] = {
+  model: { type: 'string' },
+};
+
 const main = async () => {
-  await Promise.all([
-    admin(),
-    departments(),
-    users(),
-    courses(),
-    curriculums(),
-    subjects(),
-  ]);
+  const {
+    values: { model },
+  } = parseArgs({ options });
+
+  switch (model) {
+    case 'all':
+      await admin()
+        .then(async () => users())
+        .then(async () => departments())
+        .then(async () => courses())
+        .then(async () => curriculums())
+        .then(async () => subjects());
+      break;
+    case 'admin':
+      await admin();
+      break;
+    case 'users':
+      await users();
+      break;
+    case 'departments':
+      await departments();
+      break;
+    case 'courses':
+      await courses();
+      break;
+    case 'curriculums':
+      await curriculums();
+      break;
+    case 'subjects':
+      await subjects();
+      break;
+    default:
+      console.error('Model not found');
+      process.exit(1);
+  }
 };
 
 const admin = async () => {
