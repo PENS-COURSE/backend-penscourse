@@ -1,12 +1,16 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
+import { AllowUnauthorizedRequest } from './authentication/metadata/allow-unauthorized-request.decorator';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @AllowUnauthorizedRequest()
+  getHello() {
+    return {
+      message: 'Hello World !',
+    };
   }
 }
