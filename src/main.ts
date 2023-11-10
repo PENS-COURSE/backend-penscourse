@@ -47,11 +47,6 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Online Classroom PENS V1')
-    .setDescription(
-      `
-    Admin Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjIsImVtYWlsIjoiYmludGFuZ3JlemVrYUBnbWFpbC5jb20iLCJpYXQiOjE2OTk2MjYzMzMsImV4cCI6OTk5OTYyNjM5M30.gHAztByuwBfOpL__UdpfNvEWLyVAnyu4eHy9vvxkSBU
-    `,
-    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();
