@@ -1,18 +1,46 @@
 import { fakerID_ID as faker } from '@faker-js/faker';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import { ParseArgsConfig, parseArgs } from 'node:util';
 import { HashHelpers } from '../src/utils/hash.utils';
 import { StringHelper } from '../src/utils/slug.utils';
 const prisma = new PrismaClient();
 
+const options: ParseArgsConfig['options'] = {
+  model: { type: 'string' },
+};
+
 const main = async () => {
-  await Promise.all([
-    admin(),
-    departments(),
-    users(),
-    courses(),
-    curriculums(),
-    subjects(),
-  ]);
+  const {
+    values: { model },
+  } = parseArgs({ options });
+
+  switch (model) {
+    case 'all':
+      await admin()
+        .then(async () => users())
+        .then(async () => departments())
+        .then(async () => curriculums())
+        .then(async () => subjects());
+      break;
+    case 'admin':
+      await admin();
+      break;
+    case 'users':
+      await users();
+      break;
+    case 'departments':
+      await departments();
+      break;
+    case 'curriculums':
+      await curriculums();
+      break;
+    case 'subjects':
+      await subjects();
+      break;
+    default:
+      console.error('Model not found');
+      process.exit(1);
+  }
 };
 
 const admin = async () => {
@@ -39,22 +67,347 @@ const admin = async () => {
 const departments = async () => {
   const departments = await prisma.department.findMany();
 
+  const dummyDepartments: Prisma.DepartmentCreateInput[] = [
+    {
+      name: 'Teknik Informatika',
+      slug: StringHelper.slug('Teknik Informatika'),
+      benefits_note: faker.lorem.paragraph(),
+      opportunities_note: faker.lorem.paragraph(),
+      participant_note: faker.lorem.paragraph(),
+      description: faker.lorem.paragraph(),
+      is_active: true,
+      icon: faker.image.urlPlaceholder(),
+      courses: {
+        createMany: {
+          data: [
+            {
+              name: 'Boost Your Design Work using Top Figma Plugins',
+              slug: StringHelper.slug(
+                'Boost Your Design Work using Top Figma Plugins',
+              ),
+              is_active: true,
+              is_free: true,
+              grade_level: faker.helpers.shuffle([
+                'beginner',
+                'intermediate',
+                'advanced',
+              ])[0] as any,
+              description: faker.lorem.paragraph(),
+              is_certified: false,
+              max_students: faker.number.int({ min: 10, max: 100 }),
+              price: null,
+              start_date: new Date(),
+              end_date: new Date(),
+              user_id: 1,
+            },
+            {
+              name: 'Full-Stack Android Developer',
+              slug: StringHelper.slug('Full-Stack Android Developer'),
+              is_active: true,
+              is_free: false,
+              grade_level: faker.helpers.shuffle([
+                'beginner',
+                'intermediate',
+                'advanced',
+              ])[0] as any,
+              description: faker.lorem.paragraph(),
+              is_certified: true,
+              max_students: faker.number.int({ min: 10, max: 100 }),
+              price: Math.round(
+                faker.number.float({ min: 50000, max: 100000 }),
+              ),
+              start_date: new Date(),
+              end_date: new Date(),
+              user_id: 1,
+            },
+          ],
+        },
+      },
+    },
+    {
+      name: 'Teknik Telekomunikasi',
+      slug: StringHelper.slug('Teknik Telekomunikasi'),
+      benefits_note: faker.lorem.paragraph(),
+      opportunities_note: faker.lorem.paragraph(),
+      participant_note: faker.lorem.paragraph(),
+      description: faker.lorem.paragraph(),
+      is_active: true,
+      icon: faker.image.urlPlaceholder(),
+      courses: {
+        createMany: {
+          data: [
+            {
+              name: 'Dasar-dasar Sistem Telekomunikasi',
+              slug: StringHelper.slug('Dasar-dasar Sistem Telekomunikasi'),
+              is_active: true,
+              is_free: true,
+              grade_level: faker.helpers.shuffle([
+                'beginner',
+                'intermediate',
+                'advanced',
+              ])[0] as any,
+              description: faker.lorem.paragraph(),
+              is_certified: false,
+              max_students: faker.number.int({ min: 10, max: 100 }),
+              price: null,
+              start_date: new Date(),
+              end_date: new Date(),
+              user_id: 1,
+            },
+            {
+              name: 'Pengenalan Teknologi 5G',
+              slug: StringHelper.slug('Pengenalan Teknologi 5G'),
+              is_active: true,
+              is_free: false,
+              grade_level: faker.helpers.shuffle([
+                'beginner',
+                'intermediate',
+                'advanced',
+              ])[0] as any,
+              description: faker.lorem.paragraph(),
+              is_certified: true,
+              max_students: faker.number.int({ min: 10, max: 100 }),
+              price: Math.round(
+                faker.number.float({ min: 50000, max: 100000 }),
+              ),
+              start_date: new Date(),
+              end_date: new Date(),
+              user_id: 1,
+            },
+          ],
+        },
+      },
+    },
+    {
+      name: 'Teknik Elektro Industri',
+      slug: StringHelper.slug('Teknik Elektro Industri'),
+      benefits_note: faker.lorem.paragraph(),
+      opportunities_note: faker.lorem.paragraph(),
+      participant_note: faker.lorem.paragraph(),
+      description: faker.lorem.paragraph(),
+      is_active: true,
+      icon: faker.image.urlPlaceholder(),
+      courses: {
+        createMany: {
+          data: [
+            {
+              name: 'Pemodelan Sistem Kontrol dengan MATLAB',
+              slug: StringHelper.slug('Pemodelan Sistem Kontrol dengan MATLAB'),
+              is_active: true,
+              is_free: true,
+              grade_level: faker.helpers.shuffle([
+                'beginner',
+                'intermediate',
+                'advanced',
+              ])[0] as any,
+              description: faker.lorem.paragraph(),
+              is_certified: false,
+              max_students: faker.number.int({ min: 10, max: 100 }),
+              price: null,
+              start_date: new Date(),
+              end_date: new Date(),
+              user_id: 1,
+            },
+            {
+              name: 'Desain Elektronika Terpadu dengan Altium Designer',
+              slug: StringHelper.slug(
+                'Desain Elektronika Terpadu dengan Altium Designer',
+              ),
+              is_active: true,
+              is_free: false,
+              grade_level: faker.helpers.shuffle([
+                'beginner',
+                'intermediate',
+                'advanced',
+              ])[0] as any,
+              description: faker.lorem.paragraph(),
+              is_certified: true,
+              max_students: faker.number.int({ min: 10, max: 100 }),
+              price: Math.round(
+                faker.number.float({ min: 50000, max: 100000 }),
+              ),
+              start_date: new Date(),
+              end_date: new Date(),
+              user_id: 1,
+            },
+          ],
+        },
+      },
+    },
+    {
+      name: 'Teknik Elektronika',
+      slug: StringHelper.slug('Teknik Elektronika'),
+      benefits_note: faker.lorem.paragraph(),
+      opportunities_note: faker.lorem.paragraph(),
+      participant_note: faker.lorem.paragraph(),
+      description: faker.lorem.paragraph(),
+      is_active: true,
+      icon: faker.image.urlPlaceholder(),
+      courses: {
+        createMany: {
+          data: [
+            {
+              name: 'Mikrokontroler dan Sistem Embedded: Teori dan Praktek',
+              slug: StringHelper.slug(
+                'Mikrokontroler dan Sistem Embedded: Teori dan Praktek',
+              ),
+              is_active: true,
+              is_free: true,
+              grade_level: faker.helpers.shuffle([
+                'beginner',
+                'intermediate',
+                'advanced',
+              ])[0] as any,
+              description: faker.lorem.paragraph(),
+              is_certified: false,
+              max_students: faker.number.int({ min: 10, max: 100 }),
+              price: null,
+              start_date: new Date(),
+              end_date: new Date(),
+              user_id: 1,
+            },
+            {
+              name: 'Desain Elektronika Digital dengan FPGA',
+              slug: StringHelper.slug('Desain Elektronika Digital dengan FPGA'),
+              is_active: true,
+              is_free: false,
+              grade_level: faker.helpers.shuffle([
+                'beginner',
+                'intermediate',
+                'advanced',
+              ])[0] as any,
+              description: faker.lorem.paragraph(),
+              is_certified: true,
+              max_students: faker.number.int({ min: 10, max: 100 }),
+              price: Math.round(
+                faker.number.float({ min: 50000, max: 100000 }),
+              ),
+              start_date: new Date(),
+              end_date: new Date(),
+              user_id: 1,
+            },
+          ],
+        },
+      },
+    },
+    {
+      name: 'Teknik Mekatronika',
+      slug: StringHelper.slug('Teknik Mekatronika'),
+      benefits_note: faker.lorem.paragraph(),
+      opportunities_note: faker.lorem.paragraph(),
+      participant_note: faker.lorem.paragraph(),
+      description: faker.lorem.paragraph(),
+      is_active: true,
+      icon: faker.image.urlPlaceholder(),
+      courses: {
+        createMany: {
+          data: [
+            {
+              name: 'Pengantar Sistem Kontrol Mekatronika',
+              slug: StringHelper.slug('Pengantar Sistem Kontrol Mekatronika'),
+              is_active: true,
+              is_free: true,
+              grade_level: faker.helpers.shuffle([
+                'beginner',
+                'intermediate',
+                'advanced',
+              ])[0] as any,
+              description: faker.lorem.paragraph(),
+              is_certified: false,
+              max_students: faker.number.int({ min: 10, max: 100 }),
+              price: null,
+              start_date: new Date(),
+              end_date: new Date(),
+              user_id: 1,
+            },
+            {
+              name: 'Mekanika dan Dinamika Robotika',
+              slug: StringHelper.slug('Mekanika dan Dinamika Robotika'),
+              is_active: true,
+              is_free: false,
+              grade_level: faker.helpers.shuffle([
+                'beginner',
+                'intermediate',
+                'advanced',
+              ])[0] as any,
+              description: faker.lorem.paragraph(),
+              is_certified: true,
+              max_students: faker.number.int({ min: 10, max: 100 }),
+              price: Math.round(
+                faker.number.float({ min: 50000, max: 100000 }),
+              ),
+              start_date: new Date(),
+              end_date: new Date(),
+              user_id: 1,
+            },
+          ],
+        },
+      },
+    },
+    {
+      name: 'Teknik Komputer',
+      slug: StringHelper.slug('Teknik Komputer'),
+      benefits_note: faker.lorem.paragraph(),
+      opportunities_note: faker.lorem.paragraph(),
+      participant_note: faker.lorem.paragraph(),
+      description: faker.lorem.paragraph(),
+      is_active: true,
+      icon: faker.image.urlPlaceholder(),
+      courses: {
+        createMany: {
+          data: [
+            {
+              name: 'Arsitektur Komputer dan Organisasi',
+              slug: StringHelper.slug('Arsitektur Komputer dan Organisasi'),
+              is_active: true,
+              is_free: true,
+              grade_level: faker.helpers.shuffle([
+                'beginner',
+                'intermediate',
+                'advanced',
+              ])[0] as any,
+              description: faker.lorem.paragraph(),
+              is_certified: false,
+              max_students: faker.number.int({ min: 10, max: 100 }),
+              price: null,
+              start_date: new Date(),
+              end_date: new Date(),
+              user_id: 1,
+            },
+            {
+              name: 'Pemrograman Lanjut dengan C++',
+              slug: StringHelper.slug('Pemrograman Lanjut dengan C++'),
+              is_active: true,
+              is_free: false,
+              grade_level: faker.helpers.shuffle([
+                'beginner',
+                'intermediate',
+                'advanced',
+              ])[0] as any,
+              description: faker.lorem.paragraph(),
+              is_certified: true,
+              max_students: faker.number.int({ min: 10, max: 100 }),
+              price: Math.round(
+                faker.number.float({ min: 50000, max: 100000 }),
+              ),
+              start_date: new Date(),
+              end_date: new Date(),
+              user_id: 1,
+            },
+          ],
+        },
+      },
+    },
+  ];
+
   if (departments.length == 0) {
-    for (let i = 0; i <= 50; i++) {
-      const name = faker.company.name();
+    dummyDepartments.forEach(async (department) => {
       await prisma.department.create({
         data: {
-          name: name,
-          slug: StringHelper.slug(name),
-          benefits_note: faker.lorem.paragraph(),
-          opportunities_note: faker.lorem.paragraph(),
-          participant_note: faker.lorem.paragraph(),
-          description: faker.lorem.paragraph(),
-          is_active: true,
-          icon: faker.image.urlPlaceholder(),
+          ...department,
         },
       });
-    }
+    });
 
     console.log(`Successfully created departments`);
   }
@@ -93,49 +446,6 @@ const users = async () => {
       });
     }
     console.log(`Successfully created users`);
-  }
-};
-
-const courses = async () => {
-  const courses = await prisma.course.findMany();
-  const departments = await prisma.department.findMany();
-  const users = await prisma.user.findMany({
-    where: {
-      role: 'dosen',
-    },
-  });
-
-  if (courses.length == 0) {
-    for (let i = 1; i < 50; i++) {
-      const name = faker.commerce.productName();
-      const slug = StringHelper.slug(name);
-      const isFree = faker.datatype.boolean();
-      const startDate = faker.date.future();
-
-      await prisma.course.create({
-        data: {
-          name: name,
-          is_free: isFree,
-          slug,
-          is_active: faker.datatype.boolean(),
-          grade_level: faker.helpers.shuffle([
-            'beginner',
-            'intermediate',
-            'advanced',
-          ])[0] as any,
-          department_id: faker.helpers.shuffle(departments)[0].id,
-          description: faker.lorem.paragraph(),
-          is_certified: faker.datatype.boolean(),
-          price: isFree
-            ? null
-            : faker.number.int({ min: 100000, max: 1000000 }),
-          start_date: startDate,
-          end_date: faker.date.future(undefined, startDate),
-          max_students: faker.number.int({ min: 10, max: 100 }),
-          user_id: faker.helpers.shuffle(users)[0].id,
-        },
-      });
-    }
   }
 };
 

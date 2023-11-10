@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +13,7 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { Request } from 'express';
@@ -68,14 +70,8 @@ export class AuthenticationController {
   @ApiOkResponse()
   @HttpCode(200)
   @Get('refresh-token')
-  async refreshToken(@Req() req: Request) {
-    const userId = req.user['id'];
-    const refreshToken = req.user['refresh_token'];
-
-    const data = await this.authenticationService.refreshToken(
-      userId,
-      refreshToken,
-    );
+  async refreshToken() {
+    const data = await this.authenticationService.refreshToken();
 
     return {
       message: 'Successfully refreshed token',
@@ -106,6 +102,36 @@ export class AuthenticationController {
   async loginWithGoogleCallback(@Req() req: Request) {
     const data = await this.authenticationService.loginWithGoogleID({
       google_id: req.user['google_id'],
+    });
+
+    return {
+      message: 'Successfully logged in user',
+      data,
+    };
+  }
+
+  @AllowUnauthorizedRequest()
+  @ApiQuery({
+    name: 'access_token',
+    type: String,
+    required: true,
+  })
+  @ApiQuery({
+    name: 'id_token',
+    type: String,
+    required: true,
+  })
+  @ApiOperation({ summary: 'Google Token Callback' })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Get('login/google/token')
+  async loginWithGoogleToken(
+    @Query('access_token') accessToken: string,
+    @Query('id_token') idToken: string,
+  ) {
+    const data = await this.authenticationService.loginWithGoogleAccessToken({
+      access_token: accessToken,
+      id_token: idToken,
     });
 
     return {

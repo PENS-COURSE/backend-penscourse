@@ -23,6 +23,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { User } from '@prisma/client';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unauthorized-request.decorator';
 import { CoursesService } from './courses.service';
@@ -79,8 +80,12 @@ export class CoursesController {
   @ApiOkResponse()
   @HttpCode(200)
   @Get()
-  async findAll(@Query('page') page: number, @Query('name') name: string) {
-    const data = await this.coursesService.findAll({ page, name });
+  async findAll(
+    @Query('page') page: number,
+    @Query('name') name: string,
+    @CurrentUser() user: User,
+  ) {
+    const data = await this.coursesService.findAll({ page, name, user });
 
     return {
       message: 'Successfully retrieved courses',

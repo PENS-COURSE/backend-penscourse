@@ -21,8 +21,10 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
-    "db:reset": "prisma migrate reset",
-    "db:seed": "prisma db seed"
+    "db:reset": "prisma migrate reset --skip-seed",
+    "db:seed": "prisma db seed",
+    "db:seed-model": "prisma db seed -- --model",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@faker-js/faker": "^8.2.0",
@@ -42,11 +44,11 @@
     "@prisma/client": "5.4.2",
     "@sentry/node": "^7.76.0",
     "@sentry/profiling-node": "^1.2.1",
-    "@types/passport-google-oauth20": "^2.0.13",
     "axios": "^1.5.1",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
+    "googleapis": "^128.0.0",
     "handlebars": "^4.7.8",
     "joi": "^17.11.0",
     "moment": "^2.29.4",
@@ -68,6 +70,7 @@
     "@types/multer": "^1.4.9",
     "@types/node": "20.8.7",
     "@types/nodemailer": "^6.4.13",
+    "@types/passport-google-oauth20": "^2.0.13",
     "@types/passport-jwt": "^3.0.11",
     "@types/supertest": "^2.0.15",
     "@typescript-eslint/eslint-plugin": "^6.8.0",

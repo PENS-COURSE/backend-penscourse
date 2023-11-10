@@ -23,6 +23,8 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { User } from '@prisma/client';
+import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unauthorized-request.decorator';
 import { DepartmentsService } from './departments.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
@@ -96,6 +98,7 @@ export class DepartmentsController {
     };
   }
 
+  @ApiBearerAuth()
   @AllowUnauthorizedRequest()
   @ApiOperation({ summary: 'Get All Courses By Department Slug' })
   @ApiQuery({ name: 'page', required: false })
@@ -107,11 +110,13 @@ export class DepartmentsController {
     @Param('slug') slug: string,
     @Query('page') page: number,
     @Query('name') name: string,
+    @CurrentUser() user: User,
   ) {
     const data = await this.departmentsService.getCoursesByDepartmentSlug({
       page,
       name,
       slug,
+      user,
     });
 
     return {

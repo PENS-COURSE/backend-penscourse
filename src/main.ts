@@ -11,6 +11,10 @@ import { SentryFilter } from './utils/sentry-filter.utils';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.setGlobalPrefix('api', {
+    exclude: ['/'],
+  });
+
   Sentry.init({
     dsn: 'https://18b885a3cd1b64525e52dd787bd51903@o4506136204541952.ingest.sentry.io/4506136210178048',
     integrations: [
