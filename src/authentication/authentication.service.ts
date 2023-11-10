@@ -1,11 +1,15 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
+  Scope,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { REQUEST } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
+import { Request } from 'express';
 import { google } from 'googleapis';
 import * as moment from 'moment';
 import { UserEntity } from '../entities/user.entity';
@@ -14,6 +18,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { HashHelpers } from '../utils/hash.utils';
+import { StringHelper } from '../utils/slug.utils';
 import {
   ForgotPasswordRequestDto,
   ForgotPasswordResetDto,
@@ -24,9 +29,10 @@ import { LogoutDto } from './dto/logout.dto';
 
 // TODO: Login with Google
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class AuthenticationService {
   constructor(
+    @Inject(REQUEST) private readonly request: Request,
     private readonly prisma: PrismaService,
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
@@ -42,7 +48,12 @@ export class AuthenticationService {
 
     const token = await this.generateJwtToken(newUser);
 
-    await this.updateRefreshToken(newUser, token.refresh_token);
+    await this.updateRefreshToken({
+      user: newUser,
+      refreshToken: token.refresh_token,
+      ipAddress: this.request.ip,
+      userAgent: this.request.headers['user-agent'],
+    });
 
     return {
       user: new UserEntity(newUser),
@@ -62,45 +73,60 @@ export class AuthenticationService {
 
     const token = await this.generateJwtToken(user);
 
-    await this.updateRefreshToken(user, token.refresh_token);
+    await this.updateRefreshToken({
+      user,
+      refreshToken: token.refresh_token,
+      ipAddress: this.request.ip,
+      userAgent: this.request.headers['user-agent'],
+    });
 
     return {
       user: new UserEntity(user),
-      token: token,
+      token,
     };
   }
 
-  async refreshToken(userId: number, refreshToken: string) {
+  async refreshToken() {
+    const userId = this.request.user['id'];
+    const refreshToken = this.request.user['refresh_token'];
+
     const user = await this.usersService.findOneByID(userId, false);
-    const oldToken = await this.prisma.refreshToken.findUnique({
-      where: { token: refreshToken },
+    const oldToken = await this.prisma.sessionLogin.findUnique({
+      where: { refresh_token: refreshToken },
     });
 
     if (!user || !oldToken) throw new ForbiddenException('Access Denied');
 
-    await this.prisma.refreshToken.delete({
-      where: { id: oldToken.id },
-    });
+    if (
+      !(await HashHelpers.comparePassword(refreshToken, oldToken.refresh_token))
+    ) {
+      throw new ForbiddenException('Access Denied');
+    }
 
     const token = await this.generateJwtToken(user);
 
-    await this.updateRefreshToken(user, token.refresh_token);
+    await this.updateRefreshToken({
+      user,
+      refreshToken: token.refresh_token,
+      ipAddress: this.request.ip,
+      userAgent: this.request.headers['user-agent'],
+    });
 
     return {
       user: new UserEntity(user),
-      token: token,
+      token,
     };
   }
 
   async logOut(payload: LogoutDto) {
-    const { refresh_token: refreshToken } = payload;
-
-    const oldToken = await this.prisma.refreshToken.findUnique({
-      where: { token: refreshToken },
+    const oldToken = await this.prisma.sessionLogin.findUnique({
+      where: {
+        refresh_token: payload.refresh_token,
+      },
     });
 
     if (oldToken) {
-      await this.prisma.refreshToken.delete({
+      await this.prisma.sessionLogin.delete({
         where: { id: oldToken.id },
       });
     }
@@ -109,20 +135,25 @@ export class AuthenticationService {
   }
 
   async loginWithGoogleID({ google_id }: { google_id: string }) {
-    const user = await this.prisma.user.findUnique({
-      where: { google_id },
+    return await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { google_id },
+      });
+
+      const token = await this.generateJwtToken(user);
+
+      await this.updateRefreshToken({
+        user,
+        refreshToken: token.refresh_token,
+        ipAddress: this.request.ip,
+        userAgent: this.request.headers['user-agent'],
+      });
+
+      return {
+        user: new UserEntity(user),
+        token,
+      };
     });
-
-    if (!user) throw new ForbiddenException('Invalid credentials');
-
-    const token = await this.generateJwtToken(user);
-
-    await this.updateRefreshToken(user, token.refresh_token);
-
-    return {
-      user: new UserEntity(user),
-      token: token,
-    };
   }
 
   async loginWithGoogleAccessToken({
@@ -146,61 +177,28 @@ export class AuthenticationService {
 
     const { data } = await oauth2.userinfo.get();
 
-    const user = await this.loginWithGoogleID({ google_id: data.id });
+    return await this.prisma.$transaction(async (tx) => {
+      const checkUser = await tx.user.findUnique({
+        where: { google_id: data.id },
+      });
 
-    return user;
-  }
+      if (!checkUser) {
+        await tx.user.create({
+          data: {
+            name: data.name,
+            email: data.email,
+            role: 'user',
+            password: await HashHelpers.hashPassword(StringHelper.random(12)),
+            avatar: data.picture,
+            google_id: data.id,
+          },
+        });
+      }
 
-  private async updateRefreshToken(user: User, refreshToken: string) {
-    return await this.prisma.refreshToken.upsert({
-      where: {
-        token: refreshToken,
-      },
-      create: {
-        user_id: user.id,
-        token: refreshToken,
-        expired_at: moment()
-          .add(
-            this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
-          )
-          .toDate(),
-      },
-      update: {},
+      const user = await this.loginWithGoogleID({ google_id: data.id });
+
+      return user;
     });
-  }
-
-  private async generateJwtToken(user: User) {
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(
-        {
-          sub: user.id,
-          email: user.email,
-        },
-        {
-          secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
-          expiresIn: this.configService.get<string>(
-            'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
-          ),
-        },
-      ),
-      this.jwtService.signAsync(
-        {
-          sub: user.id,
-          email: user.email,
-        },
-        {
-          secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
-          expiresIn: this.configService.get<string>(
-            'JWT_REFRESH_TOKEN_EXPIRATION_TIME',
-          ),
-        },
-      ),
-    ]);
-
-    return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    };
   }
 
   async forgotPasswordRequest(payload: ForgotPasswordRequestDto) {
@@ -306,5 +304,78 @@ export class AuthenticationService {
         },
       });
     });
+  }
+
+  private async updateRefreshToken({
+    user,
+    refreshToken,
+    ipAddress,
+    userAgent,
+  }: {
+    user: User;
+    refreshToken: string;
+    ipAddress?: string;
+    userAgent?: string;
+  }) {
+    return await this.prisma.sessionLogin.upsert({
+      where: {
+        refresh_token: refreshToken,
+      },
+      create: {
+        user_id: user.id,
+        refresh_token: refreshToken,
+        ip_address: ipAddress,
+        user_agent: userAgent,
+        expired_at: moment()
+          .add(
+            this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+          )
+          .toDate(),
+      },
+      update: {
+        refresh_token: refreshToken,
+        ip_address: ipAddress,
+        user_agent: userAgent,
+        expired_at: moment()
+          .add(
+            this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRATION_TIME'),
+          )
+          .toDate(),
+      },
+    });
+  }
+
+  private async generateJwtToken(user: User) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(
+        {
+          sub: user.id,
+          email: user.email,
+        },
+        {
+          secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
+          expiresIn: this.configService.get<string>(
+            'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
+          ),
+        },
+      ),
+      this.jwtService.signAsync(
+        {
+          sub: user.id,
+          email: user.email,
+        },
+        {
+          secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
+          expiresIn: this.configService.get<string>(
+            'JWT_REFRESH_TOKEN_EXPIRATION_TIME',
+          ),
+        },
+      ),
+    ]);
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
   }
 }

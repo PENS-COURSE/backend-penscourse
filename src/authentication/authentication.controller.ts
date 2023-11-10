@@ -70,14 +70,8 @@ export class AuthenticationController {
   @ApiOkResponse()
   @HttpCode(200)
   @Get('refresh-token')
-  async refreshToken(@Req() req: Request) {
-    const userId = req.user['id'];
-    const refreshToken = req.user['refresh_token'];
-
-    const data = await this.authenticationService.refreshToken(
-      userId,
-      refreshToken,
-    );
+  async refreshToken() {
+    const data = await this.authenticationService.refreshToken();
 
     return {
       message: 'Successfully refreshed token',
