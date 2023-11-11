@@ -42,8 +42,6 @@ WORKDIR /app
 # Install OpenSSL
 RUN apt-get -y update && apt-get install -yq openssl git ca-certificates
 
-COPY .env.staging /app/.env
-
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist/ ./dist/
 COPY --from=builder /app/public/ ./public/

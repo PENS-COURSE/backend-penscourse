@@ -2,6 +2,7 @@ name: Online Classroom PENS V1 Deployment
 
 on:
   release:
+    types: [created]
 
 jobs:
   deployment:
