@@ -73,6 +73,21 @@ export class CoursesController {
   }
 
   @AllowUnauthorizedRequest()
+  @ApiOperation({ summary: 'Find All Courses' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'name', required: false })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Get()
+  async findAll(@Query('page') page: number, @Query('name') name: string) {
+    const data = await this.coursesService.findAll({ page, name });
+
+    return {
+      message: 'Successfully retrieved courses',
+      data,
+    };
+  }
+
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Find All Courses' })
   @ApiQuery({ name: 'page', required: false })
@@ -80,7 +95,7 @@ export class CoursesController {
   @ApiOkResponse()
   @HttpCode(200)
   @Get()
-  async findAll(
+  async findAllAuth(
     @Query('page') page: number,
     @Query('name') name: string,
     @CurrentUser() user: User,
