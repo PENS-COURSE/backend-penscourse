@@ -233,14 +233,12 @@ model Payment {
 }
 
 model Enrollment {
-  id         Int      @id @default(autoincrement())
-  user_id    Int
-  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  course_id  Int
-  course     Course   @relation(fields: [course_id], references: [id], onDelete: Cascade)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  user_id   Int
+  user      User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course_id Int
+  course    Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
 
+  @@id([user_id, course_id])
   @@map("enrollments")
 }
 
