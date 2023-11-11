@@ -10,6 +10,23 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '20.x'
+      - run: npm install
+      - run: npm run build
+
+      - name: Transfer to Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{secrets.SSH_PASSWORD}}
+          source: 'dist'
+          target: ${{ secrets.SSH_PATH }}
+
       - name: Deploy & Build
         uses: appleboy/ssh-action@master
         with:
@@ -22,4 +39,6 @@ jobs:
             git pull
 
             bun install
+            bun prisma migrate deploy && bun prisma generate
+
             pm2 restart all
