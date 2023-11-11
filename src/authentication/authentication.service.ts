@@ -87,15 +87,15 @@ export class AuthenticationService {
   }
 
   async refreshToken() {
-    const userId = this.request.user['id'];
     const refreshToken = this.request.user['refresh_token'];
 
-    const user = await this.usersService.findOneByID(userId, false);
     const oldToken = await this.prisma.sessionLogin.findUnique({
       where: { refresh_token: refreshToken },
     });
+    if (!oldToken) throw new ForbiddenException('Access Denied');
 
-    if (!user || !oldToken) throw new ForbiddenException('Access Denied');
+    const user = await this.usersService.findOneByID(oldToken.user_id, false);
+    if (!user) throw new ForbiddenException('Access Denied');
 
     const token = await this.generateJwtToken(user);
 
