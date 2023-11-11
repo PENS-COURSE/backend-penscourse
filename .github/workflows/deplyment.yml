@@ -40,7 +40,6 @@ jobs:
             cd ${{ secrets.SSH_PATH }}
             git pull
 
-            bun prisma migrate deploy && bun prisma generate
-
+            npx prisma migrate deploy && npx prisma generate
 
             pm2 restart all
