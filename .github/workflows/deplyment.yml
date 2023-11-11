@@ -1,16 +1,33 @@
 name: Online Classroom PENS V1 Deployment
 
 on:
-  push:
-    branches: ['main']
+  release:
+    types: [created]
 
 jobs:
   deployment:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Git pull on server
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '20.x'
+      - run: npm install
+      - run: npm run build
+
+      - name: Transfer to Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{secrets.SSH_PASSWORD}}
+          source: 'dist'
+          target: ${{ secrets.SSH_PATH }}
+
+      - name: Deploy & Build
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -18,8 +35,13 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{secrets.SSH_PASSWORD}}
           script: |
+            source ~/.bashrc
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
+
             cd ${{ secrets.SSH_PATH }}
-            git reset --hard HEAD
             git pull
 
-            docker restart online_classroom_pens_api
+            npx prisma migrate deploy && npx prisma generate
+
+            pm2 restart all
