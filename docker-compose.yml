@@ -1,17 +1,17 @@
 version: '3.8'
 services:
-  app:
-    container_name: online_classroom_pens_api
-    restart: always
-    env_file:
-      - .env.staging
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - ./public:/app/public
-    ports:
-      - 3000:3000
+  # app:
+  #   container_name: online_classroom_pens_api
+  #   restart: always
+  #   env_file:
+  #     - .env.staging
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./public:/app/public
+  #   ports:
+  #     - 3000:3000
 
   nginx_proxy_manager:
     container_name: online_classroom_pens_nginx_proxy_manager

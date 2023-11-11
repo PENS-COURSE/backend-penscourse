@@ -10,22 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Build and Package
-        run: |
-          docker build -t bintangrezeka/online-classroom-pens-v1:${{ github.ref_name }} .
-          docker save -o online-classroom-pens-v1.tar bintangrezeka/online-classroom-pens-v1:${{ github.ref_name }}
-
-      - name: Transfer to Server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          port: ${{ secrets.SSH_PORT }}
-          username: ${{ secrets.SSH_USERNAME }}
-          password: ${{secrets.SSH_PASSWORD}}
-          source: docker-compose.yml,online-classroom-pens-v1.tar
-          target: ${{ secrets.SSH_PATH }}
-
-      - name: Deploy
+      - name: Deploy & Build
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -34,6 +19,7 @@ jobs:
           password: ${{secrets.SSH_PASSWORD}}
           script: |
             cd ${{ secrets.SSH_PATH }}
-            tar -xvf online-classroom-pens-v1.tar
-            docker load -i online-classroom-pens-v1.tar
-            docker compose up -d --build --remove-orphans --wait
+            git pull
+
+            bun install
+            pm2 restart all
