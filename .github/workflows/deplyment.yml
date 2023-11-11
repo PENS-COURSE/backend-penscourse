@@ -35,10 +35,13 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{secrets.SSH_PASSWORD}}
           script: |
+            source ~/.bashrc
+
             cd ${{ secrets.SSH_PATH }}
             git pull
 
             bun install
+            npm rebuild bcrypt
             bun prisma migrate deploy && bun prisma generate
 
             pm2 restart all
