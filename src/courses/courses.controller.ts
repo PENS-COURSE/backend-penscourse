@@ -94,7 +94,7 @@ export class CoursesController {
   @ApiQuery({ name: 'name', required: false })
   @ApiOkResponse()
   @HttpCode(200)
-  @Get()
+  @Get('auth')
   async findAllAuth(
     @Query('page') page: number,
     @Query('name') name: string,

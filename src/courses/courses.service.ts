@@ -1,13 +1,11 @@
 import {
   BadRequestException,
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { REQUEST } from '@nestjs/core';
 import { Prisma, User } from '@prisma/client';
-import { Request } from 'express';
+import { CommonService } from '../common/common.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { createPaginator } from '../utils/pagination.utils';
 import { StringHelper } from '../utils/slug.utils';
@@ -21,7 +19,7 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 export class CoursesService {
   constructor(
     private readonly prisma: PrismaService,
-    @Inject(REQUEST) private readonly request: Request,
+    private readonly commonService: CommonService,
   ) {}
 
   async create({
