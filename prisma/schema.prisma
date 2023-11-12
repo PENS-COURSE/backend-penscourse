@@ -17,16 +17,16 @@ enum Role {
 }
 
 model User {
-  id                Int             @id @default(autoincrement())
+  id                Int                 @id @default(autoincrement())
   name              String
-  email             String          @unique
+  email             String              @unique
   email_verified_at DateTime?
-  google_id         String?         @unique
+  google_id         String?             @unique
   password          String
   avatar            String?
   role              Role
-  created_at        DateTime        @default(now())
-  updated_at        DateTime        @updatedAt
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
   lecture           Lecture?
   sessions          SessionLogin[]
   courses           Course[]
@@ -34,6 +34,7 @@ model User {
   Notification      Notification[]
   Enrollment        Enrollment[]
   ForgotPassword    ForgotPassword?
+  SubjectCompletion SubjectCompletion[]
 
   @@map("users")
 }
@@ -102,29 +103,30 @@ enum GradeLevel {
 }
 
 model Course {
-  id            Int             @id @default(autoincrement())
-  name          String
-  slug          String          @unique
-  description   String?
-  price         Float?
-  is_free       Boolean
-  is_certified  Boolean         @default(false)
-  grade_level   GradeLevel?
-  start_date    DateTime?
-  end_date      DateTime?
-  max_students  Int?
-  thumbnail     String?
-  department    Department?     @relation(fields: [department_id], references: [id], onDelete: SetNull)
-  department_id Int?
-  user_id       Int?
-  user          User?           @relation(fields: [user_id], references: [id], onDelete: SetNull)
-  is_active     Boolean         @default(true)
-  created_at    DateTime        @default(now())
-  updated_at    DateTime        @updatedAt
-  curriculums   Curriculum[]
-  orders        Order[]
-  enrollments   Enrollment[]
-  discount      CourseDiscount?
+  id                Int                 @id @default(autoincrement())
+  name              String
+  slug              String              @unique
+  description       String?
+  price             Float?
+  is_free           Boolean
+  is_certified      Boolean             @default(false)
+  grade_level       GradeLevel?
+  start_date        DateTime?
+  end_date          DateTime?
+  max_students      Int?
+  thumbnail         String?
+  department        Department?         @relation(fields: [department_id], references: [id], onDelete: SetNull)
+  department_id     Int?
+  user_id           Int?
+  user              User?               @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  is_active         Boolean             @default(true)
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  curriculums       Curriculum[]
+  orders            Order[]
+  enrollments       Enrollment[]
+  discount          CourseDiscount?
+  SubjectCompletion SubjectCompletion[]
 
   @@map("courses")
 }
@@ -147,45 +149,48 @@ model Curriculum {
 }
 
 model VideoContent {
-  id            String     @id @default(uuid()) @db.Uuid
-  title         String
-  description   String?
-  url           String
-  duration      String?
-  curriculum    Curriculum @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
-  curriculum_id String     @db.Uuid
-  created_at    DateTime   @default(now())
-  updated_at    DateTime   @updatedAt
+  id                String              @id @default(uuid()) @db.Uuid
+  title             String
+  description       String?
+  url               String
+  duration          String?
+  curriculum        Curriculum          @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
+  curriculum_id     String              @db.Uuid
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  SubjectCompletion SubjectCompletion[]
 
   @@map("video_contents")
 }
 
 model FileContent {
-  id            String     @id @default(uuid()) @db.Uuid
-  title         String
-  description   String?
-  url           String
-  file_type     String
-  curriculum    Curriculum @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
-  curriculum_id String     @db.Uuid
-  created_at    DateTime   @default(now())
-  updated_at    DateTime   @updatedAt
+  id                String              @id @default(uuid()) @db.Uuid
+  title             String
+  description       String?
+  url               String
+  file_type         String
+  curriculum        Curriculum          @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
+  curriculum_id     String              @db.Uuid
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  SubjectCompletion SubjectCompletion[]
 
   @@map("file_contents")
 }
 
 model LiveClass {
-  id            String     @id @default(uuid()) @db.Uuid
-  title         String
-  description   String?
-  url           String
-  start_date    DateTime?
-  end_date      DateTime?
-  is_open       Boolean    @default(false)
-  curriculum    Curriculum @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
-  curriculum_id String     @db.Uuid
-  created_at    DateTime   @default(now())
-  updated_at    DateTime   @updatedAt
+  id                String              @id @default(uuid()) @db.Uuid
+  title             String
+  description       String?
+  url               String
+  start_date        DateTime?
+  end_date          DateTime?
+  is_open           Boolean             @default(false)
+  curriculum        Curriculum          @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
+  curriculum_id     String              @db.Uuid
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  SubjectCompletion SubjectCompletion[]
 
   @@map("live_classes")
 }
@@ -267,4 +272,22 @@ model Notification {
   updated_at  DateTime  @updatedAt
 
   @@map("notifications")
+}
+
+model SubjectCompletion {
+  id               Int           @id @default(autoincrement())
+  user_id          Int
+  user             User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course_id        Int
+  course           Course        @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  live_class_id    String?       @db.Uuid
+  live_class       LiveClass?    @relation(fields: [live_class_id], references: [id], onDelete: Cascade)
+  file_content_id  String?       @db.Uuid
+  file_content     FileContent?  @relation(fields: [file_content_id], references: [id], onDelete: Cascade)
+  video_content_id String?       @db.Uuid
+  video_content    VideoContent? @relation(fields: [video_content_id], references: [id], onDelete: Cascade)
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @updatedAt
+
+  @@map("subject_completions")
 }
