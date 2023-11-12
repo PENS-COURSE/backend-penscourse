@@ -16,6 +16,7 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { CurrentUser } from '../../authentication/decorators/current-user.decorators';
 import { CurriculumsService } from './curriculums.service';
 import { CreateCurriculumDto } from './dto/create-curriculum.dto';
 import { UpdateCurriculumDto } from './dto/update-curriculum.dto';
@@ -59,9 +60,10 @@ export class CurriculumsController {
   @ApiOkResponse()
   @HttpCode(200)
   @Get(':slug/curriculums')
-  async findAll(@Param('slug') slug: string) {
+  async findAll(@Param('slug') slug: string, @CurrentUser() user: any) {
     const data = await this.curriculumsService.findAllWithSubjects({
       slugCourse: slug,
+      user,
     });
 
     return {

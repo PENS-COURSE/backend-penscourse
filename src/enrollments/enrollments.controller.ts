@@ -1,8 +1,9 @@
-import { Controller, Get, HttpCode } from '@nestjs/common';
+import { Controller, Get, HttpCode, Param } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
@@ -23,6 +24,29 @@ export class EnrollmentsController {
 
     return {
       message: 'Successfully retrieved all enrollments',
+      data,
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get Progress Course By Slug' })
+  @ApiParam({
+    name: 'slug',
+    required: true,
+    type: 'string',
+    description: 'Course Slug',
+  })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Get(':slug/progress')
+  async getProgressCourseBySlug(
+    @Param('slug') slug: string,
+    @CurrentUser() user: any,
+  ) {
+    const data = await this.enrollmentsService.getProgressClass({ slug, user });
+
+    return {
+      message: 'Successfully retrieved progress course',
       data,
     };
   }
