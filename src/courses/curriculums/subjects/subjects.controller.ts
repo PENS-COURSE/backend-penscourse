@@ -19,6 +19,8 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { User } from '@prisma/client';
+import { CurrentUser } from '../../../authentication/decorators/current-user.decorators';
 import { AddFileContentDto } from './dto/add-file-content.dto';
 import { AddLiveClassDto } from './dto/add-live-class-content.dto';
 import { AddVideoContentDto } from './dto/add-video-content.dto';
@@ -32,6 +34,49 @@ import { SubjectsService } from './subjects.service';
 @Controller('courses')
 export class SubjectsController {
   constructor(private readonly subjectsService: SubjectsService) {}
+
+  @ApiOperation({ summary: 'Mark Completed Subject' })
+  @ApiParam({
+    name: 'curriculum_uuid',
+    required: true,
+    type: 'string',
+    description: 'Curriculum UUID',
+  })
+  @ApiParam({
+    name: 'course_slug',
+    required: true,
+    type: 'string',
+    description: 'Course Slug',
+  })
+  @ApiParam({
+    name: 'subject_uuid',
+    required: true,
+    type: 'string',
+    description: 'Subject UUID',
+  })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Get(
+    ':course_slug/curriculums/:curriculum_uuid/subjects/:subject_uuid/mark-completed',
+  )
+  async markSubjectCompletedBySubjectUUID(
+    @Param('curriculum_uuid') curriculum_uuid: string,
+    @Param('course_slug') course_slug: string,
+    @Param('subject_uuid') subject_uuid: string,
+    @CurrentUser() user: User,
+  ) {
+    const data = await this.subjectsService.markSubjectCompletedBySubjectUUID({
+      course_slug,
+      curriculum_uuid,
+      subject_uuid,
+      user,
+    });
+
+    return {
+      message: 'Successfully marked subject as completed',
+      data,
+    };
+  }
 
   @ApiOperation({ summary: 'Add File Content' })
   @ApiParam({

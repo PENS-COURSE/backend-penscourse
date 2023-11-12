@@ -73,14 +73,29 @@ export class CoursesController {
   }
 
   @AllowUnauthorizedRequest()
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Find All Courses' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'name', required: false })
   @ApiOkResponse()
   @HttpCode(200)
   @Get()
-  async findAll(
+  async findAll(@Query('page') page: number, @Query('name') name: string) {
+    const data = await this.coursesService.findAll({ page, name });
+
+    return {
+      message: 'Successfully retrieved courses',
+      data,
+    };
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Find All Courses' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'name', required: false })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Get('auth')
+  async findAllAuth(
     @Query('page') page: number,
     @Query('name') name: string,
     @CurrentUser() user: User,
