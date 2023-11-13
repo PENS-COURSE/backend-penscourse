@@ -107,6 +107,9 @@ export class OrdersService {
             course_id: course.id,
             user_id: user.id,
             total_price: isDiscount ? isDiscount.discount_price : course.price,
+            total_discount: isDiscount
+              ? course.price - isDiscount.discount_price
+              : null,
           },
         });
 
@@ -144,6 +147,7 @@ export class OrdersService {
           },
           include: {
             payment: true,
+            course: true,
           },
         });
       },
