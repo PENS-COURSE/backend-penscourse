@@ -7,6 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { User } from '@prisma/client';
 import * as crypto from 'crypto';
+import * as moment from 'moment';
 import { CoursesService } from '../courses/courses.service';
 import { OrderEntity } from '../entities/order.entity';
 import { PrismaService } from '../prisma/prisma.service';
@@ -85,17 +86,33 @@ export class OrdersService {
 
     return await this.prisma.$transaction(
       async (tx) => {
+        const isDiscount = await tx.courseDiscount.findFirst({
+          where: {
+            course_id: course.id,
+          },
+        });
+
+        if (isDiscount) {
+          if (moment().isBefore(isDiscount.start_date)) {
+            throw new BadRequestException('Diskon belum dimulai');
+          } else if (moment().isAfter(isDiscount.end_date)) {
+            throw new BadRequestException('Diskon sudah berakhir');
+          } else if (!isDiscount.is_active) {
+            throw new BadRequestException('Diskon sudah tidak aktif');
+          }
+        }
+
         const order = await tx.order.create({
           data: {
             course_id: course.id,
             user_id: user.id,
-            total_price: course.price,
+            total_price: isDiscount ? isDiscount.discount_price : course.price,
           },
         });
 
         const payment = await PaymentHelpers.createOrder({
           payment_id: payload.payment_id,
-          gross_amount: course.price,
+          gross_amount: isDiscount ? isDiscount.discount_price : course.price,
           order_uuid: order.id,
           user,
         });
