@@ -145,6 +145,7 @@ export class CoursesService {
       },
       include: {
         curriculums: true,
+        discount: true,
       },
     });
 
@@ -169,6 +170,7 @@ export class CoursesService {
       },
       include: {
         curriculums: true,
+        discount: true,
         ...include,
       },
     });
