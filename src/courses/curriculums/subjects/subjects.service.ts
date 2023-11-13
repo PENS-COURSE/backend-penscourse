@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { User } from '@prisma/client';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { StorageHelpers } from '../../../utils/storage.utils';
 import { CurriculumsService } from '../curriculums.service';
@@ -129,6 +130,7 @@ export class SubjectsService {
         id: curriculum.id,
       },
       include: {
+        course: true,
         live_classes: {
           where: {
             id: subject_uuid,
@@ -154,19 +156,79 @@ export class SubjectsService {
     if (data.live_classes.length > 0) {
       return {
         type: 'live_class',
+        course_id: data.course.id,
         ...data.live_classes[0],
       };
     } else if (data.file_contents.length > 0) {
       return {
         type: 'file',
+        course_id: data.course.id,
         ...data.file_contents[0],
       };
     } else if (data.video_contents.length > 0) {
       return {
         type: 'video',
+        course_id: data.course.id,
         ...data.video_contents[0],
       };
+    } else {
+      throw new NotFoundException('Subject not found');
     }
+  }
+
+  async markSubjectCompletedBySubjectUUID({
+    subject_uuid,
+    curriculum_uuid,
+    course_slug,
+    user,
+  }: {
+    subject_uuid: string;
+    curriculum_uuid: string;
+    course_slug: string;
+    user: User;
+  }) {
+    return await this.prisma.$transaction(async (prisma) => {
+      const curriculum = await this.findOneByUUID({
+        subject_uuid,
+        curriculum_uuid,
+        course_slug,
+      });
+
+      const getSubject = () => {
+        switch (curriculum.type) {
+          case 'file':
+            return {
+              file_content_id: curriculum.id,
+            };
+          case 'video':
+            return {
+              video_content_id: curriculum.id,
+            };
+          case 'live_class':
+            return {
+              live_class_id: curriculum.id,
+            };
+        }
+      };
+
+      const checkSubjectCompletion = await prisma.subjectCompletion.findFirst({
+        where: {
+          ...getSubject(),
+        },
+      });
+
+      if (checkSubjectCompletion) {
+        return checkSubjectCompletion;
+      }
+
+      return await prisma.subjectCompletion.create({
+        data: {
+          ...getSubject(),
+          user_id: user.id,
+          course_id: curriculum.course_id,
+        },
+      });
+    });
   }
 
   async updateFileContent({

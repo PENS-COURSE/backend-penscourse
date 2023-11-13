@@ -1,9 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { User } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { StringHelper } from '../../utils/slug.utils';
 import { CoursesService } from '../courses.service';
 import { CreateCurriculumDto } from './dto/create-curriculum.dto';
 import { UpdateCurriculumDto } from './dto/update-curriculum.dto';
+import {
+  FileContentEntity,
+  LiveClassEntity,
+  VideoContentEntity,
+} from './entity/SubjectEntity';
 
 @Injectable()
 export class CurriculumsService {
@@ -26,7 +32,13 @@ export class CurriculumsService {
     });
   }
 
-  async findAllWithSubjects({ slugCourse }: { slugCourse: string }) {
+  async findAllWithSubjects({
+    slugCourse,
+    user = undefined,
+  }: {
+    slugCourse: string;
+    user?: User;
+  }) {
     const course = await this.coursesService.findOneBySlug({
       slug: slugCourse,
     });
@@ -40,19 +52,86 @@ export class CurriculumsService {
       },
     });
 
-    return data.map((curriculum) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { file_contents, live_classes, video_contents, ...rest } =
-        curriculum;
-      return {
-        ...rest,
-        subjects: {
-          file_contents: curriculum.file_contents,
-          live_classes: curriculum.live_classes,
-          video_contents: curriculum.video_contents,
-        },
-      };
-    });
+    const resource = await Promise.all(
+      data.map(async (curriculum) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { file_contents, live_classes, video_contents, ...rest } =
+          curriculum;
+        return {
+          ...rest,
+          subjects: {
+            file_contents: await Promise.all(
+              curriculum.file_contents.map(async (file) => {
+                const isCompleted = user
+                  ? await this.prisma.subjectCompletion.findFirst({
+                      where: {
+                        user_id: user?.id,
+                        file_content_id: file.id,
+                      },
+                    })
+                  : null;
+
+                const entity = new FileContentEntity(file);
+                const data = {
+                  ...entity,
+                  is_completed: isCompleted ? true : false,
+                };
+
+                if (user == null) delete data.is_completed;
+
+                return data;
+              }),
+            ),
+            live_classes: await Promise.all(
+              curriculum.live_classes.map(async (liveClass) => {
+                const isCompleted = user
+                  ? await this.prisma.subjectCompletion.findFirst({
+                      where: {
+                        user_id: user?.id,
+                        live_class_id: liveClass.id,
+                      },
+                    })
+                  : null;
+
+                const entity = new LiveClassEntity(liveClass);
+                const data = {
+                  ...entity,
+                  is_completed: isCompleted ? true : false,
+                };
+
+                if (user == null) delete data.is_completed;
+
+                return data;
+              }),
+            ),
+            video_contents: await Promise.all(
+              curriculum.video_contents.map(async (video) => {
+                const isCompleted = user
+                  ? await this.prisma.subjectCompletion.findFirst({
+                      where: {
+                        user_id: user?.id,
+                        video_content_id: video.id,
+                      },
+                    })
+                  : null;
+
+                const entity = new VideoContentEntity(video);
+                const data = {
+                  ...entity,
+                  is_completed: isCompleted ? true : false,
+                };
+
+                if (user == null) delete data.is_completed;
+
+                return data;
+              }),
+            ),
+          },
+        };
+      }),
+    );
+
+    return resource;
   }
 
   async findOneByUUID(uuid: string, slugCourse: string, throwException = true) {

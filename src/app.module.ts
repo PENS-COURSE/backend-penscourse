@@ -16,6 +16,7 @@ import { OrdersModule } from './orders/orders.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProfileModule } from './profile/profile.module';
 import { UsersModule } from './users/users.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { UsersModule } from './users/users.module';
       exclude: ['/api*'],
       serveRoot: '/public',
     }),
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [

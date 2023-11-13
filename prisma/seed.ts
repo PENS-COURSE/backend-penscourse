@@ -19,8 +19,7 @@ const main = async () => {
       await admin()
         .then(async () => users())
         .then(async () => departments())
-        .then(async () => curriculums())
-        .then(async () => subjects());
+        .then(async () => curriculums());
       break;
     case 'admin':
       await admin();
@@ -33,9 +32,6 @@ const main = async () => {
       break;
     case 'curriculums':
       await curriculums();
-      break;
-    case 'subjects':
-      await subjects();
       break;
     default:
       console.error('Model not found');
@@ -66,6 +62,11 @@ const admin = async () => {
 
 const departments = async () => {
   const departments = await prisma.department.findMany();
+  const users = await prisma.user.findMany({
+    where: {
+      role: 'dosen',
+    },
+  });
 
   const dummyDepartments: Prisma.DepartmentCreateInput[] = [
     {
@@ -98,7 +99,7 @@ const departments = async () => {
               price: null,
               start_date: new Date(),
               end_date: new Date(),
-              user_id: 1,
+              user_id: faker.helpers.shuffle(users)[0].id,
             },
             {
               name: 'Full-Stack Android Developer',
@@ -118,7 +119,7 @@ const departments = async () => {
               ),
               start_date: new Date(),
               end_date: new Date(),
-              user_id: 1,
+              user_id: faker.helpers.shuffle(users)[0].id,
             },
           ],
         },
@@ -152,7 +153,7 @@ const departments = async () => {
               price: null,
               start_date: new Date(),
               end_date: new Date(),
-              user_id: 1,
+              user_id: faker.helpers.shuffle(users)[0].id,
             },
             {
               name: 'Pengenalan Teknologi 5G',
@@ -172,7 +173,7 @@ const departments = async () => {
               ),
               start_date: new Date(),
               end_date: new Date(),
-              user_id: 1,
+              user_id: faker.helpers.shuffle(users)[0].id,
             },
           ],
         },
@@ -206,7 +207,7 @@ const departments = async () => {
               price: null,
               start_date: new Date(),
               end_date: new Date(),
-              user_id: 1,
+              user_id: faker.helpers.shuffle(users)[0].id,
             },
             {
               name: 'Desain Elektronika Terpadu dengan Altium Designer',
@@ -228,7 +229,7 @@ const departments = async () => {
               ),
               start_date: new Date(),
               end_date: new Date(),
-              user_id: 1,
+              user_id: faker.helpers.shuffle(users)[0].id,
             },
           ],
         },
@@ -264,7 +265,7 @@ const departments = async () => {
               price: null,
               start_date: new Date(),
               end_date: new Date(),
-              user_id: 1,
+              user_id: faker.helpers.shuffle(users)[0].id,
             },
             {
               name: 'Desain Elektronika Digital dengan FPGA',
@@ -284,7 +285,7 @@ const departments = async () => {
               ),
               start_date: new Date(),
               end_date: new Date(),
-              user_id: 1,
+              user_id: faker.helpers.shuffle(users)[0].id,
             },
           ],
         },
@@ -318,7 +319,7 @@ const departments = async () => {
               price: null,
               start_date: new Date(),
               end_date: new Date(),
-              user_id: 1,
+              user_id: faker.helpers.shuffle(users)[0].id,
             },
             {
               name: 'Mekanika dan Dinamika Robotika',
@@ -338,7 +339,7 @@ const departments = async () => {
               ),
               start_date: new Date(),
               end_date: new Date(),
-              user_id: 1,
+              user_id: faker.helpers.shuffle(users)[0].id,
             },
           ],
         },
@@ -372,7 +373,7 @@ const departments = async () => {
               price: null,
               start_date: new Date(),
               end_date: new Date(),
-              user_id: 1,
+              user_id: faker.helpers.shuffle(users)[0].id,
             },
             {
               name: 'Pemrograman Lanjut dengan C++',
@@ -392,7 +393,7 @@ const departments = async () => {
               ),
               start_date: new Date(),
               end_date: new Date(),
-              user_id: 1,
+              user_id: faker.helpers.shuffle(users)[0].id,
             },
           ],
         },
@@ -450,78 +451,217 @@ const users = async () => {
 };
 
 const curriculums = async () => {
-  const curriculums = await prisma.curriculum.findMany();
-  if (curriculums.length == 0) {
-    const courses = await prisma.course.findMany();
+  const dummyVideoURL: string[] = [
+    'https://www.youtube.com/watch?v=AII0Dv1ypNU&pp=ygUNa3VsZGkgcHJvamVjdA%3D%3D',
+    'https://www.youtube.com/watch?v=mEnHFfpeLUQ&pp=ygUNa3VsZGkgcHJvamVjdA%3D%3D',
+    'https://www.youtube.com/watch?v=9Mv1gSrXrlg&pp=ygUNa3VsZGkgcHJvamVjdA%3D%3D',
+    'https://www.youtube.com/watch?v=F5q0oz5pryY&t=616s&pp=ygUNa3VsZGkgcHJvamVjdA%3D%3D',
+    'https://www.youtube.com/watch?v=epRWFH47xCI&pp=ygUNa3VsZGkgcHJvamVjdA%3D%3D',
+  ];
 
-    for (let i = 1; i < 50; i++) {
-      const name = faker.word.words();
-      await prisma.curriculum.create({
-        data: {
-          title: name,
-          slug: StringHelper.slug(name),
-          week: i,
-          course_id: faker.helpers.shuffle(courses)[0].id,
+  const dummyFileURL: string[] = [
+    'https://repository.uir.ac.id/4644/5/bab2.pdf',
+    'https://repository.uir.ac.id/4561/6/bab2.pdf',
+    'http://repository.unpas.ac.id/11242/5/BAB%20II.pdf',
+    'https://eprints.walisongo.ac.id/id/eprint/4059/3/103911025_bab2.pdf',
+    'http://repository.iainpare.ac.id/1639/1/Belajar%20Dan%20Pembelajaran.pdf',
+  ];
+
+  const dummyCurriculums = [
+    {
+      title: 'Introdution',
+      slug: StringHelper.slug('Introdution'),
+      week: 1,
+      video_contents: {
+        createMany: {
+          data: [1, 2, 3].map((i) => ({
+            title: faker.music.songName(),
+            url: faker.helpers.shuffle(dummyVideoURL)[0],
+            duration: `${i} Jam`,
+          })),
         },
-      });
-    }
+      },
+      file_contents: {
+        createMany: {
+          data: [1, 2, 3].map(() => ({
+            title: faker.music.songName(),
+            url: faker.helpers.shuffle(dummyFileURL)[0],
+            file_type: 'pdf',
+          })),
+        },
+      },
+      live_classes: {
+        createMany: {
+          data: [1, 2, 3].map(() => ({
+            title: faker.music.songName(),
+            url: `https://meet.jit.si/${StringHelper.slug(
+              faker.music.songName(),
+            )}`,
+            start_date: faker.date.future(),
+          })),
+        },
+      },
+    },
+    {
+      title: 'Responsive UI',
+      slug: StringHelper.slug('Responsive UI'),
+      week: 2,
+      video_contents: {
+        createMany: {
+          data: [1, 2, 3].map((i) => ({
+            title: faker.music.songName(),
+            url: faker.helpers.shuffle(dummyVideoURL)[0],
+            duration: `${i} Jam`,
+          })),
+        },
+      },
+      file_contents: {
+        createMany: {
+          data: [1, 2, 3].map(() => ({
+            title: faker.music.songName(),
+            url: faker.helpers.shuffle(dummyFileURL)[0],
+            file_type: 'pdf',
+          })),
+        },
+      },
+      live_classes: {
+        createMany: {
+          data: [1, 2, 3].map(() => ({
+            title: faker.music.songName(),
+            url: `https://meet.jit.si/${StringHelper.slug(
+              faker.music.songName(),
+            )}`,
+            start_date: faker.date.future(),
+          })),
+        },
+      },
+    },
+    {
+      title: 'Adaptive UI',
+      slug: StringHelper.slug('Adaptive UI'),
+      week: 3,
+      video_contents: {
+        createMany: {
+          data: [1, 2, 3].map((i) => ({
+            title: faker.music.songName(),
+            url: faker.helpers.shuffle(dummyVideoURL)[0],
+            duration: `${i} Jam`,
+          })),
+        },
+      },
+      file_contents: {
+        createMany: {
+          data: [1, 2, 3].map(() => ({
+            title: faker.music.songName(),
+            url: faker.helpers.shuffle(dummyFileURL)[0],
+            file_type: 'pdf',
+          })),
+        },
+      },
+      live_classes: {
+        createMany: {
+          data: [1, 2, 3].map(() => ({
+            title: faker.music.songName(),
+            url: `https://meet.jit.si/${StringHelper.slug(
+              faker.music.songName(),
+            )}`,
+            start_date: faker.date.future(),
+          })),
+        },
+      },
+    },
+    {
+      title: 'Animation',
+      slug: StringHelper.slug('Animation'),
+      week: 4,
+      video_contents: {
+        createMany: {
+          data: [1, 2, 3].map((i) => ({
+            title: faker.music.songName(),
+            url: faker.helpers.shuffle(dummyVideoURL)[0],
+            duration: `${i} Jam`,
+          })),
+        },
+      },
+      file_contents: {
+        createMany: {
+          data: [1, 2, 3].map(() => ({
+            title: faker.music.songName(),
+            url: faker.helpers.shuffle(dummyFileURL)[0],
+            file_type: 'pdf',
+          })),
+        },
+      },
+      live_classes: {
+        createMany: {
+          data: [1, 2, 3].map(() => ({
+            title: faker.music.songName(),
+            url: `https://meet.jit.si/${StringHelper.slug(
+              faker.music.songName(),
+            )}`,
+            start_date: faker.date.future(),
+          })),
+        },
+      },
+    },
+    {
+      title: 'Sliver Widget',
+      slug: StringHelper.slug('Sliver Widget'),
+      week: 5,
+      video_contents: {
+        createMany: {
+          data: [1, 2, 3].map((i) => ({
+            title: faker.music.songName(),
+            url: faker.helpers.shuffle(dummyVideoURL)[0],
+            duration: `${i} Jam`,
+          })),
+        },
+      },
+      file_contents: {
+        createMany: {
+          data: [1, 2, 3].map(() => ({
+            title: faker.music.songName(),
+            url: faker.helpers.shuffle(dummyFileURL)[0],
+            file_type: 'pdf',
+          })),
+        },
+      },
+      live_classes: {
+        createMany: {
+          data: [1, 2, 3].map(() => ({
+            title: faker.music.songName(),
+            url: `https://meet.jit.si/${StringHelper.slug(
+              faker.music.songName(),
+            )}`,
+            start_date: faker.date.future(),
+          })),
+        },
+      },
+    },
+  ];
 
-    console.log(`Successfully created curriculums`);
+  const courses = await prisma.course.findMany();
+  if (courses.length == 0) {
+    console.error('Courses is empty');
+    process.exit(1);
   }
-};
 
-const subjects = async () => {
-  const curriculums = await prisma.curriculum.findMany();
-  if (curriculums.length != 0) {
-    const liveClasses = [];
-    const videoContents = [];
-    const fileContents = [];
-
-    for (let i = 1; i < 10; i++) {
-      liveClasses.push({
-        title: faker.word.words(),
-        description: faker.lorem.paragraph(),
-        url: faker.internet.url(),
-      });
-
-      videoContents.push({
-        title: faker.word.words(),
-        description: faker.lorem.paragraph(),
-        url: faker.internet.url(),
-      });
-
-      fileContents.push({
-        title: faker.word.words(),
-        url: faker.internet.url(),
-        file_type: faker.helpers.shuffle(['pdf', 'docx', 'pptx'])[0] as any,
-      });
-    }
-
-    curriculums.forEach(async (curriculum) => {
-      await prisma.curriculum.update({
-        where: {
-          id: curriculum.id,
-        },
-        data: {
-          live_classes: {
-            createMany: {
-              data: liveClasses,
+  Promise.all(
+    courses.map(async (course) => {
+      await Promise.all(
+        dummyCurriculums.map(async (curriculum) => {
+          await prisma.curriculum.create({
+            data: {
+              ...curriculum,
+              course_id: course.id,
             },
-          },
-          video_contents: {
-            createMany: {
-              data: videoContents,
-            },
-          },
-          file_contents: {
-            createMany: {
-              data: fileContents,
-            },
-          },
-        },
-      });
-    });
-  }
+          });
+        }),
+      );
+    }),
+  );
+
+  console.log(`Successfully created curriculums`);
 };
 
 main()
