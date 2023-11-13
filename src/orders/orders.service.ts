@@ -50,13 +50,18 @@ export class OrdersService {
         id: orderId,
         user_id: user.id,
       },
+      include: {
+        course: true,
+        payment: true,
+        user: true,
+      },
     });
 
     if (throwException && !order) {
       throw new NotFoundException('Order not found');
     }
 
-    return order;
+    return new OrderEntity({ ...order });
   }
 
   async orderCourse({
