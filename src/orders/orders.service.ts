@@ -132,9 +132,10 @@ export class OrdersService {
   }
 
   async handleMidtransNotifications(body: any) {
-    const orderId = body.order_id;
-    const statusCode = body.status_code;
-    const grossAmount = body.gross_amount;
+    const orderId = body?.order_id;
+    const statusCode = body?.status_code;
+    const grossAmount = body?.gross_amount;
+
     const serverKey = this.configService.get('MIDTRANS_SERVER_KEY');
 
     const hash = crypto.createHash('sha512');
@@ -142,13 +143,13 @@ export class OrdersService {
       .update(`${orderId}${statusCode}${grossAmount}${serverKey}`, 'utf8')
       .digest('hex');
 
-    if (signatureKey !== body.signature_key) {
+    if (signatureKey !== body?.signature_key) {
       throw new BadRequestException('Invalid signature key');
     }
 
     const payment = await this.prisma.payment.findFirst({
       where: {
-        transaction_id: body.transaction_id,
+        transaction_id: body?.transaction_id,
       },
     });
 
@@ -171,11 +172,11 @@ export class OrdersService {
         order_id: order.id,
       },
       data: {
-        status: body.transaction_status,
+        status: body?.transaction_status,
       },
     });
 
-    if (body.transaction_status === 'settlement') {
+    if (body?.transaction_status === 'settlement') {
       await this.prisma.enrollment.create({
         data: {
           user_id: order.user_id,

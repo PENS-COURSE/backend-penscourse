@@ -79,7 +79,7 @@ export class OrdersController {
   @ApiOperation({ summary: 'Notification Midtrans' })
   @AllowUnauthorizedRequest()
   @Post('notification-midtrans')
-  async notificationMidtrans(payload: any) {
+  async notificationMidtrans(@Body() payload: any) {
     return await this.ordersService.handleMidtransNotifications(payload);
   }
 }
