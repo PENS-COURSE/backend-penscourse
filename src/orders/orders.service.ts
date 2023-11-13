@@ -77,11 +77,22 @@ export class OrdersService {
     const course = await this.course.findOneBySlug({ slug: courseSlug });
 
     if (course.is_free) {
-      throw new BadRequestException('Course is free');
+      throw new BadRequestException('Course ini gratis');
     }
 
     if (!course.is_active) {
       throw new ForbiddenException();
+    }
+
+    const enrollment = await this.prisma.enrollment.findFirst({
+      where: {
+        course_id: course.id,
+        user_id: user.id,
+      },
+    });
+
+    if (enrollment) {
+      throw new BadRequestException('Anda sudah memiliki course ini');
     }
 
     return await this.prisma.$transaction(
