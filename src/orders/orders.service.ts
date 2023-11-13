@@ -190,6 +190,10 @@ export class OrdersService {
       },
     });
 
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
+    }
+
     const order = await this.prisma.order.findFirst({
       where: {
         id: payment.order_id,
