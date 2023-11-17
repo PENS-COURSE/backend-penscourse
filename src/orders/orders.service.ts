@@ -163,7 +163,8 @@ export class OrdersService {
         });
       },
       {
-        timeout: 20000,
+        timeout: 60000,
+        maxWait: 60000,
       },
     );
   }
