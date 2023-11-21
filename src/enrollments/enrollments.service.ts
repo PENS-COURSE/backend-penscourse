@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
+import { plainToInstance } from 'class-transformer';
 import { CommonService } from '../common/common.service';
 import { CoursesService } from '../courses/courses.service';
+import { UserEntity } from '../entities/user.entity';
 import { PrismaService } from '../prisma/prisma.service';
 import { createPaginator } from '../utils/pagination.utils';
 
@@ -16,14 +18,18 @@ export class EnrollmentsService {
   async findAll({ user, page = 1 }: { user: User; page?: number }) {
     const pagination = createPaginator({ perPage: 25 });
 
-    return pagination({
+    return await pagination({
       model: this.prisma.enrollment,
       args: {
         where: {
           user_id: user.id,
         },
         include: {
-          course: true,
+          course: {
+            include: {
+              user: true,
+            },
+          },
         },
       },
       map: async (enrollments) =>
@@ -38,6 +44,7 @@ export class EnrollmentsService {
               ...enrollment,
               course: {
                 ...enrollment.course,
+                user: plainToInstance(UserEntity, enrollment.course.user, {}),
               },
               ...progressCourse,
             };
