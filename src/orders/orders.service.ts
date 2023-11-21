@@ -11,6 +11,7 @@ import * as moment from 'moment';
 import { CoursesService } from '../courses/courses.service';
 import { OrderEntity } from '../entities/order.entity';
 import { PrismaService } from '../prisma/prisma.service';
+import { createPaginator } from '../utils/pagination.utils';
 import { PaymentHelpers } from '../utils/payment.utils';
 import { OrderCourseDto } from './dto/order-course.dto';
 
@@ -22,19 +23,27 @@ export class OrdersService {
     private readonly configService: ConfigService,
   ) {}
 
-  async findAll({ user }: { user: User }) {
-    const orders = await this.prisma.order.findMany({
-      include: {
-        course: true,
-        payment: true,
-        user: true,
-      },
-      where: {
-        user_id: user?.id,
-      },
-    });
+  async findAll({ page = 1, user }: { page: number; user: User }) {
+    const pagination = createPaginator({ perPage: 25 });
 
-    return orders.map((order) => new OrderEntity({ ...order }));
+    return await pagination({
+      model: this.prisma.order,
+      args: {
+        where: {
+          user_id: user?.id,
+        },
+        include: {
+          user: true,
+          course: true,
+          payment: true,
+        },
+      },
+      options: {
+        page,
+      },
+      map: async (orders) =>
+        orders.map((order) => new OrderEntity({ ...order })),
+    });
   }
 
   async findOne({
@@ -163,7 +172,8 @@ export class OrdersService {
         });
       },
       {
-        timeout: 20000,
+        timeout: 60000,
+        maxWait: 60000,
       },
     );
   }

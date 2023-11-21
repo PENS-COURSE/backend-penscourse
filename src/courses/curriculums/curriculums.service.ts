@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -43,23 +44,68 @@ export class CurriculumsService {
       slug: slugCourse,
     });
 
+    const isUserEnrolled = await this.prisma.enrollment.findFirst({
+      where: {
+        user_id: user?.id,
+        course: {
+          id: course.id,
+        },
+      },
+    });
+
     const data = await this.prisma.curriculum.findMany({
       where: { course_id: course.id },
       include: {
         file_contents: true,
         live_classes: true,
         video_contents: true,
+        quizzes: {
+          where: {
+            is_active: true,
+          },
+        },
       },
     });
 
     const resource = await Promise.all(
       data.map(async (curriculum) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { file_contents, live_classes, video_contents, ...rest } =
-          curriculum;
+        const {
+          file_contents,
+          live_classes,
+          video_contents,
+          quizzes,
+          ...rest
+        } = curriculum;
         return {
           ...rest,
           subjects: {
+            quizzes: await Promise.all(
+              curriculum.quizzes.map(async (quiz) => {
+                const isTaken = await this.prisma.quizSession.findFirst({
+                  where: {
+                    quiz_id: quiz.id,
+                    user_id: user?.id,
+                  },
+                });
+
+                if (user?.role != 'dosen' && user?.role != 'admin') {
+                  delete quiz.show_result;
+                }
+
+                if (!isUserEnrolled) {
+                  return {
+                    id: quiz.id,
+                    title: quiz.title,
+                    description: quiz.description,
+                  };
+                }
+
+                return {
+                  ...quiz,
+                  is_taken: isTaken && isUserEnrolled ? true : false,
+                };
+              }),
+            ),
             file_contents: await Promise.all(
               curriculum.file_contents.map(async (file) => {
                 const isCompleted = user
@@ -78,6 +124,14 @@ export class CurriculumsService {
                 };
 
                 if (user == null) delete data.is_completed;
+
+                if (!isUserEnrolled) {
+                  return {
+                    id: file.id,
+                    title: file.title,
+                    description: file.description,
+                  };
+                }
 
                 return data;
               }),
@@ -101,6 +155,14 @@ export class CurriculumsService {
 
                 if (user == null) delete data.is_completed;
 
+                if (!isUserEnrolled) {
+                  return {
+                    id: liveClass.id,
+                    title: liveClass.title,
+                    description: liveClass.description,
+                  };
+                }
+
                 return data;
               }),
             ),
@@ -122,6 +184,14 @@ export class CurriculumsService {
                 };
 
                 if (user == null) delete data.is_completed;
+
+                if (!isUserEnrolled) {
+                  return {
+                    id: video.id,
+                    title: video.title,
+                    description: video.description,
+                  };
+                }
 
                 return data;
               }),

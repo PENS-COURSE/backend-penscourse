@@ -131,9 +131,11 @@ export class AuthenticationService {
 
   async loginWithGoogleID({ google_id }: { google_id: string }) {
     return await this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.findUnique({
+      const user = await tx.user.findFirst({
         where: { google_id },
       });
+
+      console.log(user);
 
       const token = await this.generateJwtToken(user);
 
@@ -151,19 +153,13 @@ export class AuthenticationService {
     });
   }
 
-  async loginWithGoogleAccessToken({
-    access_token,
-    id_token,
-  }: {
-    access_token: string;
-    id_token: string;
-  }) {
+  async loginWithGoogleAccessToken({ access_token }: { access_token: string }) {
     const client = new google.auth.OAuth2({
       clientId: this.configService.get<string>('GOOGLE_CLIENT_ID'),
       clientSecret: this.configService.get<string>('GOOGLE_CLIENT_SECRET'),
     });
 
-    client.setCredentials({ access_token, id_token });
+    client.setCredentials({ access_token });
 
     const oauth2 = google.oauth2({
       auth: client,
@@ -172,28 +168,33 @@ export class AuthenticationService {
 
     const { data } = await oauth2.userinfo.get();
 
-    return await this.prisma.$transaction(async (tx) => {
-      const checkUser = await tx.user.findUnique({
-        where: { google_id: data.id },
-      });
-
-      if (!checkUser) {
-        await tx.user.create({
-          data: {
-            name: data.name,
-            email: data.email,
-            role: 'user',
-            password: await HashHelpers.hashPassword(StringHelper.random(12)),
-            avatar: data.picture,
-            google_id: data.id,
-          },
-        });
-      }
-
-      const user = await this.loginWithGoogleID({ google_id: data.id });
-
-      return user;
+    const checkUser = await this.prisma.user.findFirst({
+      where: { OR: [{ google_id: data.id }, { email: data.email }] },
     });
+
+    await this.prisma.user.upsert({
+      where: {
+        id: checkUser?.id,
+      },
+      create: {
+        name: data.name,
+        email: data.email,
+        role: 'user',
+        password: await HashHelpers.hashPassword(StringHelper.random(12)),
+        avatar: data.picture,
+        google_id: data.id,
+      },
+      update: {
+        name: data.name,
+        email: data.email,
+        avatar: data.picture,
+        google_id: data.id,
+      },
+    });
+
+    const user = await this.loginWithGoogleID({ google_id: data.id });
+
+    return user;
   }
 
   async forgotPasswordRequest(payload: ForgotPasswordRequestDto) {

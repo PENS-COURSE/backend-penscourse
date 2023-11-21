@@ -5,7 +5,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
+import { plainToInstance } from 'class-transformer';
 import { CommonService } from '../common/common.service';
+import { UserEntity } from '../entities/user.entity';
 import { PrismaService } from '../prisma/prisma.service';
 import { createPaginator } from '../utils/pagination.utils';
 import { StringHelper } from '../utils/slug.utils';
@@ -75,8 +77,8 @@ export class CoursesService {
             user?.role == 'admin'
               ? undefined
               : onlyPublisher
-              ? user?.id
-              : undefined,
+                ? user?.id
+                : undefined,
         },
       ],
     };
@@ -86,6 +88,7 @@ export class CoursesService {
       args: {
         include: {
           discount: true,
+          user: true,
         },
         orderBy: {
           enrollments: user
@@ -118,6 +121,8 @@ export class CoursesService {
                 course_id: course.id,
               },
             }));
+
+          course.user = plainToInstance(UserEntity, course.user, {});
 
           const data = {
             ...course,
@@ -171,6 +176,7 @@ export class CoursesService {
       include: {
         curriculums: true,
         discount: true,
+        user: true,
         ...include,
       },
     });
@@ -178,7 +184,10 @@ export class CoursesService {
     if (throwException && !data)
       throw new NotFoundException('Course not found');
 
-    return data;
+    return {
+      ...data,
+      user: plainToInstance(UserEntity, data.user, {}),
+    };
   }
 
   async update({

@@ -17,6 +17,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProfileModule } from './profile/profile.module';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
+import { QuizzesModule } from './quizzes/quizzes.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { CommonModule } from './common/common.module';
       serveRoot: '/public',
     }),
     CommonModule,
+    QuizzesModule,
   ],
   controllers: [AppController],
   providers: [

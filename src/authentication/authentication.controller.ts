@@ -116,22 +116,13 @@ export class AuthenticationController {
     type: String,
     required: true,
   })
-  @ApiQuery({
-    name: 'id_token',
-    type: String,
-    required: true,
-  })
   @ApiOperation({ summary: 'Google Token Callback' })
   @ApiOkResponse()
   @HttpCode(200)
   @Get('login/google/token')
-  async loginWithGoogleToken(
-    @Query('access_token') accessToken: string,
-    @Query('id_token') idToken: string,
-  ) {
+  async loginWithGoogleToken(@Query('access_token') accessToken: string) {
     const data = await this.authenticationService.loginWithGoogleAccessToken({
       access_token: accessToken,
-      id_token: idToken,
     });
 
     return {

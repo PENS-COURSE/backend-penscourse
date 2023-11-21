@@ -35,6 +35,7 @@ model User {
   Enrollment        Enrollment[]
   ForgotPassword    ForgotPassword?
   SubjectCompletion SubjectCompletion[]
+  QuizSession       QuizSession[]
 
   @@map("users")
 }
@@ -144,6 +145,8 @@ model Curriculum {
   video_contents VideoContent[]
   file_contents  FileContent[]
   live_classes   LiveClass[]
+  quizzes        Quiz[]
+  Question       Question[]
 
   @@map("curriculums")
 }
@@ -290,4 +293,109 @@ model SubjectCompletion {
   updated_at       DateTime      @updatedAt
 
   @@map("subject_completions")
+}
+
+model Quiz {
+  id               String               @id @default(uuid()) @db.Uuid
+  title            String
+  description      String?              @db.Text
+  duration         Int
+  start_date       DateTime?
+  end_date         DateTime?
+  is_ended         Boolean              @default(false)
+  is_active        Boolean              @default(false)
+  show_result      Boolean              @default(true)
+  pass_grade       Int?
+  curriculum       Curriculum           @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
+  curriculum_id    String               @db.Uuid
+  created_at       DateTime             @default(now())
+  updated_at       DateTime             @updatedAt
+  questions        Question[]
+  sessions         QuizSession[]
+  option_generated QuizOptionGenerated?
+
+  @@map("quizzes")
+}
+
+model QuizOptionGenerated {
+  quiz_id        String  @db.Uuid
+  quiz           Quiz    @relation(fields: [quiz_id], references: [id], onDelete: Cascade)
+  easy           Int
+  medium         Int
+  hard           Int
+  all_curriculum Boolean @default(false)
+  total_question Int
+
+  @@id([quiz_id])
+  @@map("quiz_option_generated")
+}
+
+enum QuestionType {
+  multiple_choice
+  single_choice
+}
+
+enum Level {
+  easy
+  medium
+  hard
+}
+
+model Question {
+  id                   String                 @id @default(uuid()) @db.Uuid
+  question             String                 @db.Text
+  option_a             String                 @db.Text
+  option_b             String                 @db.Text
+  option_c             String?                @db.Text
+  option_d             String?                @db.Text
+  option_e             String?                @db.Text
+  question_type        QuestionType
+  quiz                 Quiz                   @relation(fields: [quiz_id], references: [id], onDelete: Cascade)
+  quiz_id              String                 @db.Uuid
+  level                Level
+  curriculum_id        String?                @db.Uuid
+  curriculum           Curriculum?            @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
+  created_at           DateTime               @default(now())
+  updated_at           DateTime               @updatedAt
+  answer               QuestionAnswer[]
+  QuizEnrolledQuestion QuizEnrolledQuestion[]
+
+  @@map("questions")
+}
+
+model QuestionAnswer {
+  id          String   @id @default(uuid()) @db.Uuid
+  question_id String   @db.Uuid
+  question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  answer      String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("question_answers")
+}
+
+model QuizSession {
+  id         String                 @id @default(uuid()) @db.Uuid
+  user_id    Int
+  user       User                   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  quiz_id    String                 @db.Uuid
+  quiz       Quiz                   @relation(fields: [quiz_id], references: [id], onDelete: Cascade)
+  score      Int?
+  is_ended   Boolean                @default(false)
+  created_at DateTime               @default(now())
+  updated_at DateTime               @updatedAt
+  questions  QuizEnrolledQuestion[]
+
+  @@map("quiz_sessions")
+}
+
+model QuizEnrolledQuestion {
+  quiz_session    QuizSession @relation(fields: [quiz_session_id], references: [id], onDelete: Cascade)
+  quiz_session_id String      @db.Uuid
+  question        Question    @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  question_id     String      @db.Uuid
+  answer          String[]
+
+  @@id([quiz_session_id, question_id])
+  @@map("session_questions")
 }
