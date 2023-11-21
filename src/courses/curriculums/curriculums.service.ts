@@ -44,6 +44,15 @@ export class CurriculumsService {
       slug: slugCourse,
     });
 
+    const isUserEnrolled = await this.prisma.enrollment.findFirst({
+      where: {
+        user_id: user?.id,
+        course: {
+          id: course.id,
+        },
+      },
+    });
+
     const data = await this.prisma.curriculum.findMany({
       where: { course_id: course.id },
       include: {
@@ -83,9 +92,17 @@ export class CurriculumsService {
                   delete quiz.show_result;
                 }
 
+                if (!isUserEnrolled) {
+                  return {
+                    id: quiz.id,
+                    title: quiz.title,
+                    description: quiz.description,
+                  };
+                }
+
                 return {
                   ...quiz,
-                  is_taken: isTaken ? true : false,
+                  is_taken: isTaken && isUserEnrolled ? true : false,
                 };
               }),
             ),
@@ -107,6 +124,14 @@ export class CurriculumsService {
                 };
 
                 if (user == null) delete data.is_completed;
+
+                if (!isUserEnrolled) {
+                  return {
+                    id: file.id,
+                    title: file.title,
+                    description: file.description,
+                  };
+                }
 
                 return data;
               }),
@@ -130,6 +155,14 @@ export class CurriculumsService {
 
                 if (user == null) delete data.is_completed;
 
+                if (!isUserEnrolled) {
+                  return {
+                    id: liveClass.id,
+                    title: liveClass.title,
+                    description: liveClass.description,
+                  };
+                }
+
                 return data;
               }),
             ),
@@ -151,6 +184,14 @@ export class CurriculumsService {
                 };
 
                 if (user == null) delete data.is_completed;
+
+                if (!isUserEnrolled) {
+                  return {
+                    id: video.id,
+                    title: video.title,
+                    description: video.description,
+                  };
+                }
 
                 return data;
               }),

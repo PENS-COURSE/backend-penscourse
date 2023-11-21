@@ -17,6 +17,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../../authentication/decorators/current-user.decorators';
+import { AllowUnauthorizedRequest } from '../../authentication/metadata/allow-unauthorized-request.decorator';
 import { CurriculumsService } from './curriculums.service';
 import { CreateCurriculumDto } from './dto/create-curriculum.dto';
 import { UpdateCurriculumDto } from './dto/update-curriculum.dto';
@@ -49,7 +50,10 @@ export class CurriculumsController {
     };
   }
 
-  @ApiOperation({ summary: 'Find All Curriculums With Subjects' })
+  @ApiOperation({
+    summary: 'Find All Curriculums With Subjects ( OPTIONAL AUTH )',
+  })
+  @AllowUnauthorizedRequest()
   @ApiParam({
     name: 'slug',
     required: true,
