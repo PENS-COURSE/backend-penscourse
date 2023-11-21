@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -49,17 +50,45 @@ export class CurriculumsService {
         file_contents: true,
         live_classes: true,
         video_contents: true,
+        quizzes: {
+          where: {
+            is_active: true,
+          },
+        },
       },
     });
 
     const resource = await Promise.all(
       data.map(async (curriculum) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { file_contents, live_classes, video_contents, ...rest } =
-          curriculum;
+        const {
+          file_contents,
+          live_classes,
+          video_contents,
+          quizzes,
+          ...rest
+        } = curriculum;
         return {
           ...rest,
           subjects: {
+            quizzes: await Promise.all(
+              curriculum.quizzes.map(async (quiz) => {
+                const isTaken = await this.prisma.quizSession.findFirst({
+                  where: {
+                    quiz_id: quiz.id,
+                    user_id: user?.id,
+                  },
+                });
+
+                if (user?.role != 'dosen' && user?.role != 'admin') {
+                  delete quiz.show_result;
+                }
+
+                return {
+                  ...quiz,
+                  is_taken: isTaken ? true : false,
+                };
+              }),
+            ),
             file_contents: await Promise.all(
               curriculum.file_contents.map(async (file) => {
                 const isCompleted = user

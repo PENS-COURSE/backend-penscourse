@@ -17,9 +17,9 @@ const main = async () => {
   switch (model) {
     case 'all':
       await admin()
-        .then(async () => users())
-        .then(async () => departments())
-        .then(async () => curriculums());
+        .then(async () => await users())
+        .then(async () => await departments())
+        .then(async () => await curriculums());
       break;
     case 'admin':
       await admin();
@@ -415,39 +415,32 @@ const departments = async () => {
 };
 
 const users = async () => {
-  const users = await prisma.user.findMany();
-
-  if (users.length == 0) {
-    for (let i = 0; i <= 50; i++) {
-      const role = faker.helpers.shuffle(['admin', 'dosen', 'user'])[0];
-      const provider =
-        role == 'admin' || role == 'dosen'
-          ? 'pens.ac.id'
-          : 'student.pens.ac.id';
-      await prisma.user.create({
-        data: {
-          name: faker.person.fullName(),
-          password: await HashHelpers.hashPassword('password'),
-          email: faker.internet
-            .email({ provider: provider })
-            .toLocaleLowerCase(),
-          role: role as any,
-          email_verified_at: i % 2 == 0 ? new Date() : null,
-          lecture:
-            role == 'dosen'
-              ? {
-                  create: {
-                    nip: faker.number
-                      .int({ min: 1000000000, max: 9999999999 })
-                      .toString(),
-                  },
-                }
-              : {},
-        },
-      });
-    }
-    console.log(`Successfully created users`);
+  for (let i = 0; i <= 50; i++) {
+    const role = faker.helpers.shuffle(['admin', 'dosen', 'user'])[0];
+    const provider =
+      role == 'admin' || role == 'dosen' ? 'pens.ac.id' : 'student.pens.ac.id';
+    await prisma.user.create({
+      data: {
+        name: faker.person.fullName(),
+        password: await HashHelpers.hashPassword('password'),
+        email: faker.internet.email({ provider: provider }).toLocaleLowerCase(),
+        role: role as any,
+        email_verified_at: i % 2 == 0 ? new Date() : null,
+        lecture:
+          role == 'dosen'
+            ? {
+                create: {
+                  nip: faker.number
+                    .int({ min: 1000000000, max: 9999999999 })
+                    .toString(),
+                },
+              }
+            : {},
+      },
+    });
   }
+
+  console.log(`Successfully created users`);
 };
 
 const curriculums = async () => {

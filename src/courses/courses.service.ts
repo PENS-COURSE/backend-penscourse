@@ -75,8 +75,8 @@ export class CoursesService {
             user?.role == 'admin'
               ? undefined
               : onlyPublisher
-              ? user?.id
-              : undefined,
+                ? user?.id
+                : undefined,
         },
       ],
     };
