@@ -18,7 +18,7 @@ export class EnrollmentsService {
   async findAll({ user, page = 1 }: { user: User; page?: number }) {
     const pagination = createPaginator({ perPage: 25 });
 
-    return pagination({
+    return await pagination({
       model: this.prisma.enrollment,
       args: {
         where: {

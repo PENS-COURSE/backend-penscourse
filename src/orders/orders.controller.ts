@@ -1,9 +1,18 @@
-import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
@@ -17,12 +26,17 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @ApiBearerAuth()
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    required: false,
+  })
   @ApiOkResponse()
   @HttpCode(200)
   @ApiOperation({ summary: 'Find All Orders User' })
   @Get('')
-  async findAll(@CurrentUser() user: any) {
-    const data = await this.ordersService.findAll({ user });
+  async findAll(@CurrentUser() user: any, @Query('page') page: number) {
+    const data = await this.ordersService.findAll({ user, page });
 
     return {
       message: 'Successfully get all orders',
