@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, Param } from '@nestjs/common';
+import { Controller, Get, HttpCode, Param, Query } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -19,8 +19,8 @@ export class EnrollmentsController {
   @ApiOperation({ summary: 'Get all enrollments' })
   @ApiOkResponse()
   @Get('')
-  async findAll(@CurrentUser() user: any) {
-    const data = await this.enrollmentsService.findAll({ user });
+  async findAll(@CurrentUser() user: any, @Query('page') page: number) {
+    const data = await this.enrollmentsService.findAll({ user, page });
 
     return {
       message: 'Successfully retrieved all enrollments',
