@@ -1,5 +1,6 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
+import { instanceToPlain } from 'class-transformer';
 import { Request } from 'express';
 import { UserEntity } from '../entities/user.entity';
 import { UsersService } from '../users/users.service';
@@ -18,7 +19,7 @@ export class ProfileService {
     const userId = this.req.user['id'];
     const user = await this.usersService.findOneByID(userId);
 
-    return new UserEntity(user);
+    return instanceToPlain(new UserEntity(user), { groups: ['detail'] });
   }
 
   async updateProfile(payload: UpdateProfileDto, avatar?: Express.Multer.File) {
@@ -31,7 +32,7 @@ export class ProfileService {
       avatar,
     );
 
-    return new UserEntity(user);
+    return instanceToPlain(new UserEntity(user), { groups: ['detail'] });
   }
 
   async changePassword(payload: ChangePasswordDto) {

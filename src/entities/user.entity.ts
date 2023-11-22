@@ -1,5 +1,5 @@
 import { $Enums, User } from '@prisma/client';
-import { Expose } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 
 export class UserEntity implements User {
   constructor(partial: Partial<UserEntity>) {
@@ -19,7 +19,7 @@ export class UserEntity implements User {
   @Expose({ groups: ['detail'] })
   email_verified_at: Date;
 
-  @Expose({ groups: ['detail'] })
+  @Exclude()
   password: string;
 
   avatar: string;

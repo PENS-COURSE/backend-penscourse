@@ -1,11 +1,14 @@
 import { Course, Order, Payment } from '@prisma/client';
+import { instanceToPlain } from 'class-transformer';
 import { UserEntity } from './user.entity';
 
 export class OrderEntity implements Order {
   constructor(partial: Partial<OrderEntity>) {
     Object.assign(this, partial);
 
-    this.user = new UserEntity(this.user);
+    this.user = instanceToPlain(new UserEntity(this.user), {
+      groups: ['detail'],
+    });
   }
 
   id: string;
@@ -13,7 +16,7 @@ export class OrderEntity implements Order {
   course_id: number;
   total_price: number;
   total_discount: number;
-  user: UserEntity;
+  user: any;
   course: Course;
   payment: Payment;
   created_at: Date;
