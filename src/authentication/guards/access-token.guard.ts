@@ -1,6 +1,7 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
+import { IsRefreshTokenKey } from '../metadata/is-refreshtoken.decorator';
 
 @Injectable()
 export class AccessTokenGuard extends AuthGuard('jwt-access-token') {
@@ -19,6 +20,15 @@ export class AccessTokenGuard extends AuthGuard('jwt-access-token') {
       'allow-unauthorized-request',
       context.getHandler(),
     );
+
+    const IsRefreshToken = this.reflector.get<boolean>(
+      IsRefreshTokenKey,
+      context.getHandler(),
+    );
+
+    if (IsRefreshToken) {
+      if (err || !user) return null;
+    }
 
     if (isAllowUnauthorizedRequest) {
       if (context.switchToHttp().getRequest().headers.authorization) {
