@@ -90,13 +90,6 @@ export class CoursesService {
           discount: true,
           user: true,
         },
-        orderBy: {
-          enrollments: user
-            ? {
-                _count: 'asc',
-              }
-            : undefined,
-        },
         where: {
           slug: {
             contains: name,
@@ -138,7 +131,13 @@ export class CoursesService {
           return data;
         });
 
-        return Promise.all(mappedCourses);
+        return Promise.all(mappedCourses).then((data) =>
+          user
+            ? data.sort((a) => {
+                return a.is_enrolled ? 1 : -1;
+              })
+            : data,
+        );
       },
     });
   }
