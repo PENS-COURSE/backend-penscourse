@@ -29,6 +29,7 @@ import { LogoutDto } from './dto/logout.dto';
 import { GoogleGuard } from './guards/google.guard';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { AllowUnauthorizedRequest } from './metadata/allow-unauthorized-request.decorator';
+import { IsRefreshToken } from './metadata/is-refreshtoken.decorator';
 
 @ApiTags('Authentication')
 @Controller('authentication')
@@ -63,6 +64,7 @@ export class AuthenticationController {
     };
   }
 
+  @IsRefreshToken()
   @AllowUnauthorizedRequest()
   @UseGuards(RefreshTokenGuard)
   @ApiOperation({ summary: 'Refresh Token User' })

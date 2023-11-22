@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { instanceToPlain } from 'class-transformer';
 import { UserEntity } from '../entities/user.entity';
 import { PrismaService } from '../prisma/prisma.service';
 import { HashHelpers } from '../utils/hash.utils';
@@ -40,7 +41,7 @@ export class UsersService {
       data: createUserDto,
     });
 
-    return new UserEntity(data);
+    return data;
   }
 
   async findAll({ page = 1 }: { page: number }) {
@@ -50,7 +51,10 @@ export class UsersService {
       options: {
         page,
       },
-      map: async (data) => data.map((user) => new UserEntity(user)),
+      map: async (data) =>
+        data.map((user) =>
+          instanceToPlain(new UserEntity(user), { groups: ['detail'] }),
+        ),
     });
   }
 
@@ -100,7 +104,7 @@ export class UsersService {
       data: updateUserDto,
     });
 
-    return new UserEntity(data);
+    return instanceToPlain(new UserEntity(data), { groups: ['detail'] });
   }
 
   async remove(id: number) {

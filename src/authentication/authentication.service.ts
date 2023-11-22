@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { REQUEST } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
+import { instanceToPlain } from 'class-transformer';
 import { Request } from 'express';
 import { google } from 'googleapis';
 import * as moment from 'moment';
@@ -56,7 +57,7 @@ export class AuthenticationService {
     });
 
     return {
-      user: new UserEntity(newUser),
+      user: instanceToPlain(new UserEntity(newUser), { groups: ['detail'] }),
       token: token,
     };
   }
@@ -81,7 +82,7 @@ export class AuthenticationService {
     });
 
     return {
-      user: new UserEntity(user),
+      user: instanceToPlain(new UserEntity(user), { groups: ['detail'] }),
       token,
     };
   }
@@ -108,7 +109,7 @@ export class AuthenticationService {
     });
 
     return {
-      user: new UserEntity(user),
+      user: instanceToPlain(new UserEntity(user), { groups: ['detail'] }),
       token,
     };
   }
@@ -147,7 +148,7 @@ export class AuthenticationService {
       });
 
       return {
-        user: new UserEntity(user),
+        user: instanceToPlain(new UserEntity(user), { groups: ['detail'] }),
         token,
       };
     });
