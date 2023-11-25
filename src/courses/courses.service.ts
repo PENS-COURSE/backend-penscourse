@@ -294,18 +294,6 @@ export class CoursesService {
       },
     });
 
-    const wording = notificationWording(
-      NotificationType.course_enrollment_free_success,
-    );
-
-    await this.notificationService.sendNotification({
-      user_ids: [53],
-      title: wording.title,
-      body: wording.body,
-      type: wording.type,
-      action_id: course.slug,
-    });
-
     if (isEnrolled) {
       throw new BadRequestException('You have already enrolled this course');
     }
@@ -315,6 +303,18 @@ export class CoursesService {
         course_id: course.id,
         user_id: user.id,
       },
+    });
+
+    const wording = notificationWording(
+      NotificationType.course_enrollment_free_success,
+    );
+
+    await this.notificationService.sendNotification({
+      user_ids: [user.id],
+      title: wording.title,
+      body: wording.body,
+      type: wording.type,
+      action_id: course.slug,
     });
 
     return data;
