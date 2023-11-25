@@ -38,3 +38,4 @@ lerna-debug.log*
 public/uploads/*
 !public/uploads/.gitkeep
 .env
+.env.staging
