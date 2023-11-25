@@ -1,7 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from '@prisma/client';
+import { NotificationsService } from '../../../notifications/notifications.service';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { StorageHelpers } from '../../../utils/storage.utils';
+import {
+  NotificationType,
+  notificationWording,
+} from '../../../utils/wording.utils';
 import { CurriculumsService } from '../curriculums.service';
 import { AddFileContentDto } from './dto/add-file-content.dto';
 import { AddLiveClassDto } from './dto/add-live-class-content.dto';
@@ -10,10 +15,6 @@ import { UpdateFileContentDto } from './dto/update-file-content.dto';
 import { UpdateLiveClassDto } from './dto/update-live-class.dto';
 import { UpdateVideoContentDto } from './dto/update-video-content.dto';
 
-// TODO: Update & Delete Content
-// TODO: Send Notification to all students when live class is open
-// TODO: Send Notification to all students when new file, video, live class is added
-// TODO: Update Course to Completed when all curriculums are completed
 // TODO: Generate Certificate when course is completed
 // TODO: Send Certificate to all students when course is completed (Email, Download)
 
@@ -22,6 +23,7 @@ export class SubjectsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly curriculumService: CurriculumsService,
+    private readonly notificationService: NotificationsService,
   ) {}
 
   async addFileContent({
@@ -42,7 +44,7 @@ export class SubjectsService {
       course_slug,
     );
 
-    return await this.prisma.fileContent.create({
+    const data = await this.prisma.fileContent.create({
       data: {
         title,
         description,
@@ -51,6 +53,29 @@ export class SubjectsService {
         url: file.path,
       },
     });
+
+    if (data) {
+      const course = await this.prisma.course.findFirst({
+        where: {
+          slug: course_slug,
+        },
+        include: {
+          enrollments: true,
+        },
+      });
+
+      const wording = notificationWording(NotificationType.course_new_file);
+
+      await this.notificationService.sendNotification({
+        user_ids: course.enrollments.map((enrollment) => enrollment.user_id),
+        title: wording.title,
+        body: wording.body,
+        type: wording.type,
+        action_id: course_slug,
+      });
+    }
+
+    return data;
   }
 
   async addVideoContent({
@@ -69,7 +94,7 @@ export class SubjectsService {
       course_slug,
     );
 
-    return await this.prisma.videoContent.create({
+    const data = await this.prisma.videoContent.create({
       data: {
         title: title,
         url: video_url,
@@ -78,6 +103,29 @@ export class SubjectsService {
         curriculum_id: curriculum.id,
       },
     });
+
+    if (data) {
+      const course = await this.prisma.course.findFirst({
+        where: {
+          slug: course_slug,
+        },
+        include: {
+          enrollments: true,
+        },
+      });
+
+      const wording = notificationWording(NotificationType.course_new_video);
+
+      await this.notificationService.sendNotification({
+        user_ids: course.enrollments.map((enrollment) => enrollment.user_id),
+        title: wording.title,
+        body: wording.body,
+        type: wording.type,
+        action_id: course_slug,
+      });
+    }
+
+    return data;
   }
 
   async addLiveClass({
@@ -96,7 +144,7 @@ export class SubjectsService {
       course_slug,
     );
 
-    return await this.prisma.liveClass.create({
+    const data = await this.prisma.liveClass.create({
       data: {
         title,
         description,
@@ -107,6 +155,31 @@ export class SubjectsService {
         is_open: false,
       },
     });
+
+    if (data) {
+      const course = await this.prisma.course.findFirst({
+        where: {
+          slug: course_slug,
+        },
+        include: {
+          enrollments: true,
+        },
+      });
+
+      const wording = notificationWording(
+        NotificationType.course_new_live_class,
+      );
+
+      await this.notificationService.sendNotification({
+        user_ids: course.enrollments.map((enrollment) => enrollment.user_id),
+        title: wording.title,
+        body: wording.body,
+        type: wording.type,
+        action_id: course_slug,
+      });
+    }
+
+    return data;
   }
 
   async findOneByUUID({

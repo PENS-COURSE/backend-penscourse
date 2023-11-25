@@ -71,18 +71,6 @@ export class CreateQuizDto {
   @IsBoolean()
   @IsOptional()
   @Transform(({ value }) => value == true || value == 'true')
-  is_ended?: boolean;
-
-  @ApiPropertyOptional()
-  @IsBoolean()
-  @IsOptional()
-  @Transform(({ value }) => value == true || value == 'true')
-  is_active?: boolean;
-
-  @ApiPropertyOptional()
-  @IsBoolean()
-  @IsOptional()
-  @Transform(({ value }) => value == true || value == 'true')
   show_result?: boolean;
 
   @ApiPropertyOptional()
@@ -107,4 +95,16 @@ export class CreateQuizDto {
   generated_questions: QuizGeneratorDto;
 }
 
-export class UpdateQuizDto extends PartialType(CreateQuizDto) {}
+export class UpdateQuizDto extends PartialType(CreateQuizDto) {
+  @ApiPropertyOptional()
+  @IsBoolean()
+  @IsOptional()
+  @Transform(({ value }) => value == true || value == 'true')
+  is_ended?: boolean;
+
+  @ApiPropertyOptional()
+  @IsBoolean()
+  @IsOptional()
+  @Transform(({ value }) => value == true || value == 'true')
+  is_active?: boolean;
+}

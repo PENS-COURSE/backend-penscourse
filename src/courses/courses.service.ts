@@ -6,12 +6,13 @@ import {
 } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
-import { CommonService } from '../common/common.service';
 import { UserEntity } from '../entities/user.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { createPaginator } from '../utils/pagination.utils';
 import { StringHelper } from '../utils/slug.utils';
 import { StorageHelpers } from '../utils/storage.utils';
+import { NotificationType, notificationWording } from '../utils/wording.utils';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 
@@ -21,7 +22,7 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 export class CoursesService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly commonService: CommonService,
+    private readonly notificationService: NotificationsService,
   ) {}
 
   async create({
@@ -292,6 +293,19 @@ export class CoursesService {
         user_id: user.id,
       },
     });
+
+    const wording = notificationWording(
+      NotificationType.course_enrollment_free_success,
+    );
+
+    await this.notificationService.sendNotification({
+      user_ids: [53],
+      title: wording.title,
+      body: wording.body,
+      type: wording.type,
+      action_id: course.slug,
+    });
+
     if (isEnrolled) {
       throw new BadRequestException('You have already enrolled this course');
     }
