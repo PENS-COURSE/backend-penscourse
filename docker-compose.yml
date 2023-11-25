@@ -36,8 +36,6 @@ services:
       - 6379:6379
     volumes:
       - ./data:/data
-    networks:
-      - redis-net
 
 volumes:
   nginx-data:
