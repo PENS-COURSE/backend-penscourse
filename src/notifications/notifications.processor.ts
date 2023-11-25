@@ -38,7 +38,7 @@ export class NotificationsConsumer {
   @OnQueueFailed()
   async onError(error: Error, job: Job) {
     console.log('=========================================');
-    console.log(`Error Push Notificaiton : ${error.message}`);
+    console.log(`Error Push Notificaiton : ${error}`);
     console.log(`Job Detail : ${JSON.stringify(job.data)}`);
 
     // Sentry
