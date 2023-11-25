@@ -42,8 +42,8 @@ jobs:
             cd ${{ secrets.SSH_PATH }}
             git pull
 
-            pnpm install
+            yarn install
 
             npx prisma migrate deploy && npx prisma generate
 
-            pm2 restart all
+            pm2 restart all --update-env
