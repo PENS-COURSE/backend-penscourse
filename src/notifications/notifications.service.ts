@@ -1,9 +1,5 @@
 import { InjectQueue } from '@nestjs/bull';
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { User } from '@prisma/client';
 import { Queue } from 'bull';
@@ -129,9 +125,6 @@ export class NotificationsService {
 
         return notification;
       }),
-    ).catch((error) => {
-      console.error(error.response.data.errors);
-      throw new InternalServerErrorException();
-    });
+    );
   }
 }
