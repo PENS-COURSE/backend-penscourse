@@ -2,8 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Question, User } from '@prisma/client';
 import { CurriculumsService } from '../courses/curriculums/curriculums.service';
 import { QuizSession } from '../entities/quiz.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ArrayHelpers } from '../utils/array.utils';
+import { NotificationType, notificationWording } from '../utils/wording.utils';
 import { CreateQuizDto, UpdateQuizDto } from './dto/payload-quiz.dto';
 
 @Injectable()
@@ -11,6 +13,7 @@ export class QuizzesService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly curriculumsService: CurriculumsService,
+    private readonly notificationService: NotificationsService,
   ) {}
 
   async createQuiz({ payload }: { payload: CreateQuizDto }) {
@@ -29,8 +32,8 @@ export class QuizzesService {
         description: payload.description,
         start_date: payload.start_date,
         end_date: payload.end_date,
-        is_active: payload.is_active,
-        is_ended: payload.is_ended,
+        is_active: false,
+        is_ended: false,
         show_result: payload.show_result,
         pass_grade: payload.pass_grade,
         option_generated: {
@@ -70,7 +73,7 @@ export class QuizzesService {
       payload.course_slug,
     );
 
-    return await this.prismaService.quiz.update({
+    const data = await this.prismaService.quiz.update({
       where: {
         id: quiz_uuid,
       },
@@ -101,6 +104,31 @@ export class QuizzesService {
         },
       },
     });
+
+    if (data) {
+      if (data.is_active) {
+        const course = await this.prismaService.course.findFirst({
+          where: {
+            slug: payload.course_slug,
+          },
+          include: {
+            enrollments: true,
+          },
+        });
+
+        const wording = notificationWording(NotificationType.course_new_quiz);
+
+        await this.notificationService.sendNotification({
+          user_ids: course.enrollments.map((enrollment) => enrollment.user_id),
+          title: wording.title,
+          body: wording.body,
+          type: wording.type,
+          action_id: payload.course_slug,
+        });
+      }
+    }
+
+    return data;
   }
 
   async deleteQuiz({ quiz_uuid }: { quiz_uuid: string }) {

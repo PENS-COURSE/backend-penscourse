@@ -50,8 +50,9 @@ export class PaymentHelpers {
         },
       )
       .then((res) => res.data)
-      .catch((err) => {
-        console.log(err.response.data);
+      .catch(async (err) => {
+        await this.cancelOrder({ order_uuid });
+        console.log('PaymentHelpers -> createOrder -> err', err);
         throw new BadRequestException(err.message);
       });
 
@@ -59,6 +60,29 @@ export class PaymentHelpers {
       namePayment,
       response,
     };
+  }
+
+  static async cancelOrder({ order_uuid }: { order_uuid: string }) {
+    const buf = Buffer.from(process.env.MIDTRANS_SERVER_KEY, 'utf8');
+
+    const headers = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: `Basic ${buf.toString('base64')}`,
+    };
+
+    const response = await axios.post(
+      `https://api.sandbox.midtrans.com/v2/${order_uuid}/cancel`,
+      {
+        headers,
+      },
+    );
+
+    if (response.status == 200) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 

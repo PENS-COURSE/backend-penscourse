@@ -1,3 +1,4 @@
+import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
@@ -7,6 +8,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthenticationModule } from './authentication/authentication.module';
 import { AccessTokenGuard } from './authentication/guards/access-token.guard';
+import { CommonModule } from './common/common.module';
 import { CourseDiscountModule } from './course-discount/course-discount.module';
 import { CoursesModule } from './courses/courses.module';
 import { DepartmentsModule } from './departments/departments.module';
@@ -15,12 +17,18 @@ import { MailModule } from './mail/mail.module';
 import { OrdersModule } from './orders/orders.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProfileModule } from './profile/profile.module';
-import { UsersModule } from './users/users.module';
-import { CommonModule } from './common/common.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
+import { UsersModule } from './users/users.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
     PrismaModule,
     UsersModule,
     AuthenticationModule,
@@ -48,6 +56,7 @@ import { QuizzesModule } from './quizzes/quizzes.module';
     }),
     CommonModule,
     QuizzesModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [

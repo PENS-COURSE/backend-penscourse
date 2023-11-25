@@ -10,9 +10,11 @@ import * as crypto from 'crypto';
 import * as moment from 'moment';
 import { CoursesService } from '../courses/courses.service';
 import { OrderEntity } from '../entities/order.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { createPaginator } from '../utils/pagination.utils';
 import { PaymentHelpers } from '../utils/payment.utils';
+import { NotificationType, notificationWording } from '../utils/wording.utils';
 import { OrderCourseDto } from './dto/order-course.dto';
 
 @Injectable()
@@ -21,6 +23,7 @@ export class OrdersService {
     private readonly prisma: PrismaService,
     private readonly course: CoursesService,
     private readonly configService: ConfigService,
+    private readonly notificationService: NotificationsService,
   ) {}
 
   async findAll({ page = 1, user }: { page: number; user: User }) {
@@ -133,43 +136,85 @@ export class OrdersService {
           },
         });
 
-        const payment = await PaymentHelpers.createOrder({
-          payment_id: payload.payment_id,
-          gross_amount: isDiscount ? isDiscount.discount_price : course.price,
-          order_uuid: order.id,
-          user,
-        });
+        if (order) {
+          const payment = await PaymentHelpers.createOrder({
+            payment_id: payload.payment_id,
+            gross_amount: isDiscount ? isDiscount.discount_price : course.price,
+            order_uuid: order.id,
+            user,
+          });
 
-        await tx.payment.create({
-          data: {
-            order_id: order.id,
-            gross_amount: order.total_price,
-            payment_method: payment.namePayment,
-            payment_type: payment.response.payment_type,
-            transaction_id: payment.response.transaction_id,
-            actions: payment.response.actions,
-            expiry_time: payment.response.expiry_time,
-            status: payment.response.transaction_status,
-            va_numbers_bank:
-              payment.response.va_numbers != null
-                ? payment.response.va_numbers[0]['bank']
-                : null,
-            va_numbers_va:
-              payment.response.va_numbers != null
-                ? payment.response.va_numbers[0]['va_number']
-                : null,
-          },
-        });
+          if (!payment) {
+            const wording = notificationWording(
+              NotificationType.transaction_error_payment,
+            );
 
-        return await tx.order.findFirst({
-          where: {
-            id: order.id,
-          },
-          include: {
-            payment: true,
-            course: true,
-          },
-        });
+            await this.notificationService.sendNotification({
+              user_ids: [order.user_id],
+              title: wording.title,
+              body: wording.body,
+              type: wording.type,
+            });
+
+            throw new BadRequestException('Order gagal dibuat');
+          }
+
+          await tx.payment.create({
+            data: {
+              order_id: order.id,
+              gross_amount: order.total_price,
+              payment_method: payment.namePayment,
+              payment_type: payment.response.payment_type,
+              transaction_id: payment.response.transaction_id,
+              actions: payment.response.actions,
+              expiry_time: payment.response.expiry_time,
+              status: payment.response.transaction_status,
+              va_numbers_bank:
+                payment.response.va_numbers != null
+                  ? payment.response.va_numbers[0]['bank']
+                  : null,
+              va_numbers_va:
+                payment.response.va_numbers != null
+                  ? payment.response.va_numbers[0]['va_number']
+                  : null,
+            },
+          });
+
+          const wording = notificationWording(
+            NotificationType.transaction_waiting_payment,
+          );
+
+          await this.notificationService.sendNotification({
+            user_ids: [order.user_id],
+            title: wording.title,
+            body: wording.body,
+            type: wording.type,
+            action_id: order.id,
+          });
+
+          return await tx.order.findFirst({
+            where: {
+              id: order.id,
+            },
+            include: {
+              payment: true,
+              course: true,
+            },
+          });
+        } else {
+          const wording = notificationWording(
+            NotificationType.transaction_error_payment,
+          );
+
+          await this.notificationService.sendNotification({
+            user_ids: [order.user_id],
+            title: wording.title,
+            body: wording.body,
+            type: wording.type,
+          });
+
+          throw new BadRequestException('Order gagal dibuat');
+        }
       },
       {
         timeout: 60000,
@@ -208,6 +253,9 @@ export class OrdersService {
       where: {
         id: payment.order_id,
       },
+      include: {
+        course: true,
+      },
     });
 
     if (!payment) {
@@ -233,6 +281,18 @@ export class OrdersService {
           user_id: order.user_id,
           course_id: order.course_id,
         },
+      });
+
+      const wording = notificationWording(
+        NotificationType.transaction_success_payment,
+      );
+
+      await this.notificationService.sendNotification({
+        user_ids: [order.user_id],
+        title: wording.title,
+        body: wording.body,
+        type: wording.type,
+        action_id: order.course.slug,
       });
     }
 

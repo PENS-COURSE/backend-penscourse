@@ -64,7 +64,7 @@ export class UsersService {
     });
 
     if (throwException && !user)
-      throw new NotFoundException("User doesn't exist");
+      throw new NotFoundException('User tidak ditemukan');
 
     return user;
   }
@@ -75,7 +75,7 @@ export class UsersService {
     });
 
     if (throwException && !user)
-      throw new NotFoundException("User doesn't exist");
+      throw new NotFoundException('User tidak ditemukan');
 
     return user;
   }

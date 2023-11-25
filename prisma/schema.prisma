@@ -268,6 +268,7 @@ model Notification {
   type        String
   title       String
   description String?   @db.Text
+  action_id   String?
   user_id     Int
   user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
   read_at     DateTime?
