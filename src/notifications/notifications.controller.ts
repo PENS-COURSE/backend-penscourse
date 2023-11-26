@@ -21,11 +21,24 @@ export class NotificationsController {
     type: Number,
     required: false,
   })
+  @ApiQuery({
+    name: 'filterOnlyUnread',
+    type: Boolean,
+    required: false,
+  })
   @ApiOkResponse()
   @HttpCode(200)
   @Get()
-  async findAll(@CurrentUser() user: any, @Query('page') page: number) {
-    const data = await this.notificationsService.findAll({ user, page });
+  async findAll(
+    @CurrentUser() user: any,
+    @Query('page') page: number,
+    @Query('filterOnlyUnread') filterOnlyUnread: boolean,
+  ) {
+    const data = await this.notificationsService.findAll({
+      user,
+      page,
+      filterOnlyUnread,
+    });
 
     return {
       message: 'Berhasil mendapatkan notifikasi',
