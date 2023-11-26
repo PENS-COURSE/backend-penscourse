@@ -23,6 +23,9 @@ export class NotificationsService {
         where: {
           user_id: user.id,
         },
+        orderBy: {
+          created_at: 'desc',
+        },
       },
       options: {
         page,
