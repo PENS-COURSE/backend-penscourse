@@ -17,11 +17,11 @@ export class NotificationsService {
   async findAll({
     user,
     page = 1,
-    filterOnlyUnread,
+    filter_read,
   }: {
     user: User;
     page?: number;
-    filterOnlyUnread?: boolean;
+    filter_read?: 'read' | 'unread';
   }) {
     const pagination = createPaginator({ perPage: 25 });
 
@@ -30,7 +30,7 @@ export class NotificationsService {
       args: {
         where: {
           user_id: user.id,
-          read_at: filterOnlyUnread ? null : undefined,
+          read_at: filter_read === 'read' ? { not: null } : { equals: null },
         },
         orderBy: {
           created_at: 'desc',
