@@ -1,30 +1,36 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { User } from '@prisma/client';
 import { Queue } from 'bull';
-import { OneSignalService } from 'onesignal-api-client-nest';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
+import { createPaginator } from '../utils/pagination.utils';
 
 @Injectable()
 export class NotificationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userService: UsersService,
-    private readonly configService: ConfigService,
-    private readonly oneSignalService: OneSignalService,
     @InjectQueue('notifications') private readonly notificationQueue: Queue,
   ) {}
 
-  async findAll({ user }: { user: User }) {
-    const notifications = await this.prisma.notification.findMany({
-      where: {
-        user_id: user.id,
+  async findAll({ user, page = 1 }: { user: User; page?: number }) {
+    const pagination = createPaginator({ perPage: 25 });
+
+    return await pagination({
+      model: this.prisma.notification,
+      args: {
+        where: {
+          user_id: user.id,
+        },
+        orderBy: {
+          created_at: 'desc',
+        },
+      },
+      options: {
+        page,
       },
     });
-
-    return notifications;
   }
 
   async findOne({
@@ -75,7 +81,11 @@ export class NotificationsService {
   }
 
   async markAllAsRead({ user }: { user: User }) {
-    const notifications = await this.findAll({ user });
+    const notifications = await this.prisma.notification.findMany({
+      where: {
+        user_id: user.id,
+      },
+    });
 
     const updatedNotifications = await this.prisma.notification.updateMany({
       where: {

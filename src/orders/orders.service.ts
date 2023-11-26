@@ -40,6 +40,9 @@ export class OrdersService {
           course: true,
           payment: true,
         },
+        orderBy: {
+          created_at: 'desc',
+        },
       },
       options: {
         page,
