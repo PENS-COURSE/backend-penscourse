@@ -14,7 +14,15 @@ export class NotificationsService {
     @InjectQueue('notifications') private readonly notificationQueue: Queue,
   ) {}
 
-  async findAll({ user, page = 1 }: { user: User; page?: number }) {
+  async findAll({
+    user,
+    page = 1,
+    filterOnlyUnread,
+  }: {
+    user: User;
+    page?: number;
+    filterOnlyUnread?: boolean;
+  }) {
     const pagination = createPaginator({ perPage: 25 });
 
     return await pagination({
@@ -22,6 +30,7 @@ export class NotificationsService {
       args: {
         where: {
           user_id: user.id,
+          read_at: filterOnlyUnread ? null : undefined,
         },
         orderBy: {
           created_at: 'desc',
