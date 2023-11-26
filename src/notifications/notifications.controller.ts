@@ -22,8 +22,9 @@ export class NotificationsController {
     required: false,
   })
   @ApiQuery({
-    name: 'filterOnlyUnread',
-    type: Boolean,
+    name: 'filter_read',
+    type: String,
+    enum: ['read', 'unread'],
     required: false,
   })
   @ApiOkResponse()
@@ -32,12 +33,12 @@ export class NotificationsController {
   async findAll(
     @CurrentUser() user: any,
     @Query('page') page: number,
-    @Query('filterOnlyUnread') filterOnlyUnread: boolean,
+    @Query('filter_read') filter_read: 'read' | 'unread',
   ) {
     const data = await this.notificationsService.findAll({
       user,
       page,
-      filterOnlyUnread,
+      filter_read,
     });
 
     return {
