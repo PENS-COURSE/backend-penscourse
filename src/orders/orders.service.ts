@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { User } from '@prisma/client';
+import { $Enums, User } from '@prisma/client';
 import * as crypto from 'crypto';
 import * as moment from 'moment';
 import { CoursesService } from '../courses/courses.service';
@@ -26,7 +26,15 @@ export class OrdersService {
     private readonly notificationService: NotificationsService,
   ) {}
 
-  async findAll({ page = 1, user }: { page: number; user: User }) {
+  async findAll({
+    page = 1,
+    user,
+    filterByStatus,
+  }: {
+    page: number;
+    user: User;
+    filterByStatus?: $Enums.PaymentStatusType;
+  }) {
     const pagination = createPaginator({ perPage: 25 });
 
     return await pagination({
@@ -34,6 +42,9 @@ export class OrdersService {
       args: {
         where: {
           user_id: user?.id,
+          payment: {
+            status: filterByStatus || undefined,
+          },
         },
         include: {
           user: true,
