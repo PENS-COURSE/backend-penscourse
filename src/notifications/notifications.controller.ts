@@ -1,8 +1,9 @@
-import { Controller, Get, HttpCode, Param } from '@nestjs/common';
+import { Controller, Get, HttpCode, Param, Query } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
@@ -15,11 +16,16 @@ export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   @ApiOperation({ summary: 'Get all notifications' })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    required: false,
+  })
   @ApiOkResponse()
   @HttpCode(200)
   @Get()
-  async findAll(@CurrentUser() user: any) {
-    const data = await this.notificationsService.findAll({ user });
+  async findAll(@CurrentUser() user: any, @Query('page') page: number) {
+    const data = await this.notificationsService.findAll({ user, page });
 
     return {
       message: 'Berhasil mendapatkan notifikasi',

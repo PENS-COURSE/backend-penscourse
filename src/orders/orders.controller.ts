@@ -15,6 +15,7 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { $Enums } from '@prisma/client';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unauthorized-request.decorator';
 import { OrderCourseDto } from './dto/order-course.dto';
@@ -31,12 +32,26 @@ export class OrdersController {
     type: Number,
     required: false,
   })
+  @ApiQuery({
+    name: 'status',
+    type: String,
+    required: false,
+    enum: $Enums.PaymentStatusType,
+  })
   @ApiOkResponse()
   @HttpCode(200)
   @ApiOperation({ summary: 'Find All Orders User' })
   @Get('')
-  async findAll(@CurrentUser() user: any, @Query('page') page: number) {
-    const data = await this.ordersService.findAll({ user, page });
+  async findAll(
+    @CurrentUser() user: any,
+    @Query('page') page: number,
+    @Query('status') status: $Enums.PaymentStatusType,
+  ) {
+    const data = await this.ordersService.findAll({
+      user,
+      page,
+      filterByStatus: status,
+    });
 
     return {
       message: 'Successfully get all orders',
