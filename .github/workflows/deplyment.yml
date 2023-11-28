@@ -42,7 +42,9 @@ jobs:
             cd ${{ secrets.SSH_PATH }}
             git pull
 
-            yarn install
+            bun upgrade
+
+            bun install && npm rebuild bcrypt
 
             npx prisma migrate deploy && npx prisma generate
 
