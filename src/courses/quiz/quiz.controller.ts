@@ -1,11 +1,21 @@
-import { Body, Controller, Get, HttpCode, Param, Patch } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Query,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { User } from '@prisma/client';
 import { CurrentUser } from '../../authentication/decorators/current-user.decorators';
 import { AnswerQuizDto } from './dto/answer-quiz.dto';
 import { QuizService } from './quiz.service';
@@ -15,6 +25,30 @@ import { QuizService } from './quiz.service';
 @Controller('courses')
 export class QuizController {
   constructor(private readonly quizSerice: QuizService) {}
+
+  @ApiOperation({ summary: 'Get All Quiz' })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['ongoing', 'late', 'finished'],
+  })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Get('quiz')
+  async findAllQuiz(
+    @CurrentUser() user: User,
+    @Query('status') status: 'ongoing' | 'late' | 'finished',
+  ) {
+    const data = await this.quizSerice.findAllQuiz({
+      status,
+      user,
+    });
+
+    return {
+      message: 'Berhasil mendapatkan semua quiz',
+      data,
+    };
+  }
 
   @ApiOperation({ summary: 'Enroll Quiz' })
   @ApiParam({

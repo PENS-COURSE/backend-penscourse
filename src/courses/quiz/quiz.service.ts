@@ -4,12 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import * as moment from 'moment';
 import { QuestionEntity } from '../../entities/quiz.entity';
 import { PrismaService } from '../../prisma/prisma.service';
 import { QuizzesService } from '../../quizzes/quizzes.service';
+import { createPaginator } from '../../utils/pagination.utils';
 import { CoursesService } from '../courses.service';
 import { AnswerQuizDto } from './dto/answer-quiz.dto';
 
@@ -20,6 +21,100 @@ export class QuizService {
     private readonly quizzesService: QuizzesService,
     private readonly coursesService: CoursesService,
   ) {}
+
+  async findAllQuiz({
+    user,
+    status,
+  }: {
+    user: User;
+    status: 'ongoing' | 'late' | 'finished';
+  }) {
+    const pagination = createPaginator({ perPage: 25 });
+
+    const filterStatus: Prisma.QuizWhereInput = {};
+    const filterSession: Prisma.QuizSessionWhereInput = {};
+
+    switch (status) {
+      case 'ongoing':
+        filterStatus.is_active = true;
+        filterStatus.is_ended = false;
+        filterStatus.sessions = {
+          none: {
+            user_id: user.id,
+          },
+        };
+        filterSession.user_id = {
+          not: user.id,
+        };
+        break;
+      case 'late':
+        filterStatus.is_active = true;
+        filterStatus.is_ended = true;
+        filterSession.user_id = {
+          not: user.id,
+        };
+        break;
+      case 'finished':
+        filterSession.user_id = {
+          equals: user.id,
+        };
+      default:
+        break;
+    }
+
+    return await pagination({
+      model: this.prisma.quiz,
+      args: {
+        where: {
+          ...filterStatus,
+          curriculum: {
+            course: {
+              enrollments: {
+                every: {
+                  user_id: user.id,
+                },
+              },
+            },
+          },
+        },
+        include: {
+          sessions: {
+            where: {
+              ...filterSession,
+            },
+          },
+          curriculum: {
+            include: {
+              course: true,
+            },
+          },
+        },
+      },
+      map: async (quizzes) => {
+        return Promise.all(
+          quizzes.map(async (quiz) => {
+            const isTaken = await this.prisma.quizSession.findFirst({
+              where: {
+                quiz_id: quiz.id,
+                user_id: user?.id,
+              },
+            });
+
+            delete quiz.sessions;
+
+            return {
+              ...quiz,
+              detail_score: {
+                score: isTaken?.score,
+                is_passed: isTaken?.score >= quiz.pass_grade,
+              },
+              is_taken: !!isTaken,
+            };
+          }),
+        );
+      },
+    });
+  }
 
   async takeQuiz({
     quiz_uuid,
