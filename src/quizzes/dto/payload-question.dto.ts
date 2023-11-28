@@ -45,3 +45,8 @@ export class CreateQuizQuestionDto {
 }
 
 export class UpdateQuizQuestionDto extends PartialType(CreateQuizQuestionDto) {}
+
+export class CreateQuizQuestionCSVDto {
+  @ApiProperty({ type: 'string', format: 'binary' })
+  file: any;
+}

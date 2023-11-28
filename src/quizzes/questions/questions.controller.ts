@@ -7,14 +7,23 @@ import {
   Param,
   Patch,
   Post,
+  Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiOkResponse,
+  ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { memoryStorage } from 'multer';
 import {
+  CreateQuizQuestionCSVDto,
   CreateQuizQuestionDto,
   UpdateQuizQuestionDto,
 } from '../dto/payload-question.dto';
@@ -110,6 +119,37 @@ export class QuestionsController {
 
     return {
       message: 'Pertanyaan berhasil dihapus',
+      data,
+    };
+  }
+
+  @ApiOperation({
+    summary: 'Upload pertanyaan dengan file CSV',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'File CSV',
+    type: CreateQuizQuestionCSVDto,
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+    }),
+  )
+  @HttpCode(201)
+  @ApiCreatedResponse()
+  @Post(':quiz_uuid/questions/upload')
+  async uploadQuestionByCSV(
+    @UploadedFile() file: Express.Multer.File,
+    @Query('quiz_uuid') quiz_uuid: string,
+  ) {
+    const data = await this.questionsService.createQuestionByCSV({
+      csv: file,
+      quiz_uuid,
+    });
+
+    return {
+      message: 'Pertanyaan berhasil diupload',
       data,
     };
   }
