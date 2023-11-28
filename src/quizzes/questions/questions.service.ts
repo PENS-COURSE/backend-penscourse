@@ -3,6 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import * as csvParser from 'csv-parser';
+import { Readable } from 'stream';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   CreateQuizQuestionDto,
@@ -237,5 +239,79 @@ export class QuestionsService {
     }
 
     return question;
+  }
+
+  async createQuestionByCSV({
+    csv,
+    quiz_uuid,
+  }: {
+    csv: Express.Multer.File;
+    quiz_uuid: string;
+  }) {
+    const data: Promise<any[]> = new Promise((resolve, reject) => {
+      const results = [];
+
+      Readable.from(csv.buffer)
+        .pipe(
+          csvParser({
+            separator: ',',
+            mapHeaders: ({ header }) => header.trim(),
+          }),
+        )
+        .on('error', (e) => reject(e))
+        .on('data', async (row) => {
+          results.push(row);
+        })
+        .on('end', async () => {
+          resolve(results);
+        });
+    });
+
+    const questions = await data;
+
+    if (questions.length === 0) {
+      throw new BadRequestException('File CSV tidak boleh kosong');
+    }
+
+    return await Promise.all(
+      questions.map(async (question) => {
+        switch (question['Tipe Pertanyaan']) {
+          case 'single_choice':
+            return await this.createQuestion({
+              quiz_uuid,
+              payload: {
+                question: question['Pertanyaan'],
+                option_a: question['Opsi A'] != '' ? question['Opsi A'] : null,
+                option_b: question['Opsi B'] != '' ? question['Opsi B'] : null,
+                option_c: question['Opsi C'] != '' ? question['Opsi C'] : null,
+                option_d: question['Opsi D'] != '' ? question['Opsi D'] : null,
+                option_e: question['Opsi E'] != '' ? question['Opsi E'] : null,
+                level: question['Level'],
+                question_type: 'single_choice',
+                right_answer: question['Jawaban Benar'].split(','),
+              },
+            });
+          case 'multiple_choice':
+            return await this.createQuestion({
+              quiz_uuid,
+              payload: {
+                question: question['Pertanyaan'],
+                option_a: question['Opsi A'] != '' ? question['Opsi A'] : null,
+                option_b: question['Opsi B'] != '' ? question['Opsi B'] : null,
+                option_c: question['Opsi C'] != '' ? question['Opsi C'] : null,
+                option_d: question['Opsi D'] != '' ? question['Opsi D'] : null,
+                option_e: question['Opsi E'] != '' ? question['Opsi E'] : null,
+                level: question['Level'],
+                question_type: 'multiple_choice',
+                right_answer: question['Jawaban Benar'].split(','),
+              },
+            });
+          default:
+            throw new BadRequestException(
+              'Tipe pertanyaan hanya boleh single_choice atau multiple_choice',
+            );
+        }
+      }),
+    );
   }
 }
