@@ -3,5 +3,5 @@ module.exports = {
   watch: true,
   script: './dist/src/main.js',
   ignore_watch: ['node_modules', 'dist', 'logs', 'public'],
-  interpreter: '~/.bun/bin/bun',
+  interpreter: '/usr/local/bin/bun',
 };
