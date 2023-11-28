@@ -349,4 +349,45 @@ export class SubjectsController {
       data,
     };
   }
+
+  @ApiOperation({ summary: 'Open Live Class' })
+  @ApiParam({
+    name: 'subject_uuid',
+    required: true,
+    type: 'string',
+    description: 'Subject UUID',
+  })
+  @ApiParam({
+    name: 'curriculum_uuid',
+    required: true,
+    type: 'string',
+    description: 'Curriculum UUID',
+  })
+  @ApiParam({
+    name: 'course_slug',
+    required: true,
+    type: 'string',
+    description: 'Course Slug',
+  })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Patch(
+    ':course_slug/curriculums/:curriculum_uuid/subjects/:subject_uuid/live-class/open',
+  )
+  async openLiveClass(
+    @Param('curriculum_uuid') curriculum_uuid: string,
+    @Param('course_slug') course_slug: string,
+    @Param('subject_uuid') subject_uuid: string,
+  ) {
+    const data = await this.subjectsService.openLiveClass({
+      subject_uuid,
+      curriculum_uuid,
+      course_slug,
+    });
+
+    return {
+      message: 'Berhasil membuka live class',
+      data,
+    };
+  }
 }

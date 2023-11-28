@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { User } from '@prisma/client';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -417,5 +421,63 @@ export class SubjectsService {
         end_date: end_date ?? undefined,
       },
     });
+  }
+
+  async openLiveClass({
+    subject_uuid,
+    curriculum_uuid,
+    course_slug,
+  }: {
+    subject_uuid: string;
+    curriculum_uuid: string;
+    course_slug: string;
+  }) {
+    // TODO: Check user is instructor
+
+    const liveClass = await this.prisma.liveClass.findFirst({
+      where: {
+        id: subject_uuid,
+        curriculum_id: curriculum_uuid,
+      },
+    });
+
+    if (!liveClass) {
+      throw new NotFoundException('Kelas online tidak ditemukan');
+    }
+
+    if (liveClass.is_open) {
+      throw new BadRequestException('Kelas online sudah dibuka');
+    }
+
+    const data = await this.prisma.liveClass.update({
+      where: {
+        id: liveClass.id,
+      },
+      data: {
+        is_open: true,
+      },
+    });
+
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: {
+        course: {
+          slug: course_slug,
+        },
+      },
+    });
+
+    const wording = notificationWording(
+      NotificationType.course_live_class_open,
+    );
+
+    await this.notificationService.sendNotification({
+      user_ids: enrollments.map((enrollment) => enrollment.user_id),
+      title: wording.title,
+      body: wording.body,
+      type: wording.type,
+      action_id: course_slug,
+    });
+
+    return data;
   }
 }
