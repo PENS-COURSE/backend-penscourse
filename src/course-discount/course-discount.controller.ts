@@ -17,9 +17,11 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
+import { Roles } from '../utils/decorators/roles.decorator';
 import { CourseDiscountService } from './course-discount.service';
 import { CreateCourseDiscountDto } from './dto/create-course-discount.dto';
 
+@Roles(['admin', 'dosen'])
 @ApiBearerAuth()
 @ApiTags('Course Discounts')
 @Controller('course-discounts')

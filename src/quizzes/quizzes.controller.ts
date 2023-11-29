@@ -16,11 +16,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
+import { Roles } from '../utils/decorators/roles.decorator';
 import { CreateQuizDto } from './dto/payload-quiz.dto';
 import { QuizzesService } from './quizzes.service';
 
 @ApiBearerAuth()
 @ApiTags('Quizzes ( ADMIN / DOSEN )')
+@Roles(['admin', 'dosen'])
 @Controller('quizzes')
 export class QuizzesController {
   constructor(private readonly quizzesService: QuizzesService) {}

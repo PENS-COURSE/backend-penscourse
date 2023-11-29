@@ -1,4 +1,11 @@
-import { Controller, Get, HttpCode, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -7,6 +14,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
+import { Roles } from '../utils/decorators/roles.decorator';
+import { HasEnrolledGuard } from '../utils/guards/has-enrolled.guard';
 import { EnrollmentsService } from './enrollments.service';
 
 @ApiTags('Enrollments')
@@ -14,6 +23,7 @@ import { EnrollmentsService } from './enrollments.service';
 export class EnrollmentsController {
   constructor(private readonly enrollmentsService: EnrollmentsService) {}
 
+  @Roles(['user'])
   @ApiBearerAuth()
   @HttpCode(200)
   @ApiOperation({ summary: 'Get all enrollments' })
@@ -28,6 +38,8 @@ export class EnrollmentsController {
     };
   }
 
+  @Roles(['user'])
+  @UseGuards(HasEnrolledGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get Progress Course By Slug' })
   @ApiParam({

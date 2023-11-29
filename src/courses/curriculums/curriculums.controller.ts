@@ -18,6 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { CurrentUser } from '../../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../../authentication/metadata/allow-unauthorized-request.decorator';
+import { Roles } from '../../utils/decorators/roles.decorator';
 import { CurriculumsService } from './curriculums.service';
 import { CreateCurriculumDto } from './dto/create-curriculum.dto';
 import { UpdateCurriculumDto } from './dto/update-curriculum.dto';
@@ -27,6 +28,7 @@ import { UpdateCurriculumDto } from './dto/update-curriculum.dto';
 export class CurriculumsController {
   constructor(private readonly curriculumsService: CurriculumsService) {}
 
+  @Roles(['admin', 'dosen'])
   @ApiOperation({ summary: 'Create Curriculums' })
   @ApiParam({
     name: 'slug',
@@ -105,6 +107,7 @@ export class CurriculumsController {
     };
   }
 
+  @Roles(['admin', 'dosen'])
   @ApiOperation({ summary: 'Update Curriculum by UUID' })
   @ApiParam({
     name: 'uuid',
@@ -135,6 +138,7 @@ export class CurriculumsController {
     };
   }
 
+  @Roles(['admin', 'dosen'])
   @ApiOperation({ summary: 'Remove Curriculum by UUID' })
   @ApiParam({
     name: 'uuid',

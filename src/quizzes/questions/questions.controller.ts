@@ -22,6 +22,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { memoryStorage } from 'multer';
+import { Roles } from '../../utils/decorators/roles.decorator';
 import {
   CreateQuizQuestionCSVDto,
   CreateQuizQuestionDto,
@@ -31,6 +32,7 @@ import { QuestionsService } from './questions.service';
 
 @ApiTags('Quiz - Questions ( ADMIN / DOSEN )')
 @ApiBearerAuth()
+@Roles(['admin', 'dosen'])
 @Controller('quizzes')
 export class QuestionsController {
   constructor(private readonly questionsService: QuestionsService) {}
