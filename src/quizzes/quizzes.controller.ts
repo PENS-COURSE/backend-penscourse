@@ -17,7 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { Roles } from '../utils/decorators/roles.decorator';
-import { CreateQuizDto } from './dto/payload-quiz.dto';
+import { CreateQuizDto, UpdateQuizDto } from './dto/payload-quiz.dto';
 import { QuizzesService } from './quizzes.service';
 
 @ApiBearerAuth()
@@ -45,7 +45,7 @@ export class QuizzesController {
   @HttpCode(200)
   @Patch(':quiz_uuid/update')
   async updateQuiz(
-    @Body() payload: CreateQuizDto,
+    @Body() payload: UpdateQuizDto,
     @Param('quiz_uuid') quiz_uuid: string,
   ) {
     const data = await this.quizzesService.updateQuiz({ payload, quiz_uuid });
