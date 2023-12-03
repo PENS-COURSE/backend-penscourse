@@ -39,8 +39,9 @@ export class QuizService {
         filterStatus.is_active = true;
         filterStatus.is_ended = false;
         filterStatus.sessions = {
-          none: {
+          some: {
             user_id: user.id,
+            is_ended: false,
           },
         };
         filterSession.user_id = {
@@ -55,6 +56,12 @@ export class QuizService {
         };
         break;
       case 'finished':
+        filterStatus.sessions = {
+          some: {
+            user_id: user.id,
+            is_ended: true,
+          },
+        };
         filterSession.user_id = {
           equals: user.id,
         };

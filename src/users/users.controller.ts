@@ -17,18 +17,18 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { Roles } from '../utils/decorators/roles.decorator';
+import { Auth } from '../utils/decorators/auth.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
 
 @ApiTags('Users')
 @ApiBearerAuth()
-@Roles(['admin'])
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Auth('admin')
   @ApiOperation({ summary: 'Create user' })
   @ApiCreatedResponse()
   @HttpCode(201)
@@ -42,6 +42,7 @@ export class UsersController {
     };
   }
 
+  @Auth('admin')
   @ApiOperation({ summary: 'Find all users' })
   @ApiQuery({ name: 'page', required: false })
   @ApiOkResponse()
@@ -56,6 +57,7 @@ export class UsersController {
     };
   }
 
+  @Auth('admin')
   @ApiOperation({ summary: 'Find one user by ID' })
   @ApiOkResponse()
   @HttpCode(200)
@@ -69,6 +71,7 @@ export class UsersController {
     };
   }
 
+  @Auth('admin')
   @ApiOperation({ summary: 'Update User By ID' })
   @ApiOkResponse()
   @HttpCode(200)
@@ -82,6 +85,7 @@ export class UsersController {
     };
   }
 
+  @Auth('admin')
   @ApiOperation({ summary: 'Remove User By ID' })
   @ApiOkResponse()
   @HttpCode(200)

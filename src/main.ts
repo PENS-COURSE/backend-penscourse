@@ -5,6 +5,7 @@ import { PrismaClient } from '@prisma/client';
 import * as Sentry from '@sentry/node';
 import { ProfilingIntegration } from '@sentry/profiling-node';
 import { AppModule } from './app.module';
+import { RolesGuard } from './utils/guards/roles.guard';
 import { SuccessResponseInterceptor } from './utils/interceptors/success-response.interceptor';
 import { SentryFilter } from './utils/sentry-filter.utils';
 
@@ -39,6 +40,9 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  // Global Guards Roles
+  app.useGlobalGuards(new RolesGuard(app.get(Reflector)));
 
   // CORS
   app.enableCors({

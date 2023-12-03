@@ -213,6 +213,12 @@ export class QuestionsService {
       quiz_uuid,
     });
 
+    if (checkQuiz.is_active) {
+      throw new BadRequestException(
+        'Tidak dapat menghapus pertanyaan karena kuis sedang aktif, silahkan nonaktifkan kuis terlebih dahulu',
+      );
+    }
+
     return await this.prismaService.question.delete({
       where: {
         id: checkQuestion.id,

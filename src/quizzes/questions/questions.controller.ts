@@ -22,7 +22,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { memoryStorage } from 'multer';
-import { Roles } from '../../utils/decorators/roles.decorator';
+import { Auth } from '../../utils/decorators/auth.decorator';
 import {
   CreateQuizQuestionCSVDto,
   CreateQuizQuestionDto,
@@ -32,11 +32,11 @@ import { QuestionsService } from './questions.service';
 
 @ApiTags('Quiz - Questions ( ADMIN / DOSEN )')
 @ApiBearerAuth()
-@Roles(['admin', 'dosen'])
 @Controller('quizzes')
 export class QuestionsController {
   constructor(private readonly questionsService: QuestionsService) {}
 
+  @Auth('admin', 'dosen')
   @HttpCode(200)
   @ApiOkResponse()
   @Get(':quiz_uuid/questions')
@@ -51,6 +51,7 @@ export class QuestionsController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @HttpCode(200)
   @ApiOkResponse()
   @Get(':quiz_uuid/questions/:question_uuid')
@@ -69,6 +70,7 @@ export class QuestionsController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @HttpCode(201)
   @ApiCreatedResponse()
   @Post(':quiz_uuid/questions/create')
@@ -87,6 +89,7 @@ export class QuestionsController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @HttpCode(200)
   @ApiOkResponse()
   @Patch(':quiz_uuid/questions/:question_uuid/update')
@@ -107,6 +110,7 @@ export class QuestionsController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @HttpCode(200)
   @ApiOkResponse()
   @Delete(':quiz_uuid/questions/:question_uuid/delete')
@@ -125,6 +129,7 @@ export class QuestionsController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @ApiOperation({
     summary: 'Upload pertanyaan dengan file CSV',
   })
