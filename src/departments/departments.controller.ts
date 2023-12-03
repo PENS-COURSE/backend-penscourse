@@ -26,7 +26,7 @@ import {
 import { User } from '@prisma/client';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unauthorized-request.decorator';
-import { Roles } from '../utils/decorators/roles.decorator';
+import { Auth } from '../utils/decorators/auth.decorator';
 import { DepartmentsService } from './departments.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
@@ -36,7 +36,7 @@ import { UpdateDepartmentDto } from './dto/update-department.dto';
 export class DepartmentsController {
   constructor(private readonly departmentsService: DepartmentsService) {}
 
-  @Roles(['admin', 'dosen'])
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Create Department' })
   @ApiBearerAuth()
   @ApiCreatedResponse()
@@ -141,7 +141,7 @@ export class DepartmentsController {
     };
   }
 
-  @Roles(['admin', 'dosen'])
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Update Department' })
   @ApiBearerAuth()
   @ApiOkResponse()
@@ -191,7 +191,7 @@ export class DepartmentsController {
     };
   }
 
-  @Roles(['admin', 'dosen'])
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Remove Department' })
   @ApiBearerAuth()
   @ApiOkResponse()

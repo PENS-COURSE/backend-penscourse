@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { Role } from '@prisma/client';
 import { Observable } from 'rxjs';
-import { Roles } from '../decorators/roles.decorator';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -10,13 +10,14 @@ export class RolesGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const roles = this.reflector.get(Roles, context.getHandler());
+    const roles = this.reflector.get<Role[]>('roles', context.getHandler());
     if (!roles) {
       return true;
     }
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
+
     return roles.includes(user.role);
   }
 }

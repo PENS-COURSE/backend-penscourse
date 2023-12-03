@@ -26,7 +26,7 @@ import {
 import { User } from '@prisma/client';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unauthorized-request.decorator';
-import { Roles } from '../utils/decorators/roles.decorator';
+import { Auth } from '../utils/decorators/auth.decorator';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -36,7 +36,7 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
-  @Roles(['admin', 'dosen'])
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Create Courses' })
   @ApiBearerAuth()
   @ApiCreatedResponse()
@@ -110,7 +110,7 @@ export class CoursesController {
     };
   }
 
-  @Roles(['admin', 'dosen'])
+  @Auth('admin', 'dosen')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Find All Course By Publisher (DOSEN / ADMIN)' })
   @ApiQuery({ name: 'page', required: false })
@@ -157,7 +157,7 @@ export class CoursesController {
     };
   }
 
-  @Roles(['admin', 'dosen'])
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Update Course' })
   @ApiParam({
     name: 'slug',
@@ -203,7 +203,7 @@ export class CoursesController {
     };
   }
 
-  @Roles(['admin', 'dosen'])
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Remove Course' })
   @ApiParam({
     name: 'slug',
@@ -224,7 +224,7 @@ export class CoursesController {
     };
   }
 
-  @Roles(['user'])
+  @Auth('user')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Enroll Course Free' })
   @ApiParam({

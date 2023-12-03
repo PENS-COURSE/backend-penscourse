@@ -17,17 +17,17 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { Roles } from '../utils/decorators/roles.decorator';
+import { Auth } from '../utils/decorators/auth.decorator';
 import { CourseDiscountService } from './course-discount.service';
 import { CreateCourseDiscountDto } from './dto/create-course-discount.dto';
 
-@Roles(['admin', 'dosen'])
 @ApiBearerAuth()
 @ApiTags('Course Discounts')
 @Controller('course-discounts')
 export class CourseDiscountController {
   constructor(private readonly courseDiscountService: CourseDiscountService) {}
 
+  @Auth('admin', 'dosen')
   @HttpCode(201)
   @ApiCreatedResponse()
   @Post('create')
@@ -40,6 +40,7 @@ export class CourseDiscountController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @HttpCode(200)
   @ApiOkResponse()
   @ApiQuery({
@@ -57,6 +58,7 @@ export class CourseDiscountController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @HttpCode(200)
   @ApiOkResponse()
   @ApiParam({
@@ -74,6 +76,7 @@ export class CourseDiscountController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @HttpCode(200)
   @ApiOkResponse()
   @ApiParam({
@@ -94,6 +97,7 @@ export class CourseDiscountController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @HttpCode(200)
   @ApiOkResponse()
   @ApiParam({
