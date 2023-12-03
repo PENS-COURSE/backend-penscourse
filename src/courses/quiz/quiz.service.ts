@@ -31,35 +31,77 @@ export class QuizService {
   }) {
     const pagination = createPaginator({ perPage: 25 });
 
-    const filterStatus: Prisma.QuizWhereInput = {};
+    let filterStatus: Prisma.QuizWhereInput = {};
     const filterSession: Prisma.QuizSessionWhereInput = {};
 
     switch (status) {
       case 'ongoing':
-        filterStatus.is_active = true;
-        filterStatus.is_ended = false;
-        filterStatus.sessions = {
-          some: {
-            user_id: user.id,
-            is_ended: false,
-          },
-        };
-        filterSession.user_id = {
-          not: user.id,
+        filterStatus = {
+          is_active: true,
+          is_ended: false,
+
+          OR: [
+            {
+              start_date: {
+                lte: new Date().toISOString(),
+              },
+              end_date: {
+                gte: new Date().toISOString(),
+              },
+            },
+            {
+              start_date: null,
+              end_date: null,
+            },
+            {
+              sessions: {
+                none: {
+                  user_id: user.id,
+                },
+              },
+            },
+            {
+              sessions: {
+                every: {
+                  user_id: {
+                    not: user.id,
+                  },
+                  is_ended: true,
+                },
+              },
+            },
+          ],
         };
         break;
       case 'late':
-        filterStatus.is_active = true;
-        filterStatus.is_ended = true;
-        filterSession.user_id = {
-          not: user.id,
+        filterStatus = {
+          is_active: true,
+          OR: [
+            {
+              is_ended: false,
+              end_date: {
+                lt: new Date(),
+              },
+            },
+            {
+              is_ended: true,
+              end_date: null,
+            },
+          ],
+          sessions: {
+            none: {
+              user_id: user.id,
+            },
+          },
         };
         break;
       case 'finished':
-        filterStatus.sessions = {
-          some: {
-            user_id: user.id,
-            is_ended: true,
+        filterStatus = {
+          sessions: {
+            some: {
+              user_id: user.id,
+              is_ended: true,
+            },
           },
         };
         filterSession.user_id = {
