@@ -16,7 +16,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
-import { CreateQuizDto } from './dto/payload-quiz.dto';
+import { Auth } from '../utils/decorators/auth.decorator';
+import { CreateQuizDto, UpdateQuizDto } from './dto/payload-quiz.dto';
 import { QuizzesService } from './quizzes.service';
 
 @ApiBearerAuth()
@@ -25,6 +26,7 @@ import { QuizzesService } from './quizzes.service';
 export class QuizzesController {
   constructor(private readonly quizzesService: QuizzesService) {}
 
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Create Quiz' })
   @ApiCreatedResponse()
   @HttpCode(201)
@@ -38,12 +40,13 @@ export class QuizzesController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Update Quiz' })
   @ApiOkResponse()
   @HttpCode(200)
   @Patch(':quiz_uuid/update')
   async updateQuiz(
-    @Body() payload: CreateQuizDto,
+    @Body() payload: UpdateQuizDto,
     @Param('quiz_uuid') quiz_uuid: string,
   ) {
     const data = await this.quizzesService.updateQuiz({ payload, quiz_uuid });
@@ -54,6 +57,7 @@ export class QuizzesController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Remove Quiz' })
   @ApiOkResponse()
   @HttpCode(200)
@@ -67,6 +71,7 @@ export class QuizzesController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Get Quiz Enrolled by Student' })
   @ApiOkResponse()
   @HttpCode(200)
@@ -83,6 +88,7 @@ export class QuizzesController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Reset Quiz Enrolled by Student' })
   @ApiOkResponse()
   @HttpCode(200)

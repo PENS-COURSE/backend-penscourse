@@ -18,6 +18,7 @@ import {
 import { $Enums } from '@prisma/client';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unauthorized-request.decorator';
+import { Auth } from '../utils/decorators/auth.decorator';
 import { OrderCourseDto } from './dto/order-course.dto';
 import { OrdersService } from './orders.service';
 
@@ -79,6 +80,7 @@ export class OrdersController {
     };
   }
 
+  @Auth('user')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Order Course' })
   @ApiParam({

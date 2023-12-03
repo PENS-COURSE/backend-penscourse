@@ -18,15 +18,19 @@ import {
 } from '@nestjs/swagger';
 import { CurrentUser } from '../../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../../authentication/metadata/allow-unauthorized-request.decorator';
+import { Auth } from '../../utils/decorators/auth.decorator';
 import { CurriculumsService } from './curriculums.service';
 import { CreateCurriculumDto } from './dto/create-curriculum.dto';
 import { UpdateCurriculumDto } from './dto/update-curriculum.dto';
+
+// TODO: Check User is Teacher & Course is handled by Teacher
 
 @ApiTags('Course - Curriculums')
 @Controller('courses')
 export class CurriculumsController {
   constructor(private readonly curriculumsService: CurriculumsService) {}
 
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Create Curriculums' })
   @ApiParam({
     name: 'slug',
@@ -105,6 +109,7 @@ export class CurriculumsController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Update Curriculum by UUID' })
   @ApiParam({
     name: 'uuid',
@@ -135,6 +140,7 @@ export class CurriculumsController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Remove Curriculum by UUID' })
   @ApiParam({
     name: 'uuid',

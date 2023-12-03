@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -21,6 +22,8 @@ import {
 } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { CurrentUser } from '../../../authentication/decorators/current-user.decorators';
+import { Auth } from '../../../utils/decorators/auth.decorator';
+import { HasEnrolledGuard } from '../../../utils/guards/has-enrolled.guard';
 import { AddFileContentDto } from './dto/add-file-content.dto';
 import { AddLiveClassDto } from './dto/add-live-class-content.dto';
 import { AddVideoContentDto } from './dto/add-video-content.dto';
@@ -35,6 +38,8 @@ import { SubjectsService } from './subjects.service';
 export class SubjectsController {
   constructor(private readonly subjectsService: SubjectsService) {}
 
+  @Auth('user')
+  @UseGuards(HasEnrolledGuard)
   @ApiOperation({ summary: 'Mark Completed Subject' })
   @ApiParam({
     name: 'curriculum_uuid',
@@ -78,6 +83,7 @@ export class SubjectsController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Add File Content' })
   @ApiParam({
     name: 'curriculum_uuid',
@@ -114,6 +120,7 @@ export class SubjectsController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Add Video Content' })
   @ApiParam({
     name: 'curriculum_uuid',
@@ -146,6 +153,7 @@ export class SubjectsController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Add Live Class' })
   @ApiParam({
     name: 'curriculum_uuid',
@@ -217,6 +225,7 @@ export class SubjectsController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Update File Content' })
   @ApiParam({
     name: 'curriculum_uuid',
@@ -264,6 +273,7 @@ export class SubjectsController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Update Video Content' })
   @ApiParam({
     name: 'curriculum_uuid',
@@ -307,6 +317,7 @@ export class SubjectsController {
     };
   }
 
+  @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Update Live Class' })
   @ApiParam({
     name: 'curriculum_uuid',
@@ -346,6 +357,48 @@ export class SubjectsController {
 
     return {
       message: 'Successfully updated live class',
+      data,
+    };
+  }
+
+  @Auth('admin', 'dosen')
+  @ApiOperation({ summary: 'Open Live Class' })
+  @ApiParam({
+    name: 'subject_uuid',
+    required: true,
+    type: 'string',
+    description: 'Subject UUID',
+  })
+  @ApiParam({
+    name: 'curriculum_uuid',
+    required: true,
+    type: 'string',
+    description: 'Curriculum UUID',
+  })
+  @ApiParam({
+    name: 'course_slug',
+    required: true,
+    type: 'string',
+    description: 'Course Slug',
+  })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Patch(
+    ':course_slug/curriculums/:curriculum_uuid/subjects/:subject_uuid/live-class/open',
+  )
+  async openLiveClass(
+    @Param('curriculum_uuid') curriculum_uuid: string,
+    @Param('course_slug') course_slug: string,
+    @Param('subject_uuid') subject_uuid: string,
+  ) {
+    const data = await this.subjectsService.openLiveClass({
+      subject_uuid,
+      curriculum_uuid,
+      course_slug,
+    });
+
+    return {
+      message: 'Berhasil membuka live class',
       data,
     };
   }

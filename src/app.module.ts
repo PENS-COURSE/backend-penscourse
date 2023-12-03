@@ -14,12 +14,13 @@ import { CoursesModule } from './courses/courses.module';
 import { DepartmentsModule } from './departments/departments.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { MailModule } from './mail/mail.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { OrdersModule } from './orders/orders.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProfileModule } from './profile/profile.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
 import { UsersModule } from './users/users.module';
-import { NotificationsModule } from './notifications/notifications.module';
+import { RolesGuard } from './utils/guards/roles.guard';
 
 @Module({
   imports: [
@@ -64,6 +65,10 @@ import { NotificationsModule } from './notifications/notifications.module';
     {
       provide: APP_GUARD,
       useClass: AccessTokenGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
   ],
 })
