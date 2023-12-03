@@ -280,7 +280,8 @@ export class QuizzesService {
       },
     });
 
-    const totalQuestions = quiz.questions.length;
+    const generatedQuestions = quiz.option_generated;
+    const totalGeneratedQuestions = quiz.option_generated.total_question;
 
     const easyQuestions = quiz.questions.filter((question) =>
       quiz.option_generated.all_curriculum
@@ -301,20 +302,20 @@ export class QuizzesService {
           question.curriculum_id == quiz.curriculum_id,
     );
 
-    const totalEasy = Math.round(
-      (quiz.option_generated.easy / 100) * totalQuestions,
+    const totalQuestionEasy = Math.round(
+      totalGeneratedQuestions * (generatedQuestions.easy / 100),
     );
-    const totalMedium = Math.round(
-      (quiz.option_generated.medium / 100) * totalQuestions,
+    const totalQuestionMedium = Math.round(
+      totalGeneratedQuestions * (generatedQuestions.medium / 100),
     );
-    const totalHard = Math.round(
-      (quiz.option_generated.hard / 100) * totalQuestions,
+    const totalQuestionHard = Math.round(
+      totalGeneratedQuestions * (generatedQuestions.hard / 100),
     );
 
     questions.push(
-      ...this.randomizeQuestions(easyQuestions, totalEasy),
-      ...this.randomizeQuestions(mediumQuestions, totalMedium),
-      ...this.randomizeQuestions(hardQuestions, totalHard),
+      ...this.randomizeQuestions(easyQuestions, totalQuestionEasy),
+      ...this.randomizeQuestions(mediumQuestions, totalQuestionMedium),
+      ...this.randomizeQuestions(hardQuestions, totalQuestionHard),
     );
 
     const randomQuestions: Question[] = ArrayHelpers.shuffle(questions);
@@ -371,19 +372,18 @@ export class QuizzesService {
 
     // Check Minimum Question Percentage
     const totalQuestions = data.questions.length;
+    const generatedQuestions = data.option_generated;
     const totalGeneratedQuestions = data.option_generated.total_question;
 
-    if (!data.option_generated.all_curriculum) {
-      const totalEasy = Math.round(
-        (data.option_generated.easy / 100) * totalQuestions,
+    if (data.option_generated.all_curriculum) {
+      const totalQuestionEasy = Math.round(
+        totalGeneratedQuestions * (generatedQuestions.easy / 100),
       );
-
-      const totalMedium = Math.round(
-        (data.option_generated.medium / 100) * totalQuestions,
+      const totalQuestionMedium = Math.round(
+        totalGeneratedQuestions * (generatedQuestions.medium / 100),
       );
-
-      const totalHard = Math.round(
-        (data.option_generated.hard / 100) * totalQuestions,
+      const totalQuestionHard = Math.round(
+        totalGeneratedQuestions * (generatedQuestions.hard / 100),
       );
 
       const easyQuestions = data.questions.filter(
@@ -396,34 +396,30 @@ export class QuizzesService {
         (question) => question.level == 'hard',
       );
 
-      if (easyQuestions.length < totalEasy) {
+      if (easyQuestions.length < totalQuestionEasy) {
         throw new BadRequestException(
-          `Jumlah soal easy tidak mencukupi, dimohon untuk menambahkan soal easy terlebih dahulu minimal ${totalEasy} soal`,
+          `Jumlah soal easy tidak mencukupi, dimohon untuk menambahkan soal easy terlebih dahulu minimal ${totalQuestionEasy} soal`,
         );
       }
-
-      if (mediumQuestions.length < totalMedium) {
+      if (mediumQuestions.length < totalQuestionMedium) {
         throw new BadRequestException(
-          `Jumlah soal medium tidak mencukupi, dimohon untuk menambahkan soal medium terlebih dahulu minimal ${totalMedium} soal`,
+          `Jumlah soal medium tidak mencukupi, dimohon untuk menambahkan soal medium terlebih dahulu minimal ${totalQuestionMedium} soal`,
         );
       }
-
-      if (hardQuestions.length < totalHard) {
+      if (hardQuestions.length < totalQuestionHard) {
         throw new BadRequestException(
-          `Jumlah soal hard tidak mencukupi, dimohon untuk menambahkan soal hard terlebih dahulu minimal ${totalHard} soal`,
+          `Jumlah soal hard tidak mencukupi, dimohon untuk menambahkan soal hard terlebih dahulu minimal ${totalQuestionHard} soal`,
         );
       }
     } else {
-      const totalEasy = Math.round(
-        (data.option_generated.easy / 100) * totalQuestions,
+      const totalQuestionEasy = Math.round(
+        totalGeneratedQuestions * (generatedQuestions.easy / 100),
       );
-
-      const totalMedium = Math.round(
-        (data.option_generated.medium / 100) * totalQuestions,
+      const totalQuestionMedium = Math.round(
+        totalGeneratedQuestions * (generatedQuestions.medium / 100),
       );
-
-      const totalHard = Math.round(
-        (data.option_generated.hard / 100) * totalQuestions,
+      const totalQuestionHard = Math.round(
+        totalGeneratedQuestions * (generatedQuestions.hard / 100),
       );
 
       const easyQuestions = data.questions.filter(
@@ -442,21 +438,19 @@ export class QuizzesService {
           question.curriculum_id == data.curriculum_id,
       );
 
-      if (easyQuestions.length < totalEasy) {
+      if (easyQuestions.length < totalQuestionEasy) {
         throw new BadRequestException(
-          `Jumlah soal easy pada kurikulum ${data.curriculum.title} tidak mencukupi, dimohon untuk menambahkan soal easy pada kurikulum ${data.curriculum.title} terlebih dahulu minimal ${totalEasy} soal`,
+          `Jumlah soal easy pada kurikulum ${data.curriculum.title} tidak mencukupi, dimohon untuk menambahkan soal easy pada kurikulum ${data.curriculum.title} terlebih dahulu minimal ${totalQuestionEasy} soal`,
         );
       }
-
-      if (mediumQuestions.length < totalMedium) {
+      if (mediumQuestions.length < totalQuestionMedium) {
         throw new BadRequestException(
-          `Jumlah soal medium pada kurikulum ${data.curriculum.title} tidak mencukupi, dimohon untuk menambahkan soal medium pada kurikulum ${data.curriculum.title} terlebih dahulu minimal ${totalMedium} soal`,
+          `Jumlah soal medium pada kurikulum ${data.curriculum.title} tidak mencukupi, dimohon untuk menambahkan soal medium pada kurikulum ${data.curriculum.title} terlebih dahulu minimal ${totalQuestionMedium} soal`,
         );
       }
-
-      if (hardQuestions.length < totalHard) {
+      if (hardQuestions.length < totalQuestionHard) {
         throw new BadRequestException(
-          `Jumlah soal hard pada kurikulum ${data.curriculum.title} tidak mencukupi, dimohon untuk menambahkan soal hard pada kurikulum ${data.curriculum.title} terlebih dahulu minimal ${totalHard} soal`,
+          `Jumlah soal hard pada kurikulum ${data.curriculum.title} tidak mencukupi, dimohon untuk menambahkan soal hard pada kurikulum ${data.curriculum.title} terlebih dahulu minimal ${totalQuestionHard} soal`,
         );
       }
     }
