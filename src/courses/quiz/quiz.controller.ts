@@ -18,7 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { CurrentUser } from '../../authentication/decorators/current-user.decorators';
-import { Roles } from '../../utils/decorators/roles.decorator';
+import { Auth } from '../../utils/decorators/auth.decorator';
 import { HasEnrolledGuard } from '../../utils/guards/has-enrolled.guard';
 import { AnswerQuizDto } from './dto/answer-quiz.dto';
 import { QuizService } from './quiz.service';
@@ -29,7 +29,7 @@ import { QuizService } from './quiz.service';
 export class QuizController {
   constructor(private readonly quizSerice: QuizService) {}
 
-  @Roles(['user'])
+  @Auth('user')
   @ApiOperation({ summary: 'Get All Quiz' })
   @ApiQuery({
     name: 'status',
@@ -54,7 +54,7 @@ export class QuizController {
     };
   }
 
-  @Roles(['user'])
+  @Auth('user')
   @UseGuards(HasEnrolledGuard)
   @ApiOperation({ summary: 'Enroll Quiz' })
   @ApiParam({
@@ -89,7 +89,7 @@ export class QuizController {
     };
   }
 
-  @Roles(['user'])
+  @Auth('user')
   @ApiOperation({ summary: 'Update Answer Question Quiz' })
   @ApiOkResponse()
   @HttpCode(200)
@@ -109,7 +109,7 @@ export class QuizController {
     };
   }
 
-  @Roles(['user'])
+  @Auth('user')
   @ApiOperation({ summary: 'Submit Quiz' })
   @ApiOkResponse()
   @HttpCode(200)
