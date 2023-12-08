@@ -48,25 +48,17 @@ export class DepartmentsService {
     });
   }
 
-  async findAll({
-    page = 1,
-    name = undefined,
-  }: {
-    page: number;
-    name?: string;
-  }) {
+  async findAll({ page = 1, name = '' }: { page: number; name?: string }) {
     const pagination = createPaginator({ perPage: 25, page: page });
 
     return await pagination({
       model: this.prisma.department,
       args: {
         where: {
-          name: name
-            ? {
-                contains: name,
-                mode: 'insensitive',
-              }
-            : undefined,
+          name: {
+            contains: name,
+            mode: 'insensitive',
+          },
           is_active: true,
         },
       },
