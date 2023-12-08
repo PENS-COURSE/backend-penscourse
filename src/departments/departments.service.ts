@@ -61,14 +61,20 @@ export class DepartmentsService {
       model: this.prisma.department,
       args: {
         where: {
-          name: {
-            contains: name,
-            mode: 'insensitive',
-          },
-          slug: {
-            contains: name,
-            mode: 'insensitive',
-          },
+          OR: [
+            {
+              name: {
+                contains: name,
+                mode: 'insensitive',
+              },
+            },
+            {
+              slug: {
+                contains: name,
+                mode: 'insensitive',
+              },
+            },
+          ],
           AND: [{ is_active: true }],
         },
       },
