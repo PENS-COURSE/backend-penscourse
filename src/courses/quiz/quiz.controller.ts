@@ -54,6 +54,27 @@ export class QuizController {
     };
   }
 
+  @ApiOperation({
+    summary: 'Get Quiz By Quiz UUID',
+  })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Get('quiz/:quiz_uuid')
+  async findOneQuiz(
+    @Param('quiz_uuid') quiz_uuid: string,
+    @CurrentUser() user: any,
+  ) {
+    const data = await this.quizSerice.findOneQuiz({
+      quiz_uuid,
+      user,
+    });
+
+    return {
+      message: 'Berhasil mendapatkan quiz',
+      data,
+    };
+  }
+
   @Auth('user')
   @UseGuards(HasEnrolledGuard)
   @ApiOperation({ summary: 'Enroll Quiz' })
