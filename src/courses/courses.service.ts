@@ -44,10 +44,12 @@ export class CoursesService {
       createCourseDto.price = null;
     }
 
+    const adminId = createCourseDto?.user_id || user?.id;
+
     const data = await this.prisma.course.create({
       data: {
         ...createCourseDto,
-        user_id: user?.role == 'admin' ? createCourseDto.user_id : user?.id,
+        user_id: user?.role == 'admin' ? adminId : user?.id,
         slug: StringHelper.slug(createCourseDto.name),
       },
     });
@@ -223,11 +225,13 @@ export class CoursesService {
     }
 
     const data = await this.prisma.$transaction(async (tx) => {
+      const adminId = updateCourseDto?.user_id || user?.id;
+
       const courseUpdate = await tx.course.update({
         where: { id: course.id },
         data: {
           ...updateCourseDto,
-          user_id: user?.role == 'admin' ? updateCourseDto.user_id : user?.id,
+          user_id: user?.role == 'admin' ? adminId : user?.id,
         },
       });
 
