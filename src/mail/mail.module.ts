@@ -11,15 +11,15 @@ import { MailService } from './mail.service';
     MailerModule.forRootAsync({
       useFactory: async (config: ConfigService) => ({
         transport: {
-          host: config.get('MAIL_HOST'),
-          port: config.get('MAIL_PORT'),
+          host: 'sandbox.smtp.mailtrap.io',
+          port: 2525,
           auth: {
-            user: config.get('MAIL_USER'),
-            pass: config.get('MAIL_PASSWORD'),
+            user: '0af3fb66aae052',
+            pass: 'd0c8d87493ef40',
           },
         },
         defaults: {
-          from: `"No Reply" <${config.get('MAIL_FROM')}>`,
+          from: config.get('MAIL_FROM'),
         },
         template: {
           dir: join(__dirname, '..', '..', 'mail/templates'),

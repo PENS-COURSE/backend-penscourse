@@ -16,11 +16,13 @@ export class MailService {
     to: string;
     subject: string;
   }) {
-    await this.mailerService.sendMail({
+    const mail = await this.mailerService.sendMail({
       to,
       subject,
       template: `./${template}`,
       context: data,
     });
+
+    return mail;
   }
 }

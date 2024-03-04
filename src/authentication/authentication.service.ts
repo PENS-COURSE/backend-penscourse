@@ -199,108 +199,129 @@ export class AuthenticationService {
   }
 
   async forgotPasswordRequest(payload: ForgotPasswordRequestDto) {
-    await this.prisma.$transaction(async (tx) => {
-      const user = await this.usersService.findOneByEmail(payload.email);
+    return await this.prisma.$transaction(
+      async (tx) => {
+        const user = await this.usersService.findOneByEmail(payload.email);
 
-      const minuteToExpire = 5;
-      const OTP = Math.floor(100000 + Math.random() * 900000);
-      const otpHashed = await HashHelpers.hashPassword(OTP.toString());
+        const minuteToExpire = 5;
+        const OTP = Math.floor(100000 + Math.random() * 900000);
+        const otpHashed = await HashHelpers.hashPassword(OTP.toString());
 
-      await tx.forgotPassword.upsert({
-        where: {
-          user_id: user.id,
-        },
-        create: {
-          user_id: user.id,
-          otp: otpHashed,
-          expired_at: moment().add(minuteToExpire, 'minutes').toDate(),
-        },
-        update: {
-          otp: OTP.toString(),
-          expired_at: moment().add(minuteToExpire, 'minutes').toDate(),
-        },
-      });
+        await tx.forgotPassword.upsert({
+          where: {
+            user_id: user.id,
+          },
+          create: {
+            user_id: user.id,
+            otp: otpHashed,
+            expired_at: moment().add(minuteToExpire, 'minutes').toDate(),
+          },
+          update: {
+            otp: OTP.toString(),
+            expired_at: moment().add(minuteToExpire, 'minutes').toDate(),
+          },
+        });
 
-      await this.mailService.sendMail({
-        data: {
-          name: user.name,
-          otp: OTP,
-        },
-        subject: 'PENS Online Classroom: Kode OTP Anda',
-        template: 'sent-otp',
-        to: user.email,
-      });
-    });
+        await this.mailService.sendMail({
+          data: {
+            name: user.name,
+            otp: OTP,
+          },
+          subject: 'PENS Online Classroom: Kode OTP Anda',
+          template: 'sent-otp',
+          to: user.email,
+        });
+
+        return null;
+      },
+      {
+        timeout: 30000,
+        maxWait: 30000,
+      },
+    );
   }
 
   async forgotPasswordVerify(payload: ForgotPasswordVerifyDto) {
-    await this.prisma.$transaction(async (tx) => {
-      const token = await tx.forgotPassword.findFirst({
-        where: {
-          user: {
-            email: payload.email,
+    return await this.prisma.$transaction(
+      async (tx) => {
+        const token = await tx.forgotPassword.findFirst({
+          where: {
+            user: {
+              email: payload.email,
+            },
           },
-        },
-      });
+        });
 
-      if (
-        !token ||
-        !(await HashHelpers.comparePassword(payload.otp, token.otp))
-      )
-        throw new ForbiddenException('Invalid OTP');
+        if (
+          !token ||
+          !(await HashHelpers.comparePassword(payload.otp, token.otp))
+        )
+          throw new ForbiddenException('Invalid OTP');
 
-      if (token.verified_at)
-        throw new BadRequestException('OTP already verified');
+        if (token.verified_at)
+          throw new BadRequestException('OTP already verified');
 
-      if (moment().isAfter(token.expired_at))
-        throw new ForbiddenException('OTP expired');
+        if (moment().isAfter(token.expired_at))
+          throw new ForbiddenException('OTP expired');
 
-      await tx.forgotPassword.update({
-        where: {
-          user_id: token.user_id,
-        },
-        data: {
-          verified_at: new Date(),
-        },
-      });
-    });
+        await tx.forgotPassword.update({
+          where: {
+            user_id: token.user_id,
+          },
+          data: {
+            verified_at: new Date(),
+          },
+        });
+      },
+      {
+        timeout: 30000,
+        maxWait: 30000,
+      },
+    );
   }
 
   async forgotPasswordReset(payload: ForgotPasswordResetDto) {
-    await this.prisma.$transaction(async (tx) => {
-      const token = await tx.forgotPassword.findFirst({
-        where: {
-          user: {
-            email: payload.email,
+    return await this.prisma.$transaction(
+      async (tx) => {
+        const token = await tx.forgotPassword.findFirst({
+          where: {
+            user: {
+              email: payload.email,
+            },
           },
-        },
-      });
+        });
 
-      if (
-        !token ||
-        !(await HashHelpers.comparePassword(payload.otp, token.otp))
-      )
-        throw new ForbiddenException('Invalid OTP');
+        if (
+          !token ||
+          !(await HashHelpers.comparePassword(payload.otp, token.otp))
+        )
+          throw new ForbiddenException('Invalid OTP');
 
-      if (!token.verified_at) throw new BadRequestException('OTP not verified');
+        if (!token.verified_at)
+          throw new BadRequestException('OTP not verified');
 
-      if (moment().isAfter(token.expired_at))
-        throw new ForbiddenException('OTP expired');
+        if (moment().isAfter(token.expired_at))
+          throw new ForbiddenException('OTP expired');
 
-      if (payload.password !== payload.password_confirmation)
-        throw new BadRequestException('Password confirmation does not match');
+        if (payload.password !== payload.password_confirmation)
+          throw new BadRequestException('Password confirmation does not match');
 
-      const password = await HashHelpers.hashPassword(payload.password);
+        const password = await HashHelpers.hashPassword(payload.password);
 
-      await tx.user.update({
-        where: {
-          id: token.user_id,
-        },
-        data: {
-          password,
-        },
-      });
-    });
+        await tx.user.update({
+          where: {
+            id: token.user_id,
+          },
+          data: {
+            password,
+          },
+        });
+      },
+      {
+        timeout: 30000,
+        maxWait: 30000,
+      },
+    );
   }
 
   private async updateRefreshToken({
