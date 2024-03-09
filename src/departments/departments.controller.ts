@@ -4,12 +4,12 @@ import {
   Delete,
   Get,
   HttpCode,
+  MaxFileSizeValidator,
   Param,
-  ParseFilePipeBuilder,
+  ParseFilePipe,
   Patch,
   Post,
   Query,
-  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -27,6 +27,8 @@ import { User } from '@prisma/client';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unauthorized-request.decorator';
 import { Auth } from '../utils/decorators/auth.decorator';
+import { FileMimeValidator } from '../utils/validation/file-validator.pipe';
+import { ImageMultipleValidationPipe } from '../utils/validation/image-multiple-validation.pipe';
 import { DepartmentsService } from './departments.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
@@ -54,23 +56,28 @@ export class DepartmentsController {
   async create(
     @Body() createDepartmentDto: CreateDepartmentDto,
     @UploadedFiles(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: 'image',
-        })
-        .addMaxSizeValidator({
-          maxSize: 2 * 1024 * 1024,
-        })
-        .build({
+      new ImageMultipleValidationPipe(
+        new ParseFilePipe({
           errorHttpStatusCode: 400,
           fileIsRequired: true,
+          validators: [
+            new MaxFileSizeValidator({
+              maxSize: 1024 * 1024 * 2,
+              message: (size) =>
+                `File size too large. File size: ${size} bytes, max size: 2MB`,
+            }),
+            new FileMimeValidator({
+              fileType: ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'],
+            }),
+          ],
         }),
+      ),
     )
     files: {
-      icon: Express.Multer.File;
-      participant_thumbnail: Express.Multer.File;
-      benefits_thumbnail: Express.Multer.File;
-      opportunities_thumbnail: Express.Multer.File;
+      icon?: Express.Multer.File[];
+      participant_thumbnail?: Express.Multer.File[];
+      benefits_thumbnail?: Express.Multer.File[];
+      opportunities_thumbnail?: Express.Multer.File[];
     },
   ) {
     const data = await this.departmentsService.create({
@@ -159,24 +166,28 @@ export class DepartmentsController {
   async update(
     @Param('slug') slug: string,
     @Body() updateDepartmentDto: UpdateDepartmentDto,
-    @UploadedFile(
-      new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: 'image',
-        })
-        .addMaxSizeValidator({
-          maxSize: 2 * 1024 * 1024,
-        })
-        .build({
+    @UploadedFiles(
+      new ImageMultipleValidationPipe(
+        new ParseFilePipe({
           errorHttpStatusCode: 400,
-          fileIsRequired: false,
+          validators: [
+            new MaxFileSizeValidator({
+              maxSize: 1024 * 1024 * 2,
+              message: (size) =>
+                `File size too large. File size: ${size} bytes, max size: 2MB`,
+            }),
+            new FileMimeValidator({
+              fileType: ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'],
+            }),
+          ],
         }),
+      ),
     )
     files: {
-      icon: Express.Multer.File;
-      participant_thumbnail: Express.Multer.File;
-      benefits_thumbnail: Express.Multer.File;
-      opportunities_thumbnail: Express.Multer.File;
+      icon: Express.Multer.File[];
+      participant_thumbnail: Express.Multer.File[];
+      benefits_thumbnail: Express.Multer.File[];
+      opportunities_thumbnail: Express.Multer.File[];
     },
   ) {
     const data = await this.departmentsService.update({

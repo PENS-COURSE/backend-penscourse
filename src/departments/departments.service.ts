@@ -25,20 +25,21 @@ export class DepartmentsService {
   }: {
     createDepartmentDto: CreateDepartmentDto;
     file: {
-      icon: Express.Multer.File;
-      participant_thumbnail: Express.Multer.File;
-      benefits_thumbnail: Express.Multer.File;
-      opportunities_thumbnail: Express.Multer.File;
+      icon?: Express.Multer.File[];
+      participant_thumbnail?: Express.Multer.File[];
+      benefits_thumbnail?: Express.Multer.File[];
+      opportunities_thumbnail?: Express.Multer.File[];
     };
   }) {
     if (!file) throw new BadRequestException('Icon is required');
 
-    createDepartmentDto.icon = file.icon?.path;
+    createDepartmentDto.icon = file.icon[0]?.path ?? null;
     createDepartmentDto.participant_thumbnail =
-      file.participant_thumbnail?.path;
-    createDepartmentDto.benefits_thumbnail = file.benefits_thumbnail?.path;
+      file.participant_thumbnail[0]?.path ?? null;
+    createDepartmentDto.benefits_thumbnail =
+      file.benefits_thumbnail[0]?.path ?? null;
     createDepartmentDto.opportunities_thumbnail =
-      file.opportunities_thumbnail?.path;
+      file.opportunities_thumbnail[0]?.path ?? null;
 
     return await this.prisma.department.create({
       data: {
@@ -125,46 +126,46 @@ export class DepartmentsService {
     slug: string;
     updateDepartmentDto: UpdateDepartmentDto;
     file: {
-      icon: Express.Multer.File;
-      participant_thumbnail: Express.Multer.File;
-      benefits_thumbnail: Express.Multer.File;
-      opportunities_thumbnail: Express.Multer.File;
+      icon: Express.Multer.File[];
+      participant_thumbnail: Express.Multer.File[];
+      benefits_thumbnail: Express.Multer.File[];
+      opportunities_thumbnail: Express.Multer.File[];
     };
   }) {
     const department = await this.findOneBySlug(slug);
 
-    if (file.icon) {
+    if (file?.icon[0]) {
       if (department.icon) {
         StorageHelpers.deleteFile(department.icon);
       }
 
-      updateDepartmentDto.icon = file.icon?.path;
+      updateDepartmentDto.icon = file.icon[0]?.path;
     }
 
-    if (file.participant_thumbnail) {
+    if (file?.participant_thumbnail[0]) {
       if (department.participant_thumbnail) {
         StorageHelpers.deleteFile(department.participant_thumbnail);
       }
 
       updateDepartmentDto.participant_thumbnail =
-        file.participant_thumbnail?.path;
+        file.participant_thumbnail[0]?.path;
     }
 
-    if (file.benefits_thumbnail) {
+    if (file?.benefits_thumbnail[0]) {
       if (department.benefits_thumbnail) {
         StorageHelpers.deleteFile(department.benefits_thumbnail);
       }
 
-      updateDepartmentDto.benefits_thumbnail = file.benefits_thumbnail?.path;
+      updateDepartmentDto.benefits_thumbnail = file.benefits_thumbnail[0]?.path;
     }
 
-    if (file.opportunities_thumbnail) {
+    if (file?.opportunities_thumbnail[0]) {
       if (department.opportunities_thumbnail) {
         StorageHelpers.deleteFile(department.opportunities_thumbnail);
       }
 
       updateDepartmentDto.opportunities_thumbnail =
-        file.opportunities_thumbnail?.path;
+        file.opportunities_thumbnail[0]?.path;
     }
 
     return await this.prisma.department.update({
