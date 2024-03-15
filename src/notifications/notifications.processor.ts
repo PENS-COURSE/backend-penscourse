@@ -30,8 +30,6 @@ export class NotificationsConsumer {
 
     const data = await this.oneSignalService.createNotification(input);
 
-    console.log(data);
-
     return data;
   }
 

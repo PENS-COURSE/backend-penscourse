@@ -46,7 +46,7 @@
     "@prisma/client": "^5.5.2",
     "@sentry/node": "^7.76.0",
     "@sentry/profiling-node": "^1.2.1",
-    "axios": "^1.5.1",
+    "axios": "^1.6.7",
     "bcrypt": "^5.1.1",
     "bull": "^4.11.5",
     "class-transformer": "^0.5.1",
