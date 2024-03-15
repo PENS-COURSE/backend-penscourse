@@ -19,7 +19,6 @@ import { $Enums } from '@prisma/client';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unauthorized-request.decorator';
 import { Auth } from '../utils/decorators/auth.decorator';
-import { OrderCourseDto } from './dto/order-course.dto';
 import { OrdersService } from './orders.service';
 
 @ApiTags('Orders')
@@ -93,12 +92,10 @@ export class OrdersController {
   async orderCourse(
     @CurrentUser() user: any,
     @Param('courseSlug') courseSlug: string,
-    @Body() payload: OrderCourseDto,
   ) {
     const data = await this.ordersService.orderCourse({
       user,
       courseSlug,
-      payload,
     });
 
     return {
@@ -107,10 +104,10 @@ export class OrdersController {
     };
   }
 
-  @ApiOperation({ summary: 'Notification Midtrans' })
+  @ApiOperation({ summary: 'Notification Xendit' })
   @AllowUnauthorizedRequest()
-  @Post('notification-midtrans')
+  @Post('notification')
   async notificationMidtrans(@Body() payload: any) {
-    return await this.ordersService.handleMidtransNotifications(payload);
+    return await this.ordersService.handleNotification(payload);
   }
 }

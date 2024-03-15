@@ -199,45 +199,25 @@ model LiveClass {
 }
 
 enum PaymentStatusType {
-  settlement
   pending
-  expire
-  cancel
-  deny
-  refund
+  expired
+  paid
 }
 
 model Order {
-  id             String   @unique @default(uuid()) @db.Uuid
+  id             String            @unique @default(uuid()) @db.Uuid
   user_id        Int
-  user           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user           User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
   course_id      Int
-  course         Course   @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  course         Course            @relation(fields: [course_id], references: [id], onDelete: Cascade)
   total_price    Int
   total_discount Int?
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
-  payment        Payment?
+  xendit_id      String?
+  status         PaymentStatusType @default(pending)
+  created_at     DateTime          @default(now())
+  updated_at     DateTime          @updatedAt
 
   @@map("orders")
-}
-
-model Payment {
-  order_id        String            @unique @db.Uuid
-  order           Order             @relation(fields: [order_id], references: [id], onDelete: Cascade)
-  status          PaymentStatusType @default(pending)
-  transaction_id  String
-  payment_method  String
-  payment_type    String
-  gross_amount    Float
-  va_numbers_bank String?
-  va_numbers_va   String?
-  expiry_time     String?
-  actions         Json?
-  created_at      DateTime          @default(now())
-  updated_at      DateTime          @updatedAt
-
-  @@map("payments")
 }
 
 model Enrollment {
