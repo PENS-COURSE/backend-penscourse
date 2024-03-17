@@ -119,7 +119,7 @@ export class QuizService {
           curriculum: {
             course: {
               enrollments: {
-                every: {
+                some: {
                   user_id: user.id,
                 },
               },
