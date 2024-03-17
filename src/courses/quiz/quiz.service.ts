@@ -492,4 +492,27 @@ export class QuizService {
       return null;
     }
   }
+
+  async getResultQuiz({ quiz_uuid, user }: { quiz_uuid: string; user: User }) {
+    const quiz = await this.findOneQuiz({ quiz_uuid, user });
+
+    const session = await this.prisma.quizSession.findFirst({
+      where: {
+        user_id: user.id,
+        quiz_id: quiz.id,
+      },
+    });
+
+    if (!session) {
+      throw new ForbiddenException(
+        'Session tidak ditemukan, silahkan kerjakan quiz terlebih dahulu',
+      );
+    }
+
+    return {
+      quiz: quiz,
+      score: session.score,
+      is_passed: session.score >= quiz.pass_grade,
+    };
+  }
 }
