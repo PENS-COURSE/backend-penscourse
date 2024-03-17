@@ -149,4 +149,23 @@ export class QuizController {
       data,
     };
   }
+
+  @Auth('user')
+  @ApiOperation({ summary: 'Get Result Quiz' })
+  @ApiOkResponse()
+  @Get('quiz/:quiz_uuid/result')
+  async getResultQuiz(
+    @Param('quiz_uuid') quiz_uuid: string,
+    @CurrentUser() user: any,
+  ) {
+    const data = await this.quizSerice.getResultQuiz({
+      quiz_uuid,
+      user,
+    });
+
+    return {
+      message: 'Berhasil mendapatkan hasil quiz',
+      data,
+    };
+  }
 }
