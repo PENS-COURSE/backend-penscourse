@@ -1,4 +1,10 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -10,21 +16,33 @@ export class HasEnrolledGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
 
     const user: User = request.user;
-
-    if (['admin', 'dosen'].includes(user.role)) return false;
+    console.log('🚀 ~ HasEnrolledGuard ~ canActivate ~ user:', user);
 
     const { slug, course_slug } = request.params;
+    console.log(
+      '🚀 ~ HasEnrolledGuard ~ canActivate ~ course_slug:',
+      course_slug,
+    );
+
+    const course = await this.prisma.course.findFirst({
+      where: { slug: slug || course_slug },
+    });
+
+    if (!course) throw new NotFoundException('Kelas tidak ditemukan');
 
     const enrollment = await this.prisma.enrollment.findFirst({
       where: {
-        user_id: user?.id,
-        course: {
-          slug: slug || course_slug,
-        },
+        user_id: user.id,
+        course_id: course.id,
       },
     });
+    console.log(
+      '🚀 ~ HasEnrolledGuard ~ canActivate ~ enrollment:',
+      enrollment,
+    );
 
-    if (!enrollment) return false;
+    if (!enrollment)
+      throw new ForbiddenException('Anda belum terdaftar di kelas ini');
 
     return true;
   }
