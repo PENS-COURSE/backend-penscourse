@@ -440,7 +440,9 @@ export class QuizService {
       session.questions.map(async (question) => {
         const questionType = question.question.question_type;
         const questionRightAnswer = question.question.answer;
-        const userAnswer = question.answer;
+        const userAnswer = question.answer.map((answer) =>
+          answer.toLowerCase(),
+        );
 
         if (questionType == 'single_choice') {
           userAnswer.forEach((answer) => {
@@ -455,20 +457,13 @@ export class QuizService {
             }
           });
         } else if (questionType == 'multiple_choice') {
-          const totalRight = questionRightAnswer.map(
-            (rightAnswer) => rightAnswer.answer,
+          const totalRight = questionRightAnswer.map((rightAnswer) =>
+            rightAnswer.answer.toLowerCase(),
           );
 
-          let totalRightAnswerUser = 0;
-
-          userAnswer.forEach((answer) => {
-            if (totalRight.includes(answer.toLowerCase())) {
-              totalRightAnswerUser++;
-            }
-          });
-
-          const tempScore = (totalRightAnswerUser / totalRight.length) * weight;
-          score += tempScore;
+          if (totalRight.sort().toString() === userAnswer.sort().toString()) {
+            score += weight;
+          }
         }
       }),
     );
