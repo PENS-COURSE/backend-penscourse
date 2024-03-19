@@ -61,13 +61,9 @@ export class QuizController {
   @ApiOkResponse()
   @HttpCode(200)
   @Get('quiz/:quiz_uuid')
-  async findOneQuiz(
-    @Param('quiz_uuid') quiz_uuid: string,
-    @CurrentUser() user: any,
-  ) {
+  async findOneQuiz(@Param('quiz_uuid') quiz_uuid: string) {
     const data = await this.quizSerice.findOneQuiz({
       quiz_uuid,
-      user,
     });
 
     return {
