@@ -165,20 +165,9 @@ export class QuizService {
     });
   }
 
-  async findOneQuiz({ quiz_uuid, user }: { quiz_uuid: string; user: User }) {
+  async findOneQuiz({ quiz_uuid }: { quiz_uuid: string }) {
     const query: Prisma.QuizWhereInput = {
       id: quiz_uuid,
-      curriculum: {
-        course: {
-          enrollments: {
-            every: {
-              user_id: ['admin', 'dosen'].includes(user.role)
-                ? undefined
-                : user.id,
-            },
-          },
-        },
-      },
     };
 
     const quiz = await this.prisma.quiz.findFirst({
