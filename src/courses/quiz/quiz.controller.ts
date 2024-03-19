@@ -55,7 +55,7 @@ export class QuizController {
   }
 
   @ApiOperation({
-    summary: 'Get Quiz By Quiz UUID',
+    summary: 'Get Quiz By Quiz',
   })
   @ApiOkResponse()
   @HttpCode(200)
