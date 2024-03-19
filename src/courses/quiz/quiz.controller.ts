@@ -57,6 +57,7 @@ export class QuizController {
   @ApiOperation({
     summary: 'Get Quiz By Quiz UUID',
   })
+  @UseGuards(HasEnrolledGuard)
   @ApiOkResponse()
   @HttpCode(200)
   @Get('quiz/:quiz_uuid')
@@ -131,6 +132,7 @@ export class QuizController {
   }
 
   @Auth('user')
+  @UseGuards(HasEnrolledGuard)
   @ApiOperation({ summary: 'Submit Quiz' })
   @ApiOkResponse()
   @HttpCode(200)
@@ -151,6 +153,7 @@ export class QuizController {
   }
 
   @Auth('user')
+  @UseGuards(HasEnrolledGuard)
   @ApiOperation({ summary: 'Get Result Quiz' })
   @ApiOkResponse()
   @Get('quiz/:quiz_uuid/result')
