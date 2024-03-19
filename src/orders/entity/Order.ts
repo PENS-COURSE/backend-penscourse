@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { $Enums, Order } from '@prisma/client';
-import { UserMinimalistEntity } from '../../entities/user.entity';
+import { UserMinimalistEntity } from '../../users/entities/user.entity';
 
 export class OrderEntity implements Order {
   @ApiProperty()

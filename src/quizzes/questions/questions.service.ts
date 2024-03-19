@@ -96,7 +96,7 @@ export class QuestionsService {
     const rightAnswer = payload.right_answer;
     const regex = new RegExp(/^[a-eA-E]+$/);
     const checkRightAnswer = rightAnswer.every((answer) =>
-      regex.test(answer.toLocaleLowerCase()),
+      regex.test(answer.toLowerCase()),
     );
 
     if (!checkRightAnswer) {
@@ -120,7 +120,7 @@ export class QuestionsService {
           curriculum_id: payload.curriculum_uuid,
           answer: {
             create: payload.right_answer.map((answer) => ({
-              answer: answer.toLocaleLowerCase(),
+              answer: answer.toLowerCase(),
             })),
           },
         },
@@ -170,7 +170,7 @@ export class QuestionsService {
     const rightAnswer = payload.right_answer;
     const regex = new RegExp(/^[a-eA-E]+$/);
     const checkRightAnswer = rightAnswer.every((answer) =>
-      regex.test(answer.toLocaleLowerCase()),
+      regex.test(answer.toLowerCase()),
     );
 
     if (!checkRightAnswer) {

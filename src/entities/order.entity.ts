@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { $Enums, Course, Order } from '@prisma/client';
 import { instanceToPlain } from 'class-transformer';
-import { UserEntity } from './user.entity';
+import { UserEntity } from '../users/entities/user.entity';
 
 export class OrderEntity implements Order {
   constructor(partial: Partial<OrderEntity>) {

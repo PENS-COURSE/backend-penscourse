@@ -6,15 +6,16 @@ import {
 } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
-import { UserEntity } from '../entities/user.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { UserEntity } from '../users/entities/user.entity';
 import { createPaginator } from '../utils/pagination.utils';
 import { StringHelper } from '../utils/slug.utils';
 import { StorageHelpers } from '../utils/storage.utils';
 import { NotificationType, notificationWording } from '../utils/wording.utils';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { CourseEntity } from './entities/course.entity';
 
 // TODO: Filter Course (Done, Active, Inactive, On Progress, Completed)
 
@@ -92,7 +93,22 @@ export class CoursesService {
         include: {
           discount: true,
           user: true,
+          enrollments: {
+            where: {
+              user_id: user?.id,
+            },
+          },
         },
+        orderBy: [
+          {
+            created_at: 'desc',
+          },
+          {
+            enrollments: {
+              _count: 'asc',
+            },
+          },
+        ],
         where: {
           slug: {
             contains: name,
@@ -107,16 +123,11 @@ export class CoursesService {
         },
       },
       options: { page },
-      map: (courses) => {
+      map: async (courses) => {
         const mappedCourses = courses.map(async (course) => {
-          const isEnrolled =
-            user?.role == 'user' &&
-            (await this.prisma.enrollment.findFirst({
-              where: {
-                user_id: user?.id,
-                course_id: course.id,
-              },
-            }));
+          const isEnrolled = user?.role == 'user' && course.enrollments.length;
+
+          delete course.enrollments;
 
           course.user = plainToInstance(UserEntity, course.user, {});
 
@@ -131,16 +142,18 @@ export class CoursesService {
 
           delete data.is_enrolled;
 
-          return data;
+          return new CourseEntity(data);
         });
 
-        return Promise.all(mappedCourses).then((data) =>
-          user
-            ? data.sort((a) => {
-                return a.is_enrolled ? 1 : -1;
-              })
-            : data,
-        );
+        return await Promise.all(mappedCourses);
+
+        // return await Promise.all(mappedCourses).then((data) =>
+        //   user
+        //     ? data.sort((a) => {
+        //         return a.is_enrolled ? 1 : -1;
+        //       })
+        //     : data,
+        // );
       },
     });
   }
@@ -166,10 +179,12 @@ export class CoursesService {
     slug,
     throwException = true,
     include,
+    user,
   }: {
     slug: string;
     throwException?: boolean;
     include?: Prisma.CourseInclude;
+    user?: User;
   }) {
     const data = await this.prisma.course.findFirst({
       where: {
@@ -179,6 +194,9 @@ export class CoursesService {
         curriculums: true,
         discount: true,
         user: true,
+        enrollments: {
+          where: { user_id: user?.id },
+        },
         ...include,
       },
     });
@@ -186,8 +204,11 @@ export class CoursesService {
     if (throwException && !data)
       throw new NotFoundException('Course not found');
 
+    const isEnrolled = user?.role == 'user' && data.enrollments.length;
+
     return {
       ...data,
+      is_enrolled: isEnrolled ? true : false,
       user: plainToInstance(UserEntity, data.user, {}),
     };
   }
@@ -237,7 +258,7 @@ export class CoursesService {
 
       if (
         updateCourseDto.price != course.price ||
-        course.discount.discount_price == course.price
+        course?.discount?.discount_price == course.price
       ) {
         const discount = await tx.courseDiscount.findFirst({
           where: {
@@ -277,7 +298,7 @@ export class CoursesService {
       where: { id: course.id },
     });
 
-    return null;
+    return course;
   }
 
   async enrollCourse({ slug, user }: { slug: string; user: User }) {
@@ -302,7 +323,7 @@ export class CoursesService {
       throw new BadRequestException('You have already enrolled this course');
     }
 
-    const data = await this.prisma.enrollment.create({
+    await this.prisma.enrollment.create({
       data: {
         course_id: course.id,
         user_id: user.id,
@@ -321,6 +342,6 @@ export class CoursesService {
       action_id: course.slug,
     });
 
-    return data;
+    return null;
   }
 }
