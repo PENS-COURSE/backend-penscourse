@@ -30,6 +30,7 @@ import { Auth } from '../utils/decorators/auth.decorator';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { CourseEntity } from './entities/course.entity';
 
 @ApiTags('Courses')
 @Controller('courses')
@@ -74,6 +75,7 @@ export class CoursesController {
     };
   }
 
+  @Auth()
   @AllowUnauthorizedRequest()
   @ApiOperation({ summary: 'Find All Courses' })
   @ApiQuery({ name: 'page', required: false })
@@ -81,23 +83,7 @@ export class CoursesController {
   @ApiOkResponse()
   @HttpCode(200)
   @Get()
-  async findAll(@Query('page') page: number, @Query('name') name: string) {
-    const data = await this.coursesService.findAll({ page, name });
-
-    return {
-      message: 'Successfully retrieved courses',
-      data,
-    };
-  }
-
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Find All Courses' })
-  @ApiQuery({ name: 'page', required: false })
-  @ApiQuery({ name: 'name', required: false })
-  @ApiOkResponse()
-  @HttpCode(200)
-  @Get('auth')
-  async findAllAuth(
+  async findAll(
     @Query('page') page: number,
     @Query('name') name: string,
     @CurrentUser() user: User,
@@ -106,7 +92,7 @@ export class CoursesController {
 
     return {
       message: 'Successfully retrieved courses',
-      data,
+      data: data,
     };
   }
 
@@ -148,12 +134,12 @@ export class CoursesController {
   @ApiOkResponse()
   @HttpCode(200)
   @Get(':slug')
-  async findOne(@Param('slug') slug: string) {
-    const data = await this.coursesService.findOneBySlug({ slug });
+  async findOne(@Param('slug') slug: string, @CurrentUser() user: any) {
+    const data = await this.coursesService.findOneBySlug({ slug, user });
 
     return {
       message: 'Successfully retrieved course',
-      data,
+      data: new CourseEntity(data),
     };
   }
 
@@ -199,7 +185,7 @@ export class CoursesController {
 
     return {
       message: 'Successfully updated course',
-      data,
+      data: new CourseEntity(data),
     };
   }
 
@@ -220,7 +206,7 @@ export class CoursesController {
 
     return {
       message: 'Successfully removed course',
-      data,
+      data: new CourseEntity(data),
     };
   }
 

@@ -426,7 +426,7 @@ const users = async () => {
       data: {
         name: faker.person.fullName(),
         password: await HashHelpers.hashPassword('password'),
-        email: faker.internet.email({ provider: provider }).toLocaleLowerCase(),
+        email: faker.internet.email({ provider: provider }).toLowerCase(),
         role: role as any,
         email_verified_at: i % 2 == 0 ? new Date() : null,
         lecture:

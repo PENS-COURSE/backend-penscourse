@@ -369,7 +369,7 @@ export class QuizService {
     const rightAnswer = payload.answer;
     const regex = new RegExp(/^[a-eA-E]+$/);
     const checkRightAnswer = rightAnswer.every((answer) =>
-      regex.test(answer.toLocaleLowerCase()),
+      regex.test(answer.toLowerCase()),
     );
 
     if (!checkRightAnswer) {
