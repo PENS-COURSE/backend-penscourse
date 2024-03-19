@@ -126,6 +126,7 @@ export class QuizController {
     };
   }
 
+  @UseGuards(HasEnrolledGuard)
   @Auth('user')
   @ApiOperation({ summary: 'Submit Quiz' })
   @ApiOkResponse()
@@ -146,6 +147,7 @@ export class QuizController {
     };
   }
 
+  @UseGuards(HasEnrolledGuard)
   @Auth('user')
   @ApiOperation({ summary: 'Get Result Quiz' })
   @ApiOkResponse()
