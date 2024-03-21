@@ -76,11 +76,8 @@ export class QuizzesController {
   @ApiOkResponse()
   @HttpCode(200)
   @Get(':quiz_uuid/enrolled')
-  async getQuizEnrolled(
-    @Param('quiz_uuid') quiz_uuid: string,
-    @CurrentUser() user: any,
-  ) {
-    const data = await this.quizzesService.getQuizEnrolled({ quiz_uuid, user });
+  async getQuizEnrolled(@Param('quiz_uuid') quiz_uuid: string) {
+    const data = await this.quizzesService.getQuizEnrolled({ quiz_uuid });
 
     return {
       message: 'Quiz berhasil diambil',

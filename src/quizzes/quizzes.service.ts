@@ -192,22 +192,9 @@ export class QuizzesService {
     return quiz;
   }
 
-  async getQuizEnrolled({
-    quiz_uuid,
-    user,
-  }: {
-    quiz_uuid: string;
-    user: User;
-  }) {
+  async getQuizEnrolled({ quiz_uuid }: { quiz_uuid: string }) {
     const quiz = await this.findOneByUUID({
       quiz_uuid,
-      where: {
-        curriculum: {
-          course: {
-            user_id: user.id,
-          },
-        },
-      },
       include: {
         sessions: {
           include: {
