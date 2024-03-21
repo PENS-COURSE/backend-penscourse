@@ -39,3 +39,9 @@ public/uploads/*
 !public/uploads/.gitkeep
 .env
 .env.staging
+
+# Lock files
+package-lock.json
+yarn.lock
+.pnpm-lock.yaml
+bun.lockb
