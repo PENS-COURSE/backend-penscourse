@@ -169,13 +169,9 @@ export class AuthenticationService {
 
     const { data } = await oauth2.userinfo.get();
 
-    const checkUser = await this.prisma.user.findFirst({
-      where: { OR: [{ google_id: data.id }, { email: data.email }] },
-    });
-
     await this.prisma.user.upsert({
       where: {
-        id: checkUser?.id,
+        email: data.email,
       },
       create: {
         name: data.name,
