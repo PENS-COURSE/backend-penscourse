@@ -206,6 +206,8 @@ export class CoursesService {
 
     const isEnrolled = user?.role == 'user' && data.enrollments.length;
 
+    delete data?.enrollments;
+
     return {
       ...data,
       is_enrolled: isEnrolled ? true : false,

@@ -10,10 +10,6 @@ export class CourseEntity implements Course {
     if (user) {
       this.user = new UserMinimalistEntity(user);
     }
-
-    if (user?.role !== 'user') {
-      delete this.is_enrolled;
-    }
   }
 
   @ApiProperty()
