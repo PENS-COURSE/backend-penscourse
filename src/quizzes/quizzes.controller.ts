@@ -15,7 +15,6 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { Auth } from '../utils/decorators/auth.decorator';
 import { CreateQuizDto, UpdateQuizDto } from './dto/payload-quiz.dto';
 import { QuizzesService } from './quizzes.service';
@@ -93,12 +92,12 @@ export class QuizzesController {
   async resetQuizEnrolled(
     @Param('quiz_uuid') quiz_uuid: string,
     @Param('user_id') user_id: number,
-    @CurrentUser() user: any,
+    // @CurrentUser() user: any,
   ) {
     const data = await this.quizzesService.resetQuizEnrolled({
       quiz_uuid,
       user_id,
-      user,
+      // user,
     });
 
     return {

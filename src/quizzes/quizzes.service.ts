@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, Question, User } from '@prisma/client';
+import { Prisma, Question } from '@prisma/client';
 import { CurriculumsService } from '../courses/curriculums/curriculums.service';
 import { QuizSession } from '../entities/quiz.entity';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -210,21 +210,21 @@ export class QuizzesService {
   async resetQuizEnrolled({
     quiz_uuid,
     user_id,
-    user,
+    // user,
   }: {
     quiz_uuid: string;
     user_id: number;
-    user: User;
+    // user: User;
   }) {
     const quiz = await this.findOneByUUID({
       quiz_uuid,
-      where: {
-        curriculum: {
-          course: {
-            user_id: user.id,
-          },
-        },
-      },
+      // where: {
+      //   curriculum: {
+      //     course: {
+      //       user_id: user.id,
+      //     },
+      //   },
+      // },
       include: {
         sessions: {
           include: {
