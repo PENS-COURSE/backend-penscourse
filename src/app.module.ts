@@ -21,6 +21,8 @@ import { ProfileModule } from './profile/profile.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
 import { UsersModule } from './users/users.module';
 import { RolesGuard } from './utils/guards/roles.guard';
+import { EventModule } from './utils/library/event/event.module';
+import { CertificatesModule } from './certificates/certificates.module';
 
 @Module({
   imports: [
@@ -58,6 +60,8 @@ import { RolesGuard } from './utils/guards/roles.guard';
     CommonModule,
     QuizzesModule,
     NotificationsModule,
+    EventModule,
+    CertificatesModule,
   ],
   controllers: [AppController],
   providers: [

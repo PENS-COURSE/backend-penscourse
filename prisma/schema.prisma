@@ -36,6 +36,7 @@ model User {
   ForgotPassword    ForgotPassword?
   SubjectCompletion SubjectCompletion[]
   QuizSession       QuizSession[]
+  Certificate       Certificate[]
 
   @@map("users")
 }
@@ -128,6 +129,7 @@ model Course {
   enrollments       Enrollment[]
   discount          CourseDiscount?
   SubjectCompletion SubjectCompletion[]
+  Certificate       Certificate[]
 
   @@map("courses")
 }
@@ -379,4 +381,39 @@ model QuizEnrolledQuestion {
 
   @@id([quiz_session_id, question_id])
   @@map("session_questions")
+}
+
+enum CertificateType {
+  competence
+  presence
+}
+
+model Certificate {
+  id              Int             @id @default(autoincrement())
+  no_cert         String
+  user_id         Int
+  user            User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course_id       Int?
+  course          Course?         @relation(fields: [course_id], references: [id], onDelete: SetNull)
+  type            CertificateType
+  certificate_url String?
+  hash_url        String?
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @updatedAt
+
+  @@map("certificates")
+}
+
+enum RequestTokenType {
+  send_certificate
+}
+
+model RequestToken {
+  id         Int              @id @default(autoincrement())
+  token      String           @unique
+  type       RequestTokenType
+  created_at DateTime         @default(now())
+  updated_at DateTime         @updatedAt
+
+  @@map("request_tokens")
 }
