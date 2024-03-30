@@ -16,13 +16,8 @@ export class HasEnrolledGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
 
     const user: User = request.user;
-    console.log('🚀 ~ HasEnrolledGuard ~ canActivate ~ user:', user);
 
     const { slug, course_slug } = request.params;
-    console.log(
-      '🚀 ~ HasEnrolledGuard ~ canActivate ~ course_slug:',
-      course_slug,
-    );
 
     const course = await this.prisma.course.findFirst({
       where: { slug: slug || course_slug },
