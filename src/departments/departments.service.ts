@@ -134,7 +134,7 @@ export class DepartmentsService {
   }) {
     const department = await this.findOneBySlug(slug);
 
-    if (file?.icon[0]) {
+    if (file?.icon != undefined && file?.icon[0]) {
       if (department.icon) {
         StorageHelpers.deleteFile(department.icon);
       }
@@ -142,7 +142,10 @@ export class DepartmentsService {
       updateDepartmentDto.icon = file.icon[0]?.path;
     }
 
-    if (file?.participant_thumbnail[0]) {
+    if (
+      file?.participant_thumbnail != undefined &&
+      file?.participant_thumbnail[0]
+    ) {
       if (department.participant_thumbnail) {
         StorageHelpers.deleteFile(department.participant_thumbnail);
       }
@@ -151,7 +154,7 @@ export class DepartmentsService {
         file.participant_thumbnail[0]?.path;
     }
 
-    if (file?.benefits_thumbnail[0]) {
+    if (file?.benefits_thumbnail != undefined && file?.benefits_thumbnail[0]) {
       if (department.benefits_thumbnail) {
         StorageHelpers.deleteFile(department.benefits_thumbnail);
       }
@@ -159,7 +162,10 @@ export class DepartmentsService {
       updateDepartmentDto.benefits_thumbnail = file.benefits_thumbnail[0]?.path;
     }
 
-    if (file?.opportunities_thumbnail[0]) {
+    if (
+      file?.opportunities_thumbnail != undefined &&
+      file?.opportunities_thumbnail[0]
+    ) {
       if (department.opportunities_thumbnail) {
         StorageHelpers.deleteFile(department.opportunities_thumbnail);
       }
