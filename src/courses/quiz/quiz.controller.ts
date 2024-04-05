@@ -56,9 +56,8 @@ export class QuizController {
 
   @Auth('user')
   @ApiOperation({
-    summary: 'Get Quiz By Quiz',
+    summary: 'Get Quiz By UUID Quiz',
   })
-  @UseGuards(HasEnrolledGuard)
   @ApiOkResponse()
   @HttpCode(200)
   @Get('quiz/:quiz_uuid')
