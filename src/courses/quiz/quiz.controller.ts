@@ -21,6 +21,7 @@ import { CurrentUser } from '../../authentication/decorators/current-user.decora
 import { Auth } from '../../utils/decorators/auth.decorator';
 import { HasEnrolledGuard } from '../../utils/guards/has-enrolled.guard';
 import { AnswerQuizDto } from './dto/answer-quiz.dto';
+import { QuizEntity } from './entities/Quiz';
 import { QuizService } from './quiz.service';
 
 @ApiTags('Course - Quiz')
@@ -68,7 +69,7 @@ export class QuizController {
 
     return {
       message: 'Berhasil mendapatkan quiz',
-      data,
+      data: new QuizEntity(data),
     };
   }
 

@@ -178,7 +178,17 @@ export class QuizService {
       throw new NotFoundException('Quiz tidak ditemukan');
     }
 
-    return quiz;
+    // const isTaken = await this.prisma.quizSession.findFirst({
+    //   where: {
+    //     quiz_id: quiz.id,
+    //     user_id: user?.id,
+    //   },
+    // });
+
+    return {
+      ...quiz,
+      // is_taken: !!isTaken,
+    };
   }
 
   async takeQuiz({
@@ -236,16 +246,16 @@ export class QuizService {
     }
 
     if (checkSession) {
+      if (checkSession.is_ended) {
+        throw new ForbiddenException('Quiz telah selesai, tidak bisa diulang');
+      }
+
       const duration = moment(checkSession.created_at)
         .add(quiz.duration, 'm')
         .toISOString();
 
       if (moment().isAfter(duration)) {
         throw new ForbiddenException('Waktu Quiz sudah habis');
-      }
-
-      if (checkSession.is_ended) {
-        throw new ForbiddenException('Quiz telah selesai, tidak bisa diulang');
       }
 
       const serializeQuestion = checkSession.questions.map((question) => {
