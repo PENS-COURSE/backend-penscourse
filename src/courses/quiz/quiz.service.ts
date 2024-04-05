@@ -244,6 +244,10 @@ export class QuizService {
         throw new ForbiddenException('Waktu Quiz sudah habis');
       }
 
+      if (checkSession.is_ended) {
+        throw new ForbiddenException('Quiz telah selesai, tidak bisa diulang');
+      }
+
       const serializeQuestion = checkSession.questions.map((question) => {
         return {
           answer: question.answer,
