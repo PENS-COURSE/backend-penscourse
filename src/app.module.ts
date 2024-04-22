@@ -19,8 +19,10 @@ import { OrdersModule } from './orders/orders.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProfileModule } from './profile/profile.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
+import { StreamingModule } from './streaming/streaming.module';
 import { UsersModule } from './users/users.module';
 import { RolesGuard } from './utils/guards/roles.guard';
+import { LivekitModule } from './utils/library/livekit/livekit.module';
 
 @Module({
   imports: [
@@ -58,6 +60,8 @@ import { RolesGuard } from './utils/guards/roles.guard';
     CommonModule,
     QuizzesModule,
     NotificationsModule,
+    LivekitModule,
+    StreamingModule,
   ],
   controllers: [AppController],
   providers: [

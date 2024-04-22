@@ -17,25 +17,27 @@ enum Role {
 }
 
 model User {
-  id                Int                 @id @default(autoincrement())
-  name              String
-  email             String              @unique
-  email_verified_at DateTime?
-  google_id         String?             @unique
-  password          String
-  avatar            String?
-  role              Role
-  created_at        DateTime            @default(now())
-  updated_at        DateTime            @updatedAt
-  lecture           Lecture?
-  sessions          SessionLogin[]
-  courses           Course[]
-  orders            Order[]
-  Notification      Notification[]
-  Enrollment        Enrollment[]
-  ForgotPassword    ForgotPassword?
-  SubjectCompletion SubjectCompletion[]
-  QuizSession       QuizSession[]
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  email                String                 @unique
+  email_verified_at    DateTime?
+  google_id            String?                @unique
+  password             String
+  avatar               String?
+  role                 Role
+  created_at           DateTime               @default(now())
+  updated_at           DateTime               @updatedAt
+  lecture              Lecture?
+  sessions             SessionLogin[]
+  courses              Course[]
+  orders               Order[]
+  Notification         Notification[]
+  Enrollment           Enrollment[]
+  ForgotPassword       ForgotPassword?
+  SubjectCompletion    SubjectCompletion[]
+  QuizSession          QuizSession[]
+  ParticipantLiveClass ParticipantLiveClass[]
+  UrlSignature         UrlSignature[]
 
   @@map("users")
 }
@@ -182,20 +184,53 @@ model FileContent {
 }
 
 model LiveClass {
-  id                String              @id @default(uuid()) @db.Uuid
-  title             String
-  description       String?
-  url               String
-  start_date        DateTime?
-  end_date          DateTime?
-  is_open           Boolean             @default(false)
-  curriculum        Curriculum          @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
-  curriculum_id     String              @db.Uuid
-  created_at        DateTime            @default(now())
-  updated_at        DateTime            @updatedAt
-  SubjectCompletion SubjectCompletion[]
+  id                   String                 @id @default(uuid()) @db.Uuid
+  title                String
+  description          String?
+  slug                 String                 @unique
+  is_open              Boolean                @default(false)
+  curriculum           Curriculum             @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
+  curriculum_id        String                 @db.Uuid
+  created_at           DateTime               @default(now())
+  updated_at           DateTime               @updatedAt
+  SubjectCompletion    SubjectCompletion[]
+  ParticipantLiveClass ParticipantLiveClass[]
+  Recording            Recording[]
 
   @@map("live_classes")
+}
+
+enum RecordingStatus {
+  pending
+  processing
+  success
+  failed
+}
+
+model Recording {
+  id            String          @id @default(uuid()) @db.Uuid
+  unique_id     String
+  url           String?
+  live_class    LiveClass       @relation(fields: [live_class_id], references: [id], onDelete: Cascade)
+  live_class_id String          @db.Uuid
+  status        RecordingStatus @default(pending)
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+
+  @@map("recordings")
+}
+
+model ParticipantLiveClass {
+  id            Int       @id @default(autoincrement())
+  live_class_id String    @db.Uuid
+  live_class    LiveClass @relation(fields: [live_class_id], references: [id], onDelete: Cascade)
+  user_id       Int
+  user          User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  duration      Int?      @default(0)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  @@map("participant_live_classes")
 }
 
 enum PaymentStatusType {
@@ -379,4 +414,17 @@ model QuizEnrolledQuestion {
 
   @@id([quiz_session_id, question_id])
   @@map("session_questions")
+}
+
+model UrlSignature {
+  id         String   @id @default(uuid()) @db.Uuid
+  data       Json
+  is_used    Boolean  @default(false)
+  user_id    Int?
+  user       User?    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  expired_at DateTime
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("url_signatures")
 }

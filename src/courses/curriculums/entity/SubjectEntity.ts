@@ -34,14 +34,13 @@ export class LiveClassEntity implements LiveClass {
   constructor(partial: Partial<LiveClassEntity>) {
     Object.assign(this, partial);
   }
+  slug: string;
+  recording_url: string;
 
   id: string;
   title: string;
   description: string;
-  url: string;
   curriculum_id: string;
-  start_date: Date;
-  end_date: Date;
   is_open: boolean;
   created_at: Date;
   updated_at: Date;

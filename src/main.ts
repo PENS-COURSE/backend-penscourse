@@ -3,8 +3,9 @@ import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PrismaClient } from '@prisma/client';
 import * as Sentry from '@sentry/node';
-import { ProfilingIntegration } from '@sentry/profiling-node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import * as bodyParser from 'body-parser';
+import * as express from 'express';
 import { AppModule } from './app.module';
 import { RolesGuard } from './utils/guards/roles.guard';
 import { SuccessResponseInterceptor } from './utils/interceptors/success-response.interceptor';
@@ -20,7 +21,7 @@ async function bootstrap() {
   Sentry.init({
     dsn: 'https://18b885a3cd1b64525e52dd787bd51903@o4506136204541952.ingest.sentry.io/4506136210178048',
     integrations: [
-      new ProfilingIntegration(),
+      nodeProfilingIntegration(),
       new Sentry.Integrations.Prisma({ client: PrismaClient }),
     ],
     // Performance Monitoring
@@ -66,6 +67,8 @@ async function bootstrap() {
       displayRequestDuration: true,
     },
   });
+
+  app.use('/api/streaming/webhook', express.raw({ type: '*/*' }));
 
   await app.listen(3000);
 

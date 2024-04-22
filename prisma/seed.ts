@@ -447,214 +447,364 @@ const users = async () => {
 };
 
 const curriculums = async () => {
-  const dummyVideoURL: string[] = [
-    'https://www.youtube.com/watch?v=AII0Dv1ypNU&pp=ygUNa3VsZGkgcHJvamVjdA%3D%3D',
-    'https://www.youtube.com/watch?v=mEnHFfpeLUQ&pp=ygUNa3VsZGkgcHJvamVjdA%3D%3D',
-    'https://www.youtube.com/watch?v=9Mv1gSrXrlg&pp=ygUNa3VsZGkgcHJvamVjdA%3D%3D',
-    'https://www.youtube.com/watch?v=F5q0oz5pryY&t=616s&pp=ygUNa3VsZGkgcHJvamVjdA%3D%3D',
-    'https://www.youtube.com/watch?v=epRWFH47xCI&pp=ygUNa3VsZGkgcHJvamVjdA%3D%3D',
-  ];
-
-  const dummyFileURL: string[] = [
-    'https://repository.uir.ac.id/4644/5/bab2.pdf',
-    'https://repository.uir.ac.id/4561/6/bab2.pdf',
-    'http://repository.unpas.ac.id/11242/5/BAB%20II.pdf',
-    'https://eprints.walisongo.ac.id/id/eprint/4059/3/103911025_bab2.pdf',
-    'http://repository.iainpare.ac.id/1639/1/Belajar%20Dan%20Pembelajaran.pdf',
-  ];
-
-  const dummyCurriculums = [
-    {
-      title: 'Introdution',
-      slug: StringHelper.slug('Introdution'),
-      week: 1,
-      video_contents: {
-        createMany: {
-          data: [1, 2, 3].map((i) => ({
-            title: faker.music.songName(),
-            url: faker.helpers.shuffle(dummyVideoURL)[0],
-            duration: `${i} Jam`,
-          })),
-        },
-      },
-      file_contents: {
-        createMany: {
-          data: [1, 2, 3].map(() => ({
-            title: faker.music.songName(),
-            url: faker.helpers.shuffle(dummyFileURL)[0],
-            file_type: 'pdf',
-          })),
-        },
-      },
-      live_classes: {
-        createMany: {
-          data: [1, 2, 3].map(() => ({
-            title: faker.music.songName(),
-            url: `https://meet.jit.si/${StringHelper.slug(
-              faker.music.songName(),
-            )}`,
-            start_date: faker.date.future(),
-          })),
-        },
-      },
-    },
-    {
-      title: 'Responsive UI',
-      slug: StringHelper.slug('Responsive UI'),
-      week: 2,
-      video_contents: {
-        createMany: {
-          data: [1, 2, 3].map((i) => ({
-            title: faker.music.songName(),
-            url: faker.helpers.shuffle(dummyVideoURL)[0],
-            duration: `${i} Jam`,
-          })),
-        },
-      },
-      file_contents: {
-        createMany: {
-          data: [1, 2, 3].map(() => ({
-            title: faker.music.songName(),
-            url: faker.helpers.shuffle(dummyFileURL)[0],
-            file_type: 'pdf',
-          })),
-        },
-      },
-      live_classes: {
-        createMany: {
-          data: [1, 2, 3].map(() => ({
-            title: faker.music.songName(),
-            url: `https://meet.jit.si/${StringHelper.slug(
-              faker.music.songName(),
-            )}`,
-            start_date: faker.date.future(),
-          })),
-        },
-      },
-    },
-    {
-      title: 'Adaptive UI',
-      slug: StringHelper.slug('Adaptive UI'),
-      week: 3,
-      video_contents: {
-        createMany: {
-          data: [1, 2, 3].map((i) => ({
-            title: faker.music.songName(),
-            url: faker.helpers.shuffle(dummyVideoURL)[0],
-            duration: `${i} Jam`,
-          })),
-        },
-      },
-      file_contents: {
-        createMany: {
-          data: [1, 2, 3].map(() => ({
-            title: faker.music.songName(),
-            url: faker.helpers.shuffle(dummyFileURL)[0],
-            file_type: 'pdf',
-          })),
-        },
-      },
-      live_classes: {
-        createMany: {
-          data: [1, 2, 3].map(() => ({
-            title: faker.music.songName(),
-            url: `https://meet.jit.si/${StringHelper.slug(
-              faker.music.songName(),
-            )}`,
-            start_date: faker.date.future(),
-          })),
-        },
-      },
-    },
-    {
-      title: 'Animation',
-      slug: StringHelper.slug('Animation'),
-      week: 4,
-      video_contents: {
-        createMany: {
-          data: [1, 2, 3].map((i) => ({
-            title: faker.music.songName(),
-            url: faker.helpers.shuffle(dummyVideoURL)[0],
-            duration: `${i} Jam`,
-          })),
-        },
-      },
-      file_contents: {
-        createMany: {
-          data: [1, 2, 3].map(() => ({
-            title: faker.music.songName(),
-            url: faker.helpers.shuffle(dummyFileURL)[0],
-            file_type: 'pdf',
-          })),
-        },
-      },
-      live_classes: {
-        createMany: {
-          data: [1, 2, 3].map(() => ({
-            title: faker.music.songName(),
-            url: `https://meet.jit.si/${StringHelper.slug(
-              faker.music.songName(),
-            )}`,
-            start_date: faker.date.future(),
-          })),
-        },
-      },
-    },
-    {
-      title: 'Sliver Widget',
-      slug: StringHelper.slug('Sliver Widget'),
-      week: 5,
-      video_contents: {
-        createMany: {
-          data: [1, 2, 3].map((i) => ({
-            title: faker.music.songName(),
-            url: faker.helpers.shuffle(dummyVideoURL)[0],
-            duration: `${i} Jam`,
-          })),
-        },
-      },
-      file_contents: {
-        createMany: {
-          data: [1, 2, 3].map(() => ({
-            title: faker.music.songName(),
-            url: faker.helpers.shuffle(dummyFileURL)[0],
-            file_type: 'pdf',
-          })),
-        },
-      },
-      live_classes: {
-        createMany: {
-          data: [1, 2, 3].map(() => ({
-            title: faker.music.songName(),
-            url: `https://meet.jit.si/${StringHelper.slug(
-              faker.music.songName(),
-            )}`,
-            start_date: faker.date.future(),
-          })),
-        },
-      },
-    },
-  ];
-
   const courses = await prisma.course.findMany();
-  if (courses.length == 0) {
-    console.error('Courses is empty');
-    process.exit(1);
-  }
 
   await Promise.all(
     courses.map(async (course) => {
-      await Promise.all(
-        dummyCurriculums.map(async (curriculum) => {
-          await prisma.curriculum.create({
-            data: {
-              ...curriculum,
-              slug: `${StringHelper.slug(curriculum.title)}`,
-              course_id: course.id,
+      await prisma.curriculum.create({
+        data: {
+          title: faker.lorem.words(),
+          slug: StringHelper.slug(faker.lorem.words()),
+          week: faker.number.int({ min: 1, max: 12 }),
+          course_id: course.id,
+          file_contents: {
+            createMany: {
+              data: [
+                {
+                  title: 'Laporan Keuangan Kuartal II 2023',
+                  description:
+                    'Laporan keuangan perusahaan untuk kuartal II tahun 2023',
+                  url: faker.internet.domainName(),
+                  file_type: 'pdf',
+                },
+                {
+                  title: 'Panduan Pemasaran Produk Baru',
+                  description:
+                    'Dokumen panduan strategi pemasaran untuk produk baru perusahaan',
+                  url: faker.internet.domainName(),
+                  file_type: 'docx',
+                },
+                {
+                  title: 'Foto Kantor Pusat',
+                  description: 'Kumpulan foto gedung kantor pusat perusahaan',
+                  url: faker.internet.domainName(),
+                  file_type: 'zip',
+                },
+                {
+                  title: 'Data Penelitian Pasar 2022',
+                  description:
+                    'File spreadsheet yang berisi data penelitian pasar tahun 2022',
+                  url: faker.internet.domainName(),
+                  file_type: 'xlsx',
+                },
+                {
+                  title: 'Video Promosi Produk',
+                  description: 'Video promosi untuk produk unggulan perusahaan',
+                  url: faker.internet.domainName(),
+                  file_type: 'mp4',
+                },
+                {
+                  title: 'Proposal Proyek Baru',
+                  description:
+                    'Dokumen proposal untuk proyek baru yang akan dijalankan perusahaan',
+                  url: faker.internet.domainName(),
+                  file_type: 'docx',
+                },
+                {
+                  title: 'Gambar Produk Terbaru',
+                  description:
+                    'Kumpulan gambar produk terbaru yang diluncurkan perusahaan',
+                  url: faker.internet.domainName(),
+                  file_type: 'zip',
+                },
+                {
+                  title: 'Laporan Survei Kepuasan Pelanggan',
+                  description:
+                    'Laporan hasil survei kepuasan pelanggan tahun 2023',
+                  url: faker.internet.domainName(),
+                  file_type: 'pdf',
+                },
+                {
+                  title: 'Template Presentasi Perusahaan',
+                  description:
+                    'File template presentasi yang digunakan untuk presentasi perusahaan',
+                  url: faker.internet.domainName(),
+                  file_type: 'pptx',
+                },
+                {
+                  title: 'Data Penjualan Online 2021-2023',
+                  description:
+                    'File spreadsheet yang berisi data penjualan online dari tahun 2021 hingga 2023',
+                  url: faker.internet.domainName(),
+                  file_type: 'xlsx',
+                },
+                {
+                  title: 'Panduan Kebijakan Sumber Daya Manusia',
+                  description:
+                    'Dokumen panduan kebijakan sumber daya manusia perusahaan',
+                  url: faker.internet.domainName(),
+                  file_type: 'docx',
+                },
+                {
+                  title: 'Video Pelatihan Karyawan',
+                  description: 'Video pelatihan untuk karyawan baru perusahaan',
+                  url: faker.internet.domainName(),
+                  file_type: 'mp4',
+                },
+                {
+                  title: 'Buku Panduan Teknologi Baru',
+                  description:
+                    'Buku panduan tentang teknologi baru yang akan diimplementasikan perusahaan',
+                  url: faker.internet.domainName(),
+                  file_type: 'epub',
+                },
+                {
+                  title: 'Data Analisis Kompetitor',
+                  description:
+                    'File spreadsheet yang berisi data analisis kompetitor perusahaan',
+                  url: faker.internet.domainName(),
+                  file_type: 'xlsx',
+                },
+                {
+                  title: 'Gambar Produk Lama',
+                  description:
+                    'Kumpulan gambar produk lama yang sudah tidak diproduksi',
+                  url: faker.internet.domainName(),
+                  file_type: 'zip',
+                },
+              ],
             },
-          });
-        }),
-      );
+          },
+          video_contents: {
+            createMany: {
+              data: [
+                {
+                  title: 'Tutorial Pemrograman Python untuk Pemula',
+                  description:
+                    'Kursus video lengkap untuk mempelajari bahasa pemrograman Python dari dasar',
+                  url: faker.internet.domainName(),
+                  duration: '8:42:17',
+                },
+                {
+                  title: 'Ceramah Motivasi Karir',
+                  description:
+                    'Rekaman ceramah motivasi tentang membangun karir yang sukses',
+                  url: faker.internet.domainName(),
+                  duration: '1:28:05',
+                },
+                {
+                  title: 'Kelas Daring Kewirausahaan',
+                  description:
+                    'Video kelas daring yang membahas aspek-aspek kewirausahaan',
+                  url: faker.internet.domainName(),
+                  duration: '6:15:32',
+                },
+                {
+                  title: 'Podcast Mingguan Teknologi',
+                  description:
+                    'Rekaman podcast mingguan yang membahas tren dan berita teknologi terbaru',
+                  url: faker.internet.domainName(),
+                  duration: '1:03:47',
+                },
+                {
+                  title: 'Tutorial Editing Video dengan Adobe Premiere',
+                  description:
+                    'Kursus video yang mengajarkan cara menggunakan perangkat lunak Adobe Premiere untuk editing video',
+                  url: faker.internet.domainName(),
+                  duration: '9:27:15',
+                },
+                {
+                  title: 'Webinar Pemasaran Digital',
+                  description:
+                    'Rekaman webinar yang membahas strategi pemasaran digital untuk bisnis',
+                  url: faker.internet.domainName(),
+                  duration: '2:18:42',
+                },
+                {
+                  title: 'Podcast Kesehatan dan Kebugaran',
+                  description:
+                    'Episode terbaru dari podcast yang membahas topik-topik seputar kesehatan dan kebugaran',
+                  url: faker.internet.domainName(),
+                  duration: '0:51:28',
+                },
+                {
+                  title: 'Tutorial Membuat Aplikasi Mobile dengan Flutter',
+                  description:
+                    'Kursus video yang mengajarkan cara membangun aplikasi mobile menggunakan framework Flutter',
+                  url: faker.internet.domainName(),
+                  duration: '10:32:09',
+                },
+                {
+                  title: 'Ceramah Pengembangan Diri',
+                  description:
+                    'Rekaman ceramah yang memberikan inspirasi dan tips untuk pengembangan diri',
+                  url: faker.internet.domainName(),
+                  duration: '1:14:22',
+                },
+                {
+                  title: 'Kelas Daring Desain UI/UX',
+                  description:
+                    'Video kelas daring yang mengajarkan prinsip-prinsip desain UI/UX untuk aplikasi dan website',
+                  url: faker.internet.domainName(),
+                  duration: '7:48:37',
+                },
+                {
+                  title: 'Podcast Buku dan Literatur',
+                  description:
+                    'Episode terbaru dari podcast yang membahas rekomendasi buku dan ulasan literatur',
+                  url: faker.internet.domainName(),
+                  duration: '1:27:19',
+                },
+                {
+                  title: 'Tutorial Pemrograman JavaScript',
+                  description:
+                    'Kursus video yang mengajarkan bahasa pemrograman JavaScript untuk pemula',
+                  url: faker.internet.domainName(),
+                  duration: '6:39:54',
+                },
+                {
+                  title: 'Webinar Manajemen Waktu',
+                  description:
+                    'Rekaman webinar yang memberikan tips dan strategi untuk manajemen waktu yang efektif',
+                  url: faker.internet.domainName(),
+                  duration: '1:52:11',
+                },
+                {
+                  title: 'Podcast Kuliner dan Memasak',
+                  description:
+                    'Episode terbaru dari podcast yang membahas resep, tips memasak, dan tren kuliner',
+                  url: faker.internet.domainName(),
+                  duration: '0:43:27',
+                },
+                {
+                  title: 'Tutorial Editing Foto dengan Adobe Lightroom',
+                  description:
+                    'Kursus video yang mengajarkan cara menggunakan perangkat lunak Adobe Lightroom untuk editing foto',
+                  url: faker.internet.domainName(),
+                  duration: '5:26:49',
+                },
+              ],
+            },
+          },
+          live_classes: {
+            createMany: {
+              data: [
+                {
+                  title: 'Kelas Yoga untuk Pemula',
+                  description:
+                    'Kelas yoga yang dirancang khusus untuk pemula yang ingin memulai gaya hidup sehat',
+                  slug: StringHelper.slug('kelas-yoga-untuk-pemula'),
+                  is_open: true,
+                },
+                {
+                  title: 'Pelatihan Pengembangan Web dengan React',
+                  description:
+                    'Pelatihan intensif untuk mempelajari library JavaScript React untuk pengembangan aplikasi web',
+                  slug: StringHelper.slug(
+                    'pelatihan-pengembangan-web-dengan-react',
+                  ),
+                  is_open: true,
+                },
+                {
+                  title: 'Kursus Fotografi Dasar',
+                  description:
+                    'Kursus yang mengajarkan dasar-dasar fotografi dan teknik pengambilan gambar untuk pemula',
+                  slug: StringHelper.slug('kursus-fotografi-dasar'),
+                  is_open: true,
+                },
+                {
+                  title: 'Workshop Menulis Kreatif',
+                  description:
+                    'Workshop yang membantu mengembangkan keterampilan menulis kreatif dan menemukan gaya penulisan pribadi',
+                  slug: StringHelper.slug('workshop-menulis-kreatif'),
+                  is_open: true,
+                },
+                {
+                  title: 'Kelas Masak Makanan Vegetarian',
+                  description:
+                    'Kelas memasak yang mengajarkan resep dan teknik memasak makanan vegetarian yang lezat',
+                  slug: StringHelper.slug('kelas-masak-makanan-vegetarian'),
+                  is_open: true,
+                },
+                {
+                  title: 'Pelatihan Manajemen Proyek Profesional',
+                  description:
+                    'Pelatihan yang memberikan pengetahuan dan keterampilan untuk mengelola proyek secara profesional',
+                  slug: StringHelper.slug(
+                    'pelatihan-manajemen-proyek-profesional',
+                  ),
+                  is_open: true,
+                },
+                {
+                  title: 'Kursus Bahasa Mandarin untuk Pemula',
+                  description:
+                    'Kursus yang mengajarkan dasar-dasar bahasa Mandarin bagi pemula yang ingin mempelajari bahasa ini',
+                  slug: StringHelper.slug(
+                    'kursus-bahasa-mandarin-untuk-pemula',
+                  ),
+                  is_open: true,
+                },
+                {
+                  title: 'Workshop Desain Grafis dengan Adobe Illustrator',
+                  description:
+                    'Workshop yang mengajarkan teknik desain grafis menggunakan perangkat lunak Adobe Illustrator',
+                  slug: StringHelper.slug(
+                    'workshop-desain-grafis-dengan-adobe-illustrator',
+                  ),
+                  is_open: true,
+                },
+                {
+                  title: 'Kelas Tari Modern untuk Pemula',
+                  description:
+                    'Kelas tari modern yang dirancang untuk pemula yang ingin mempelajari gerakan dan teknik tari modern',
+                  slug: StringHelper.slug('kelas-tari-modern-untuk-pemula'),
+                  is_open: true,
+                },
+                {
+                  title: 'Pelatihan Pemasaran Digital untuk Bisnis',
+                  description:
+                    'Pelatihan yang memberikan pengetahuan dan strategi pemasaran digital untuk meningkatkan bisnis',
+                  slug: StringHelper.slug(
+                    'pelatihan-pemasaran-digital-untuk-bisnis',
+                  ),
+                  is_open: true,
+                },
+                {
+                  title: 'Kursus Bermain Gitar untuk Pemula',
+                  description:
+                    'Kursus yang mengajarkan dasar-dasar bermain gitar bagi pemula yang ingin mempelajari alat musik ini',
+                  slug: StringHelper.slug('kursus-bermain-gitar-untuk-pemula'),
+                  is_open: true,
+                },
+                {
+                  title: 'Workshop Pengembangan Aplikasi Mobile dengan Flutter',
+                  description:
+                    'Workshop yang mengajarkan cara membangun aplikasi mobile menggunakan framework Flutter',
+                  slug: StringHelper.slug(
+                    'workshop-pengembangan-aplikasi-mobile-dengan-flutter',
+                  ),
+                  is_open: true,
+                },
+                {
+                  title: 'Kelas Bahasa Inggris Percakapan',
+                  description:
+                    'Kelas yang membantu meningkatkan keterampilan berbahasa Inggris percakapan untuk komunikasi sehari-hari',
+                  slug: StringHelper.slug('kelas-bahasa-inggris-percakapan'),
+                  is_open: true,
+                },
+                {
+                  title: 'Pelatihan Kewirausahaan dan Memulai Bisnis',
+                  description:
+                    'Pelatihan yang memberikan pengetahuan dan keterampilan untuk memulai bisnis baru dan menjadi wirausaha',
+                  slug: StringHelper.slug(
+                    'pelatihan-kewirausahaan-dan-memulai-bisnis',
+                  ),
+                  is_open: true,
+                },
+                {
+                  title: 'Kursus Menulis Kreatif untuk Anak-anak',
+                  description:
+                    'Kursus yang mengembangkan keterampilan menulis kreatif bagi anak-anak dengan cara yang menyenangkan',
+                  slug: StringHelper.slug(
+                    'kursus-menulis-kreatif-untuk-anak-anak',
+                  ),
+                  is_open: true,
+                },
+              ],
+            },
+          },
+        },
+      });
     }),
   );
 
