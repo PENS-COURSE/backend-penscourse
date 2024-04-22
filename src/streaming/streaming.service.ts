@@ -22,6 +22,45 @@ export class StreamingService {
     @Inject(REQUEST) private request: Request,
   ) {}
 
+  async openStreaming({ roomSlug, user }: { roomSlug: string; user: User }) {
+    return await this.prisma.$transaction(async (tx) => {
+      const liveClass = await this.prisma.liveClass.findFirst({
+        where: {
+          slug: roomSlug,
+        },
+        include: {
+          curriculum: {
+            include: {
+              course: true,
+            },
+          },
+        },
+      });
+
+      if (user.role !== 'admin') {
+        if (
+          liveClass.curriculum.course.user_id !== user.id &&
+          user.role !== 'dosen'
+        )
+          throw new ForbiddenException('Anda tidak memiliki akses');
+      }
+
+      // TODO: Send Notification
+
+      await this.prisma.liveClass.update({
+        where: {
+          id: liveClass.id,
+        },
+        data: {
+          is_open: true,
+          room_moderator_id: user.id,
+        },
+      });
+
+      return this.generateJoinUrl({ roomSlug, user });
+    });
+  }
+
   async generateJoinUrl({ roomSlug, user }: { roomSlug: string; user: User }) {
     return await this.prisma.$transaction(async (tx) => {
       const liveClass = await this.prisma.liveClass.findFirst({
@@ -29,6 +68,7 @@ export class StreamingService {
           slug: roomSlug,
         },
         include: {
+          room_moderator: true,
           curriculum: {
             include: {
               course: true,
@@ -65,7 +105,7 @@ export class StreamingService {
       expiredAt.setMinutes(expiredAt.getMinutes() + 1);
 
       const data: StreamingPayloadURL = {
-        // auth_token: this.request.headers.authorization,
+        moderator: liveClass?.room_moderator?.name ?? 'Admin',
         room_token: roomToken,
         expired_at: expiredAt,
       };
@@ -82,7 +122,6 @@ export class StreamingService {
       });
 
       const encryptedData = HashHelpers.encryptAES(url.id);
-      console.log('encryptedData :', btoa(encryptedData));
 
       return btoa(encryptedData);
     });

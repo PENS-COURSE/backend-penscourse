@@ -1,10 +1,5 @@
-import { Body, Controller, Get, Param, Post, Redirect } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiFoundResponse,
-  ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unauthorized-request.decorator';
 import { Auth } from '../utils/decorators/auth.decorator';
@@ -15,17 +10,40 @@ import { StreamingService } from './streaming.service';
 export class StreamingController {
   constructor(private readonly streamingService: StreamingService) {}
 
+  @Auth('admin', 'dosen')
+  @Get(':slug/open-room')
+  @ApiOkResponse()
+  async openRoom(@Param('slug') slug: string, @CurrentUser() user: any) {
+    const data = await this.streamingService.openStreaming({
+      roomSlug: slug,
+      user,
+    });
+
+    return {
+      message: 'Room opened',
+      data: {
+        url: `${process.env.STREAMING_SERVICE_URL}?signed=${data}`,
+        signature: data,
+      },
+    };
+  }
+
   @Auth()
   @Get(':slug/join-url')
-  @ApiFoundResponse({ description: 'Redirect to the generated URL' })
-  @Redirect('', 302)
+  @ApiOkResponse()
   async generateJoinUrl(@Param('slug') slug: string, @CurrentUser() user: any) {
     const data = await this.streamingService.generateJoinUrl({
       roomSlug: slug,
       user,
     });
 
-    return { url: `http://localhost:3001/?signed=${data}` };
+    return {
+      message: 'Join URL generated',
+      data: {
+        url: `${process.env.STREAMING_SERVICE_URL}?signed=${data}`,
+        signature: data,
+      },
+    };
   }
 
   @Get(':signature')

@@ -1,4 +1,4 @@
-import { FileContent, LiveClass, VideoContent } from '@prisma/client';
+import { FileContent, LiveClass, User, VideoContent } from '@prisma/client';
 
 export class FileContentEntity implements FileContent {
   constructor(partial: Partial<FileContent>) {
@@ -31,17 +31,27 @@ export class VideoContentEntity implements VideoContent {
 }
 
 export class LiveClassEntity implements LiveClass {
-  constructor(partial: Partial<LiveClassEntity>) {
+  constructor(partial: Partial<LiveClassEntity>, user?: User) {
     Object.assign(this, partial);
+
+    if (user) {
+      const isDosen =
+        user.role === 'dosen' && user.id === this.room_moderator_id;
+      const isAdmin = user.role === 'admin';
+      const isUserOpen = user.role === 'user' && this.is_open;
+
+      this.is_open = isDosen || isAdmin || isUserOpen;
+    }
   }
-  slug: string;
-  recording_url: string;
 
   id: string;
+  slug: string;
+  recording_url: string;
   title: string;
   description: string;
   curriculum_id: string;
   is_open: boolean;
+  room_moderator_id: number;
   created_at: Date;
   updated_at: Date;
 }

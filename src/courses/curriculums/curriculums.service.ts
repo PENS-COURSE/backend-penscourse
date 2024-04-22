@@ -44,7 +44,7 @@ export class CurriculumsService {
       slug: slugCourse,
     });
 
-    const isUserEnrolled = await this.prisma.enrollment.findFirst({
+    const userEnrolled = await this.prisma.enrollment.findFirst({
       where: {
         user_id: user?.id,
         course: {
@@ -52,6 +52,11 @@ export class CurriculumsService {
         },
       },
     });
+
+    const isUserEnrolled =
+      userEnrolled ||
+      user?.role === 'admin' ||
+      (user?.role === 'dosen' && course.user_id === user?.id);
 
     const data = await this.prisma.curriculum.findMany({
       where: { course_id: course.id },
@@ -147,7 +152,7 @@ export class CurriculumsService {
                     })
                   : null;
 
-                const entity = new LiveClassEntity(liveClass);
+                const entity = new LiveClassEntity(liveClass, user);
                 const data = {
                   ...entity,
                   is_completed: isCompleted ? true : false,

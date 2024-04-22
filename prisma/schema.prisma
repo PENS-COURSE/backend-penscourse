@@ -38,6 +38,7 @@ model User {
   QuizSession          QuizSession[]
   ParticipantLiveClass ParticipantLiveClass[]
   UrlSignature         UrlSignature[]
+  LiveClass            LiveClass[]
 
   @@map("users")
 }
@@ -193,6 +194,8 @@ model LiveClass {
   curriculum_id        String                 @db.Uuid
   created_at           DateTime               @default(now())
   updated_at           DateTime               @updatedAt
+  room_moderator_id    Int?
+  room_moderator       User?                  @relation(fields: [room_moderator_id], references: [id], onDelete: SetNull)
   SubjectCompletion    SubjectCompletion[]
   ParticipantLiveClass ParticipantLiveClass[]
   Recording            Recording[]

@@ -1,5 +1,5 @@
 export interface StreamingPayloadURL {
-  auth_token?: string;
+  moderator?: string;
   room_token: string;
   expired_at: Date;
 }
