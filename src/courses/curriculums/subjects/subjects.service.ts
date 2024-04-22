@@ -6,7 +6,7 @@ import {
 import { User } from '@prisma/client';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { StorageHelpers } from '../../../utils/storage.utils';
+import { StringHelper } from '../../../utils/slug.utils';
 import {
   NotificationType,
   notificationWording,
@@ -141,7 +141,7 @@ export class SubjectsService {
     curriculum_uuid: string;
     course_slug: string;
   }) {
-    const { title, description, meet_url, start_date, end_date } = payload;
+    const { title, description } = payload;
 
     const curriculum = await this.curriculumService.findOneByUUID(
       curriculum_uuid,
@@ -152,9 +152,7 @@ export class SubjectsService {
       data: {
         title,
         description,
-        url: meet_url,
-        start_date: start_date ?? undefined,
-        end_date: end_date ?? undefined,
+        slug: StringHelper.slug(title),
         curriculum_id: curriculum.id,
         is_open: false,
       },
@@ -333,10 +331,6 @@ export class SubjectsService {
       throw new NotFoundException('File not found');
     }
 
-    if (subject.url) {
-      StorageHelpers.deleteFile(subject.url);
-    }
-
     return await this.prisma.fileContent.update({
       where: {
         id: subject.id,
@@ -397,7 +391,7 @@ export class SubjectsService {
     curriculum_uuid: string;
     course_slug: string;
   }) {
-    const { title, description, start_date, meet_url, end_date } = payload;
+    const { title, description } = payload;
 
     const subject = await this.findOneByUUID({
       course_slug,
@@ -416,9 +410,6 @@ export class SubjectsService {
       data: {
         title,
         description,
-        url: meet_url,
-        start_date: start_date ?? undefined,
-        end_date: end_date ?? undefined,
       },
     });
   }
