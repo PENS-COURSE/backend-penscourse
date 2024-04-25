@@ -230,4 +230,26 @@ export class CoursesController {
       data,
     };
   }
+
+  @Auth()
+  @ApiOperation({ summary: 'Get Streaming Today' })
+  @ApiParam({
+    name: 'slug',
+    required: true,
+    type: 'string',
+    description: 'Course Slug',
+  })
+  @ApiOkResponse()
+  @Get(':slug/streaming/today')
+  async getStreamingToday(
+    @Param('slug') slug: string,
+    @CurrentUser() user: any,
+  ) {
+    const data = await this.coursesService.getStreamingToday({ slug, user });
+
+    return {
+      message: 'Successfully retrieved streaming today',
+      data,
+    };
+  }
 }

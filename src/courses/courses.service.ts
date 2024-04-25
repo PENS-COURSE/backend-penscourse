@@ -346,4 +346,35 @@ export class CoursesService {
 
     return null;
   }
+
+  async getStreamingToday({ slug, user }: { slug: string; user: User }) {
+    const course = await this.findOneBySlug({
+      slug,
+      user,
+    });
+
+    if (user && user?.role === 'user') {
+      if (!course.is_enrolled)
+        throw new ForbiddenException('Anda belum terdaftar pada kelas ini');
+    }
+
+    const liveClass = await this.prisma.liveClass.findFirst({
+      where: {
+        curriculum: {
+          course_id: course.id,
+        },
+        is_open: true,
+        updated_at: {
+          gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          lt: new Date(new Date().setHours(23, 59, 59, 999)),
+        },
+      },
+    });
+
+    if (!liveClass) {
+      return null;
+    }
+
+    return liveClass;
+  }
 }
