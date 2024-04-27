@@ -431,3 +431,17 @@ model UrlSignature {
 
   @@map("url_signatures")
 }
+
+model Banner {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  image_url   String
+  url         String?
+  is_active   Boolean  @default(true)
+  order       Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("banners")
+}

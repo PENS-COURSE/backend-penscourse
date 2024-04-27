@@ -8,6 +8,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthenticationModule } from './authentication/authentication.module';
 import { AccessTokenGuard } from './authentication/guards/access-token.guard';
+import { BannersModule } from './banners/banners.module';
 import { CommonModule } from './common/common.module';
 import { CourseDiscountModule } from './course-discount/course-discount.module';
 import { CoursesModule } from './courses/courses.module';
@@ -56,12 +57,14 @@ import { LivekitModule } from './utils/library/livekit/livekit.module';
       rootPath: './public',
       exclude: ['/api*'],
       serveRoot: '/public',
+      renderPath: '/public',
     }),
     CommonModule,
     QuizzesModule,
     NotificationsModule,
     LivekitModule,
     StreamingModule,
+    BannersModule,
   ],
   controllers: [AppController],
   providers: [

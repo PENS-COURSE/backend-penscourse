@@ -56,7 +56,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Online Classroom PENS V1')
-    .setVersion('1.0')
+    .setVersion('1.30')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
