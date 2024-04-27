@@ -247,7 +247,7 @@ export class QuizService {
 
     if (checkSession) {
       if (checkSession.is_ended) {
-        throw new ForbiddenException('Quiz telah selesai, tidak bisa diulang');
+        throw new BadRequestException('Quiz telah selesai, tidak bisa diulang');
       }
 
       const duration = moment(checkSession.created_at)
