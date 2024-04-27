@@ -267,6 +267,12 @@ export class QuizzesService {
       },
     });
 
+    if (quiz.questions.length < 1) {
+      throw new BadRequestException(
+        `Quiz tidak memiliki soal, dimohon untuk menambahkan soal terlebih dahulu`,
+      );
+    }
+
     const generatedQuestions = quiz.option_generated;
     const totalGeneratedQuestions = quiz.option_generated.total_question;
 
@@ -276,12 +282,14 @@ export class QuizzesService {
         : question.level == 'easy' &&
           question.curriculum_id == quiz.curriculum_id,
     );
+
     const mediumQuestions = quiz.questions.filter((question) =>
       quiz.option_generated.all_curriculum
         ? question.level == 'medium'
         : question.level == 'medium' &&
           question.curriculum_id == quiz.curriculum_id,
     );
+
     const hardQuestions = quiz.questions.filter((question) =>
       quiz.option_generated.all_curriculum
         ? question.level == 'hard'
@@ -292,9 +300,11 @@ export class QuizzesService {
     const totalQuestionEasy = Math.round(
       totalGeneratedQuestions * (generatedQuestions.easy / 100),
     );
+
     const totalQuestionMedium = Math.round(
       totalGeneratedQuestions * (generatedQuestions.medium / 100),
     );
+
     const totalQuestionHard = Math.round(
       totalGeneratedQuestions * (generatedQuestions.hard / 100),
     );
