@@ -1,25 +1,18 @@
 import { Module } from '@nestjs/common';
-import { MulterModule } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 import { UsersModule } from '../users/users.module';
+import UploadModule from '../utils/upload-module.utils';
 import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
 
 @Module({
   imports: [
     UsersModule,
-    MulterModule.register({
-      dest: './public/uploads/profiles',
-      storage: diskStorage({
-        destination: './public/uploads/profiles',
-        filename: (req, file, cb) => {
-          const randomName = Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('');
-          return cb(null, `${randomName}${file.originalname}`);
-        },
-      }),
+    UploadModule({
+      path: 'profiles',
+      validation: {
+        allowedMimeTypes: ['image/jpeg', 'image/png'],
+        maxSize: 2 * 1024 * 1024,
+      },
     }),
   ],
   controllers: [ProfileController],

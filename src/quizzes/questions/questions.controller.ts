@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -141,6 +142,13 @@ export class QuestionsController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
+      fileFilter: (req, file, cb) => {
+        if (!file.originalname.match(/\.(csv)$/)) {
+          return cb(new BadRequestException('File harus berformat CSV'), false);
+        }
+
+        cb(null, true);
+      },
     }),
   )
   @HttpCode(201)
