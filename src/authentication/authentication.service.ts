@@ -174,7 +174,7 @@ export class AuthenticationService {
         email: data.email,
       },
       create: {
-        name: data.name,
+        name: data.name.trim(),
         email: data.email,
         role: 'user',
         password: await HashHelpers.hashPassword(StringHelper.random(12)),
@@ -182,7 +182,7 @@ export class AuthenticationService {
         google_id: data.id,
       },
       update: {
-        name: data.name,
+        name: data.name.trim(),
         email: data.email,
         avatar: data.picture,
         google_id: data.id,

@@ -38,7 +38,10 @@ export class UsersService {
     delete createUserDto.password_confirmation;
 
     const data = await this.prisma.user.create({
-      data: createUserDto,
+      data: {
+        ...createUserDto,
+        name: createUserDto.name.trim(),
+      },
     });
 
     return data;
@@ -101,7 +104,10 @@ export class UsersService {
       where: {
         id: user.id,
       },
-      data: updateUserDto,
+      data: {
+        ...updateUserDto,
+        name: updateUserDto.name.trim(),
+      },
     });
 
     return instanceToPlain(new UserEntity(data), { groups: ['detail'] });
