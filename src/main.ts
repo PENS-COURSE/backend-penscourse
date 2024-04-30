@@ -65,6 +65,9 @@ async function bootstrap() {
     swaggerOptions: {
       persistAuthorization: true,
       displayRequestDuration: true,
+      docExpansion: 'none',
+      defaultModelsExpandDepth: -1,
+      filter: true,
     },
   });
 
