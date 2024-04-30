@@ -371,9 +371,13 @@ export class QuizService {
     // Check Only Right Answer Alphabet A - E or a - e
     const rightAnswer = payload.answer;
     const regex = new RegExp(/^[a-eA-E]+$/);
-    const checkRightAnswer = rightAnswer.every((answer) =>
-      regex.test(answer.toLowerCase()),
-    );
+    const checkRightAnswer = rightAnswer.every((answer) => {
+      if (typeof answer !== 'string') {
+        return false;
+      }
+
+      return regex.test(answer.toLowerCase());
+    });
 
     if (!checkRightAnswer) {
       throw new BadRequestException(
