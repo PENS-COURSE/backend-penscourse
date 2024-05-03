@@ -39,7 +39,12 @@ export class QuizService {
         filterStatus = {
           is_active: true,
           is_ended: false,
-
+          sessions: {
+            some: {
+              user_id: user.id,
+              is_ended: false,
+            },
+          },
           OR: [
             {
               start_date: {
@@ -52,23 +57,6 @@ export class QuizService {
             {
               start_date: null,
               end_date: null,
-            },
-            {
-              sessions: {
-                none: {
-                  user_id: user.id,
-                },
-              },
-            },
-            {
-              sessions: {
-                every: {
-                  user_id: {
-                    not: user.id,
-                  },
-                  is_ended: true,
-                },
-              },
             },
           ],
         };
