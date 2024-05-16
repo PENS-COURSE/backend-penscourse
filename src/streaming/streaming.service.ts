@@ -603,6 +603,7 @@ export class StreamingService {
       });
 
       if (event === 'participant_left' && moderator) {
+        // Close room after 10 minutes if moderator left
         const timeout = setTimeout(
           async () => {
             await this.liveKitService.deleteRoom(room.name);
