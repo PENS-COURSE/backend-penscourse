@@ -611,6 +611,27 @@ export class StreamingService {
           1000 * 60 * 10,
         );
 
+        const isRecording = await this.prisma.recording
+          .findMany({
+            where: {
+              live_class: {
+                slug: room.name,
+              },
+              created_at: {
+                gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
+              },
+            },
+            orderBy: {
+              created_at: 'desc',
+            },
+            take: 1,
+          })
+          .then((data) => data[0]);
+
+        if (isRecording) {
+          await this.stopRecord({ roomSlug: room.name });
+        }
+
         this.schedulerRegistry.addTimeout(`close-room-${room.name}`, timeout);
       } else if (event === 'participant_joined' && moderator) {
         if (this.schedulerRegistry.getTimeout(`close-room-${room.name}`)) {
