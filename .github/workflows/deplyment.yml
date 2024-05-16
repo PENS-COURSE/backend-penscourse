@@ -8,14 +8,12 @@ jobs:
   deployment:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: '20.x'
-      - run: npm install
-      - run: npm run build
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+      - run: bun install
+      - run: bun run build
 
       - name: Transfer to Server
         uses: appleboy/scp-action@master
@@ -47,3 +45,32 @@ jobs:
             npx prisma migrate deploy && npx prisma generate
 
             pm2 restart all --update-env
+
+      - name: Notify Telegram on Success Deploy
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            --- Sakinah Mart Backend ---
+            🚀 Deploy Success
+            📦 URL: ${{ github.event.release.html_url }}
+            📦 Branch: ${{ github.ref }}
+            📦 Commit: ${{ github.sha }}
+            📦 By: ${{ github.actor }}
+            📦 Time: ${{ github.event.release.created_at }}
+
+      - name: Notify Telegram on Failed Deploy
+        if: failure()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            --- Sakinah Mart Backend ---
+            ❌ Deploy Failed
+            📦 URL: ${{ github.event.release.html_url }}
+            📦 Branch: ${{ github.ref }}
+            📦 Commit: ${{ github.sha }}
+            📦 By: ${{ github.actor }}
+            📦 Time: ${{ github.event.release.created_at }}
