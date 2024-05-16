@@ -2,6 +2,7 @@ import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import * as Joi from 'joi';
 import { AppController } from './app.controller';
@@ -46,6 +47,7 @@ import { LivekitModule } from './utils/library/livekit/livekit.module';
         JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
       }),
     }),
+    ScheduleModule.forRoot(),
     ProfileModule,
     DepartmentsModule,
     CoursesModule,
