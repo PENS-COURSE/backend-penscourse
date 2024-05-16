@@ -9,7 +9,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
@@ -25,7 +24,6 @@ import { QuizEntity } from './entities/Quiz';
 import { QuizService } from './quiz.service';
 
 @ApiTags('Course - Quiz')
-@ApiBearerAuth()
 @Controller('courses')
 export class QuizController {
   constructor(private readonly quizSerice: QuizService) {}
@@ -55,9 +53,9 @@ export class QuizController {
     };
   }
 
-  @Auth('user')
+  @Auth()
   @ApiOperation({
-    summary: 'Get Quiz By UUID Quiz',
+    summary: 'Get Quiz By UUID Quiz ',
   })
   @ApiOkResponse()
   @HttpCode(200)
