@@ -1,10 +1,4 @@
-import {
-  $Enums,
-  FileContent,
-  LiveClass,
-  User,
-  VideoContent,
-} from '@prisma/client';
+import { FileContent, LiveClass, User, VideoContent } from '@prisma/client';
 
 export class FileContentEntity implements FileContent {
   constructor(partial: Partial<FileContent>) {
@@ -49,7 +43,6 @@ export class LiveClassEntity implements LiveClass {
       this.is_open = isDosen || isAdmin || isUserOpen;
     }
   }
-  status: $Enums.StatusLiveClass;
 
   id: string;
   slug: string;
