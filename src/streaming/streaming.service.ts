@@ -603,21 +603,18 @@ export class StreamingService {
       });
 
       if (event === 'participant_left' && moderator) {
-        // If Less Than 1 Minutes then Close Room
         const timeout = setTimeout(
           async () => {
             await this.liveKitService.deleteRoom(room.name);
           },
-          1000 * 60 * 1,
+          1000 * 60 * 10,
         );
 
         this.schedulerRegistry.addTimeout(`close-room-${room.name}`, timeout);
-
-        console.log(`Moderator's Room Closed - ${room.name}`);
       } else if (event === 'participant_joined' && moderator) {
-        this.schedulerRegistry.deleteTimeout(`close-room-${room.name}`);
-
-        console.log(`Moderator's Room Opened - ${room.name}`);
+        if (this.schedulerRegistry.getTimeout(`close-room-${room.name}`)) {
+          this.schedulerRegistry.deleteTimeout(`close-room-${room.name}`);
+        }
       }
     }
   }
