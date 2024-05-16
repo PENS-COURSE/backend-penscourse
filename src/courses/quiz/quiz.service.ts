@@ -160,6 +160,9 @@ export class QuizService {
 
     const quiz = await this.prisma.quiz.findFirst({
       where: query,
+      include: {
+        option_generated: true,
+      },
     });
 
     if (!quiz) {
@@ -173,8 +176,13 @@ export class QuizService {
     //   },
     // });
 
+    // Get Total Question Generated
+    const totalQuestion = quiz.option_generated.total_question;
+    delete quiz.option_generated;
+
     return {
       ...quiz,
+      total_questions: totalQuestion,
       // is_taken: !!isTaken,
     };
   }
