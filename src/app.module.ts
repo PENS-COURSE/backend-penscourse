@@ -10,6 +10,7 @@ import { AppService } from './app.service';
 import { AuthenticationModule } from './authentication/authentication.module';
 import { AccessTokenGuard } from './authentication/guards/access-token.guard';
 import { BannersModule } from './banners/banners.module';
+import { CertificatesModule } from './certificates/certificates.module';
 import { CommonModule } from './common/common.module';
 import { CourseDiscountModule } from './course-discount/course-discount.module';
 import { CoursesModule } from './courses/courses.module';
@@ -24,6 +25,7 @@ import { QuizzesModule } from './quizzes/quizzes.module';
 import { StreamingModule } from './streaming/streaming.module';
 import { UsersModule } from './users/users.module';
 import { RolesGuard } from './utils/guards/roles.guard';
+import { EventModule } from './utils/library/event/event.module';
 import { LivekitModule } from './utils/library/livekit/livekit.module';
 
 @Module({
@@ -67,6 +69,8 @@ import { LivekitModule } from './utils/library/livekit/livekit.module';
     LivekitModule,
     StreamingModule,
     BannersModule,
+    EventModule,
+    CertificatesModule,
   ],
   controllers: [AppController],
   providers: [
