@@ -48,9 +48,8 @@ export class QuizService {
           is_active: true,
           is_ended: false,
           sessions: {
-            some: {
+            none: {
               user_id: user.id,
-              is_ended: false,
             },
           },
           OR: [
@@ -65,6 +64,14 @@ export class QuizService {
             {
               start_date: null,
               end_date: null,
+            },
+            {
+              sessions: {
+                some: {
+                  user_id: user.id,
+                  is_ended: false,
+                },
+              },
             },
           ],
         };
@@ -136,7 +143,7 @@ export class QuizService {
         },
       },
       options: {
-        page: page,
+        page,
         perPage: limit,
       },
       map: async (quizzes) => {
