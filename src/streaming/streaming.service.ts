@@ -50,17 +50,63 @@ export class StreamingService {
 
       // TODO: Send Notification
 
-      await this.prisma.liveClass.update({
+      const data = await this.prisma.liveClass.update({
         where: {
           id: liveClass.id,
         },
         data: {
           is_open: true,
           room_moderator_id: user.id,
+          status: 'ongoing',
         },
       });
 
-      return this.generateJoinUrl({ roomSlug, user });
+      return data;
+    });
+  }
+
+  async closeStreaming({ roomSlug, user }: { roomSlug: string; user: User }) {
+    return await this.prisma.$transaction(async (tx) => {
+      const liveClass = await this.prisma.liveClass.findFirst({
+        where: {
+          slug: roomSlug,
+        },
+        include: {
+          curriculum: {
+            include: {
+              course: true,
+            },
+          },
+        },
+      });
+
+      if (user.role !== 'admin') {
+        if (
+          liveClass.curriculum.course.user_id !== user.id &&
+          user.role !== 'dosen'
+        )
+          throw new ForbiddenException('Anda tidak memiliki akses');
+      }
+
+      const data = await this.prisma.liveClass.update({
+        where: {
+          id: liveClass.id,
+        },
+        data: {
+          is_open: false,
+          status: 'ended',
+        },
+      });
+
+      const isRecording = await this.statusRecord({ roomSlug });
+      if (isRecording) {
+        await this.stopRecord({ roomSlug: roomSlug });
+      }
+
+      // LiveKit Close Room
+      await this.liveKitService.deleteRoom(roomSlug);
+
+      return data;
     });
   }
 
@@ -603,12 +649,22 @@ export class StreamingService {
       });
 
       if (event === 'participant_left' && moderator) {
-        // Close room after 10 minutes if moderator left
+        // Close room after 15 minutes if moderator left
         const timeout = setTimeout(
           async () => {
             await this.liveKitService.deleteRoom(room.name);
+
+            await this.prisma.liveClass.update({
+              where: {
+                slug: room.name,
+              },
+              data: {
+                is_open: false,
+                status: 'ended',
+              },
+            });
           },
-          1000 * 60 * 10,
+          1000 * 60 * 15,
         );
 
         const isRecording = await this.prisma.recording
