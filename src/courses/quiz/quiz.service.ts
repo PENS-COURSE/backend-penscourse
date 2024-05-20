@@ -25,11 +25,19 @@ export class QuizService {
   async findAllQuiz({
     user,
     status,
+    page = 1,
+    limit = 25,
   }: {
     user: User;
     status: 'ongoing' | 'late' | 'finished';
+    page: number;
+    limit: number;
   }) {
-    const pagination = createPaginator({ perPage: 25 });
+    const pagination = createPaginator({ perPage: limit });
+
+    if (limit > 25) {
+      limit = 25;
+    }
 
     let filterStatus: Prisma.QuizWhereInput = {};
     const filterSession: Prisma.QuizSessionWhereInput = {};
@@ -126,6 +134,10 @@ export class QuizService {
             },
           },
         },
+      },
+      options: {
+        page: page,
+        perPage: limit,
       },
       map: async (quizzes) => {
         return Promise.all(
