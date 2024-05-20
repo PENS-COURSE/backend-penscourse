@@ -40,6 +40,7 @@ export class LivekitService {
           : JSON.stringify({
               user_id: user.id,
               user_name: user.name,
+              role: isGuest ? 'guest' : user.role,
             }),
       },
     );

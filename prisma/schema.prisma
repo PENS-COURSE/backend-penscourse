@@ -184,12 +184,19 @@ model FileContent {
   @@map("file_contents")
 }
 
+enum StatusLiveClass {
+  pending
+  ongoing
+  ended
+}
+
 model LiveClass {
   id                   String                 @id @default(uuid()) @db.Uuid
   title                String
   description          String?
   slug                 String                 @unique
   is_open              Boolean                @default(false)
+  status               StatusLiveClass        @default(pending)
   curriculum           Curriculum             @relation(fields: [curriculum_id], references: [id], onDelete: Cascade)
   curriculum_id        String                 @db.Uuid
   created_at           DateTime               @default(now())
@@ -224,16 +231,34 @@ model Recording {
 }
 
 model ParticipantLiveClass {
-  id            Int       @id @default(autoincrement())
-  live_class_id String    @db.Uuid
-  live_class    LiveClass @relation(fields: [live_class_id], references: [id], onDelete: Cascade)
-  user_id       Int
-  user          User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  duration      Int?      @default(0)
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  id             Int              @id @default(autoincrement())
+  live_class_id  String           @db.Uuid
+  live_class     LiveClass        @relation(fields: [live_class_id], references: [id], onDelete: Cascade)
+  user_id        Int
+  user           User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  duration       Int?             @default(0)
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @updatedAt
+  ParticipantLog ParticipantLog[]
 
   @@map("participant_live_classes")
+}
+
+enum ActivityParticipantType {
+  join
+  disconnect
+}
+
+model ParticipantLog {
+  id                        Int                     @id @default(autoincrement())
+  participant_live_class_id Int
+  participant_live_class    ParticipantLiveClass    @relation(fields: [participant_live_class_id], references: [id], onDelete: Cascade)
+  user_agent                String?
+  activity_type             ActivityParticipantType
+  created_at                DateTime                @default(now())
+  updated_at                DateTime                @updatedAt
+
+  @@map("participant_logs")
 }
 
 enum PaymentStatusType {

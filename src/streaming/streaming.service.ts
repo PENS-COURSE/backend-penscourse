@@ -6,9 +6,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { User } from '@prisma/client';
 import axios from 'axios';
 import { Request } from 'express';
+import { WebhookEvent } from 'livekit-server-sdk';
 import { PrismaService } from '../prisma/prisma.service';
 import { HashHelpers } from '../utils/hash.utils';
 import { LivekitService } from '../utils/library/livekit/livekit.service';
@@ -19,6 +21,7 @@ export class StreamingService {
   constructor(
     private liveKitService: LivekitService,
     private prisma: PrismaService,
+    private schedulerRegistry: SchedulerRegistry,
     @Inject(REQUEST) private request: Request,
   ) {}
 
@@ -47,17 +50,63 @@ export class StreamingService {
 
       // TODO: Send Notification
 
-      await this.prisma.liveClass.update({
+      const data = await this.prisma.liveClass.update({
         where: {
           id: liveClass.id,
         },
         data: {
           is_open: true,
           room_moderator_id: user.id,
+          status: 'ongoing',
         },
       });
 
-      return this.generateJoinUrl({ roomSlug, user });
+      return data;
+    });
+  }
+
+  async closeStreaming({ roomSlug, user }: { roomSlug: string; user: User }) {
+    return await this.prisma.$transaction(async (tx) => {
+      const liveClass = await this.prisma.liveClass.findFirst({
+        where: {
+          slug: roomSlug,
+        },
+        include: {
+          curriculum: {
+            include: {
+              course: true,
+            },
+          },
+        },
+      });
+
+      if (user.role !== 'admin') {
+        if (
+          liveClass.curriculum.course.user_id !== user.id &&
+          user.role !== 'dosen'
+        )
+          throw new ForbiddenException('Anda tidak memiliki akses');
+      }
+
+      const data = await this.prisma.liveClass.update({
+        where: {
+          id: liveClass.id,
+        },
+        data: {
+          is_open: false,
+          status: 'ended',
+        },
+      });
+
+      const isRecording = await this.statusRecord({ roomSlug });
+      if (isRecording) {
+        await this.stopRecord({ roomSlug: roomSlug });
+      }
+
+      // LiveKit Close Room
+      await this.liveKitService.deleteRoom(roomSlug);
+
+      return data;
     });
   }
 
@@ -172,7 +221,20 @@ export class StreamingService {
       authorization: this.request.headers.authorization,
     });
 
-    console.log('data :', data);
+    console.log('Events :>> ', data.event);
+
+    if (
+      data.event === 'participant_joined' ||
+      data.event === 'participant_left'
+    ) {
+      await this.logParticipant(data);
+
+      await this.handleModeratorDisconnect(data);
+    }
+
+    if (data.event === 'room_finished') {
+      await this.calculateDuration({ roomSlug: data.room.name });
+    }
 
     return data;
   }
@@ -412,6 +474,226 @@ export class StreamingService {
       return response.data.data;
     } catch (error) {
       throw new InternalServerErrorException();
+    }
+  }
+
+  private async logParticipant({ event, room, participant }: WebhookEvent) {
+    const liveClass = await this.prisma.liveClass.findFirst({
+      where: {
+        slug: room.name,
+      },
+    });
+
+    if (!liveClass) throw new NotFoundException('Ruangan tidak ditemukan');
+
+    const user = JSON.parse(participant.metadata);
+    const role = user.role as any;
+    const userId = user.user_id as any;
+
+    // Check if participant is not a guest
+    if (participant.identity !== 'Guest') {
+      let isParticipantHasJoined =
+        await this.prisma.participantLiveClass.findFirst({
+          where: {
+            user_id: userId,
+            live_class_id: liveClass.id,
+          },
+        });
+
+      if (event === 'participant_joined') {
+        if (role === 'user') {
+          if (!isParticipantHasJoined) {
+            isParticipantHasJoined =
+              await this.prisma.participantLiveClass.create({
+                data: {
+                  user_id: userId,
+                  live_class_id: liveClass.id,
+                },
+              });
+          }
+
+          await this.prisma.participantLog.create({
+            data: {
+              participant_live_class_id: isParticipantHasJoined.id,
+              activity_type: 'join',
+              user_agent: this.request.headers['user-agent'] ?? null,
+            },
+          });
+        }
+      }
+
+      if (event === 'participant_left') {
+        if (role === 'user') {
+          if (!isParticipantHasJoined) {
+            isParticipantHasJoined =
+              await this.prisma.participantLiveClass.create({
+                data: {
+                  user_id: userId,
+                  live_class_id: liveClass.id,
+                },
+              });
+          }
+
+          await this.prisma.participantLog.create({
+            data: {
+              participant_live_class_id: isParticipantHasJoined.id,
+              activity_type: 'disconnect',
+              user_agent: this.request.headers['user-agent'] ?? null,
+            },
+          });
+        }
+      }
+    }
+  }
+
+  private async calculateDuration({ roomSlug }: { roomSlug: string }) {
+    const liveClass = await this.prisma.liveClass.findFirst({
+      where: {
+        slug: roomSlug,
+      },
+    });
+
+    if (!liveClass) throw new NotFoundException('Ruangan tidak ditemukan');
+
+    const participantLogs = await this.prisma.participantLog.findMany({
+      where: {
+        participant_live_class: {
+          live_class_id: liveClass.id,
+        },
+      },
+      orderBy: {
+        created_at: 'asc',
+      },
+    });
+
+    let participantDurations = {};
+
+    await Promise.all(
+      participantLogs.map(async (log, index) => {
+        if (log.activity_type === 'join') {
+          if (
+            participantDurations[log.participant_live_class_id] === undefined
+          ) {
+            participantDurations[log.participant_live_class_id] ??= {
+              join: log.created_at,
+              disconnect: null,
+              duration: 0,
+            };
+          } else {
+            participantDurations[log.participant_live_class_id].join =
+              log.created_at;
+          }
+        } else if (log.activity_type === 'disconnect') {
+          if (
+            participantDurations[log.participant_live_class_id] === undefined
+          ) {
+            participantDurations[log.participant_live_class_id] = {
+              join: null,
+              disconnect: log.created_at,
+              duration: 0,
+            };
+          } else {
+            participantDurations[log.participant_live_class_id].disconnect =
+              log.created_at;
+          }
+        }
+
+        if (
+          participantDurations[log.participant_live_class_id].join !== null &&
+          participantDurations[log.participant_live_class_id].disconnect !==
+            null
+        ) {
+          participantDurations[log.participant_live_class_id].duration +=
+            (participantDurations[
+              log.participant_live_class_id
+            ].disconnect.getTime() -
+              participantDurations[
+                log.participant_live_class_id
+              ].join.getTime()) /
+            1000;
+
+          participantDurations[log.participant_live_class_id].join = null;
+          participantDurations[log.participant_live_class_id].disconnect = null;
+        }
+
+        await this.prisma.participantLiveClass.update({
+          where: {
+            id: log.participant_live_class_id,
+          },
+          data: {
+            duration:
+              participantDurations[log.participant_live_class_id].duration,
+          },
+        });
+      }),
+    );
+  }
+
+  private async handleModeratorDisconnect({
+    event,
+    room,
+    participant,
+  }: WebhookEvent) {
+    const user = JSON.parse(participant.metadata);
+    const role = user.role as any;
+    const userId = user.user_id as any;
+
+    if (role !== 'user') {
+      const moderator = await this.prisma.user.findFirst({
+        where: {
+          id: userId,
+          role: {
+            not: 'user',
+          },
+        },
+      });
+
+      if (event === 'participant_left' && moderator) {
+        // Close room after 15 minutes if moderator left
+        const timeout = setTimeout(
+          async () => {
+            await this.liveKitService.deleteRoom(room.name);
+
+            await this.prisma.liveClass.update({
+              where: {
+                slug: room.name,
+              },
+              data: {
+                is_open: false,
+                status: 'ended',
+              },
+            });
+          },
+          1000 * 60 * 15,
+        );
+
+        const isRecording = await this.prisma.recording
+          .findMany({
+            where: {
+              live_class: {
+                slug: room.name,
+              },
+              created_at: {
+                gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
+              },
+            },
+            orderBy: {
+              created_at: 'desc',
+            },
+            take: 1,
+          })
+          .then((data) => data[0]);
+
+        if (isRecording) {
+          await this.stopRecord({ roomSlug: room.name });
+        }
+
+        this.schedulerRegistry.addTimeout(`close-room-${room.name}`, timeout);
+      } else if (event === 'participant_joined' && moderator) {
+        if (this.schedulerRegistry.getTimeout(`close-room-${room.name}`)) {
+          this.schedulerRegistry.deleteTimeout(`close-room-${room.name}`);
+        }
+      }
     }
   }
 }

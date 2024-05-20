@@ -28,6 +28,21 @@ export class StreamingController {
     };
   }
 
+  @Auth('admin', 'dosen')
+  @Get(':slug/close-room')
+  @ApiOkResponse()
+  async closeRoom(@Param('slug') slug: string, @CurrentUser() user: any) {
+    const data = await this.streamingService.closeStreaming({
+      roomSlug: slug,
+      user,
+    });
+
+    return {
+      message: 'Room closed',
+      data,
+    };
+  }
+
   @Auth()
   @Get(':slug/join-url')
   @ApiOkResponse()
