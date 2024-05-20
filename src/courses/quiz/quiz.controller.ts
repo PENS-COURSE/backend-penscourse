@@ -35,16 +35,32 @@ export class QuizController {
     required: false,
     enum: ['ongoing', 'late', 'finished'],
   })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: 'number',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: 'number',
+    example: 10,
+  })
   @ApiOkResponse()
   @HttpCode(200)
   @Get('quiz')
   async findAllQuiz(
     @CurrentUser() user: User,
     @Query('status') status: 'ongoing' | 'late' | 'finished',
+    @Query('page') page: number,
+    @Query('limit') limit: number,
   ) {
     const data = await this.quizSerice.findAllQuiz({
       status,
       user,
+      page,
+      limit,
     });
 
     return {
