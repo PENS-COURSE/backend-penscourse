@@ -1,5 +1,6 @@
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PrismaClient } from '@prisma/client';
 import * as Sentry from '@sentry/node';
@@ -13,6 +14,16 @@ import { SentryFilter } from './utils/sentry-filter.utils';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [process.env.RABBITMQ_URL],
+      queue: 'online-classroom',
+      queueOptions: {
+        durable: false,
+      },
+    },
+  });
 
   app.setGlobalPrefix('api', {
     exclude: ['/'],
@@ -73,6 +84,7 @@ async function bootstrap() {
 
   app.use('/api/streaming/webhook', express.raw({ type: '*/*' }));
 
+  await app.startAllMicroservices();
   await app.listen(3000);
 
   console.log(`Application is running on: ${await app.getUrl()}`);
