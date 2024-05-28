@@ -12,4 +12,11 @@ export class StringHelper {
   static random(length = 6) {
     return Str.random(length);
   }
+
+  static getInitials(str: string) {
+    return str
+      .split(' ')
+      .map((word) => word.charAt(0))
+      .join('');
+  }
 }
