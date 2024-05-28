@@ -493,6 +493,7 @@ model Certificate {
   updated_at            DateTime           @updatedAt
   CertificateScore      CertificateScore[]
 
+  @@index([no_cert])
   @@map("certificates")
 }
 
