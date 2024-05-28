@@ -1,4 +1,4 @@
-import { Controller, Get, Header, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Header, Param, Post } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
@@ -11,6 +11,7 @@ import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unaut
 import { Auth } from '../utils/decorators/auth.decorator';
 import { WithoutModifiedResponse } from '../utils/decorators/without-modified-response.decorator';
 import { CertificatesService } from './certificates.service';
+import { GenerateCertificateDto } from './dto/generate-certificate.dto';
 import { HandleCertificateCreationDto } from './dto/upload-certificate.dto';
 
 @ApiTags('Certificates')
@@ -23,8 +24,8 @@ export class CertificatesController {
   @ApiBearerAuth()
   @ApiCreatedResponse()
   @Post('generate')
-  async generateCertificate() {
-    const data = await this.certificateService.generateCertificate();
+  async generateCertificate(@Body() payload: GenerateCertificateDto) {
+    const data = await this.certificateService.generateCertificate({ payload });
 
     return {
       message: 'Successfully generate certificate',

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CertificateType } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
@@ -9,19 +9,19 @@ export class GenerateCertificateDto {
   @IsNotEmpty()
   course_slug: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsNumber()
   @IsNotEmpty()
   @Type(() => Number)
   minimum_duration_liveclass?: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsNumber()
   @IsNotEmpty()
   @Type(() => Number)
   minimum_daily_quiz_score?: number;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsNumber()
   @IsNotEmpty()
   @Type(() => Number)

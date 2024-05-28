@@ -16,7 +16,7 @@ export class CertificatesService {
     @InjectQueue('certificates') private readonly certificatesQueue: Queue,
   ) {}
 
-  async generateCertificate() {
+  async generateCertificate({ payload }: { payload: GenerateCertificateDto }) {
     const course = await this.prisma.course.findFirst({
       where: {
         slug: 'dasar-dasar-sistem-telekomunikasi-qz94kv',
@@ -40,63 +40,54 @@ export class CertificatesService {
       },
     });
 
-    // // Daily Quiz Check Ids Validation
-    // await Promise.all(
-    //   payload.list_daily_quiz_ids.map(async (quiz_id) => {
-    //     // Check ids quiz
-    //     const quiz = course.curriculums
-    //       .map((curriculum) => curriculum.quizzes)
-    //       .flat()
-    //       .find((quiz) => quiz.id === quiz_id);
+    // Daily Quiz Check Ids Validation
+    await Promise.all(
+      payload.list_daily_quiz_ids.map(async (quiz_id) => {
+        // Check ids quiz
+        const quiz = course.curriculums
+          .map((curriculum) => curriculum.quizzes)
+          .flat()
+          .find((quiz) => quiz.id === quiz_id);
 
-    //     if (!quiz)
-    //       throw new NotFoundException(
-    //         `Quiz dengan id ${quiz_id} tidak ditemukan, silahkan cek kembali`,
-    //       );
-    //   }),
-    // );
+        if (!quiz)
+          throw new NotFoundException(
+            `Quiz dengan id ${quiz_id} tidak ditemukan, silahkan cek kembali`,
+          );
+      }),
+    );
 
-    // // Final Quiz Check Ids Validation
-    // await Promise.all(
-    //   payload.list_final_quiz_ids.map(async (quiz_id) => {
-    //     // Check ids quiz
-    //     const quiz = course.curriculums
-    //       .map((curriculum) => curriculum.quizzes)
-    //       .flat()
-    //       .find((quiz) => quiz.id === quiz_id);
+    // Final Quiz Check Ids Validation
+    await Promise.all(
+      payload.list_final_quiz_ids.map(async (quiz_id) => {
+        // Check ids quiz
+        const quiz = course.curriculums
+          .map((curriculum) => curriculum.quizzes)
+          .flat()
+          .find((quiz) => quiz.id === quiz_id);
 
-    //     if (!quiz)
-    //       throw new NotFoundException(
-    //         `Quiz dengan id ${quiz_id} tidak ditemukan, silahkan cek kembali`,
-    //       );
-    //   }),
-    // );
+        if (!quiz)
+          throw new NotFoundException(
+            `Quiz dengan id ${quiz_id} tidak ditemukan, silahkan cek kembali`,
+          );
+      }),
+    );
 
-    // // Participant Check Ids Validation
-    // await Promise.all(
-    //   payload.list_participant_ids.map(async (participant_id) => {
-    //     // Check ids participant
-    //     const participant = course.enrollments
-    //       .map((enrollment) => enrollment.user_id)
-    //       .find((id) => id === participant_id);
+    // Participant Check Ids Validation
+    await Promise.all(
+      payload.list_participant_ids.map(async (participant_id) => {
+        // Check ids participant
+        const participant = course.enrollments
+          .map((enrollment) => enrollment.user_id)
+          .find((id) => id === participant_id);
 
-    //     if (!participant)
-    //       throw new NotFoundException(
-    //         `Participant dengan id ${participant_id} tidak ditemukan, silahkan cek kembali`,
-    //       );
-    //   }),
-    // );
+        if (!participant)
+          throw new NotFoundException(
+            `Participant dengan id ${participant_id} tidak ditemukan, silahkan cek kembali`,
+          );
+      }),
+    );
 
-    const body: GenerateCertificateDto = {
-      certificate_type: ['competence', 'presence'],
-      course_slug: 'dasar-dasar-sistem-telekomunikasi-qz94kv',
-      list_daily_quiz_ids: ['70b449af-fa13-4e78-8344-8bbc3204040d'],
-      list_final_quiz_ids: [],
-      list_participant_ids: [3],
-      minimum_daily_quiz_score: 30,
-    };
-
-    await this.certificatesQueue.add('generator-certificate', body);
+    await this.certificatesQueue.add('generator-certificate', payload);
 
     return 'Sertifikat sedang diproses, mohon tunggu beberapa saat';
   }
