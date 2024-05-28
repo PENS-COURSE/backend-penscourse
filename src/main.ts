@@ -47,7 +47,7 @@ async function bootstrap() {
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new SentryFilter(httpAdapter));
 
-  app.useGlobalInterceptors(new SuccessResponseInterceptor());
+  app.useGlobalInterceptors(new SuccessResponseInterceptor(app.get(Reflector)));
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.useGlobalPipes(
     new ValidationPipe({
