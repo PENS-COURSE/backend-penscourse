@@ -479,20 +479,38 @@ enum CertificateType {
 }
 
 model Certificate {
-  id              Int             @id @default(autoincrement())
-  no_cert         String
-  user_id         Int
-  user            User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  course_id       Int?
-  course          Course?         @relation(fields: [course_id], references: [id], onDelete: SetNull)
-  type            CertificateType
-  certificate_url String?
-  hash_url        String?
-  expired_at      DateTime
-  created_at      DateTime        @default(now())
-  updated_at      DateTime        @updatedAt
+  id                    Int                @id @default(autoincrement())
+  no_cert               String
+  user_id               Int
+  user                  User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course_id             Int?
+  course                Course?            @relation(fields: [course_id], references: [id], onDelete: SetNull)
+  type                  CertificateType
+  certificate_url       String?
+  certificate_thumbnail String?
+  total_duration        Int?
+  created_at            DateTime           @default(now())
+  updated_at            DateTime           @updatedAt
+  CertificateScore      CertificateScore[]
 
   @@map("certificates")
+}
+
+enum QuizType {
+  final
+  daily
+}
+
+model CertificateScore {
+  id             Int         @id @default(autoincrement())
+  certificate_id Int
+  certificate    Certificate @relation(fields: [certificate_id], references: [id], onDelete: Cascade)
+  quiz_type      QuizType
+  score          Int
+  created_at     DateTime    @default(now())
+  updated_at     DateTime    @updatedAt
+
+  @@map("certificate_scores")
 }
 
 enum RequestTokenType {

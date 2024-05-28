@@ -1,5 +1,5 @@
 export default interface Certificate {
-  type: 'Certificate of Competency' | 'certificate of Attendance';
+  type: 'Certificate of Competency' | 'Certificate of Attendance';
   course: string;
   course_instructor: string;
   date: string;

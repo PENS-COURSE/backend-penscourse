@@ -1,24 +1,23 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
-export class UploadCertificateDto {
-  @ApiProperty()
+export class HandleCertificateCreationDto {
   @IsNumber()
   @IsNotEmpty()
   user_id: number;
 
-  @ApiProperty()
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
-  course_slug: string;
+  course_id: number;
 
-  @ApiProperty({ type: 'string', format: 'binary' })
   @IsString()
   @IsNotEmpty()
-  certificate: any;
+  file_pdf: string;
 
-  @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  api_property: string;
+  file_jpg: string;
+
+  @IsString()
+  @IsNotEmpty()
+  certificate_type: 'presence' | 'competence';
 }
