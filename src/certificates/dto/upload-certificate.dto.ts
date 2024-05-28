@@ -1,13 +1,9 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class HandleCertificateCreationDto {
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  user_id: number;
-
-  @IsNumber()
-  @IsNotEmpty()
-  course_id: number;
+  certificate_id: string;
 
   @IsString()
   @IsNotEmpty()
@@ -16,8 +12,4 @@ export class HandleCertificateCreationDto {
   @IsString()
   @IsNotEmpty()
   file_jpg: string;
-
-  @IsString()
-  @IsNotEmpty()
-  certificate_type: 'presence' | 'competence';
 }
