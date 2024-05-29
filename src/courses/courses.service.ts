@@ -93,6 +93,7 @@ export class CoursesService {
         include: {
           discount: true,
           user: true,
+          reviews: true,
           enrollments: {
             where: {
               user_id: user?.id,
@@ -131,9 +132,20 @@ export class CoursesService {
 
           course.user = plainToInstance(UserEntity, course.user, {});
 
+          const totalRating = course?.reviews.reduce(
+            (acc, review) => acc + review.rating,
+            0,
+          );
+          const averageRating = totalRating / course?.reviews.length;
+          const totalUserRating = course?.reviews.length;
+
+          delete course?.reviews;
+
           const data = {
             ...course,
             is_enrolled: isEnrolled ? true : false,
+            ratings: averageRating || 0,
+            total_user_rating: totalUserRating,
           };
 
           if (user && user?.role == 'user') {
@@ -197,6 +209,7 @@ export class CoursesService {
         enrollments: {
           where: { user_id: user?.id },
         },
+        reviews: true,
         ...include,
       },
     });
@@ -205,12 +218,21 @@ export class CoursesService {
       throw new NotFoundException('Course not found');
 
     const isEnrolled = user?.role == 'user' && data.enrollments.length;
+    const totalRating = data.reviews.reduce(
+      (acc, review) => acc + review.rating,
+      0,
+    );
+    const averageRating = totalRating / data.reviews.length;
+    const totalUserRating = data.reviews.length;
 
+    delete data?.reviews;
     delete data?.enrollments;
 
     return {
       ...data,
       is_enrolled: isEnrolled ? true : false,
+      ratings: averageRating || 0,
+      total_user_rating: totalUserRating,
       user: plainToInstance(UserEntity, data.user, {}),
     };
   }
@@ -376,5 +398,28 @@ export class CoursesService {
     }
 
     return liveClass;
+  }
+
+  async endCourse({ course_slug, user }: { course_slug: string; user: User }) {
+    const course = await this.findOneBySlug({
+      slug: course_slug,
+      include: {
+        user: true,
+      },
+    });
+
+    if (user?.role != 'admin' || course.user_id != user?.id) {
+      throw new ForbiddenException('Kamu tidak memiliki akses');
+    }
+
+    await this.prisma.course.update({
+      where: { id: course.id },
+      data: {
+        is_completed: true,
+        completed_at: new Date(),
+      },
+    });
+
+    return null;
   }
 }

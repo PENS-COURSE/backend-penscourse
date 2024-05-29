@@ -252,4 +252,29 @@ export class CoursesController {
       data,
     };
   }
+
+  @Auth('admin', 'dosen')
+  @ApiOperation({ summary: 'End Course (DOSEN / ADMIN)' })
+  @ApiParam({
+    name: 'course_slug',
+    required: true,
+    type: 'string',
+    description: 'Course Slug',
+  })
+  @ApiOkResponse()
+  @Get(':course_slug/end')
+  async endCourse(
+    @Param('course_slug') courseSlug: string,
+    @CurrentUser() user: any,
+  ) {
+    const data = await this.coursesService.endCourse({
+      course_slug: courseSlug,
+      user,
+    });
+
+    return {
+      message: 'Successfully ended course',
+      data,
+    };
+  }
 }

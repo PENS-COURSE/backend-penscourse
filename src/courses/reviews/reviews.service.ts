@@ -40,6 +40,12 @@ export class ReviewsService {
           course_id,
         },
         include: {
+          course: {
+            select: {
+              name: true,
+              slug: true,
+            },
+          },
           user: {
             select: {
               name: true,
@@ -144,6 +150,20 @@ export class ReviewsService {
     const data = await this.prismaService.review.findUnique({
       where: {
         id: reviewId,
+      },
+      include: {
+        course: {
+          select: {
+            name: true,
+            slug: true,
+          },
+        },
+        user: {
+          select: {
+            name: true,
+            avatar: true,
+          },
+        },
       },
     });
 
