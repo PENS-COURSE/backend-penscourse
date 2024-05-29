@@ -40,6 +40,7 @@ model User {
   UrlSignature         UrlSignature[]
   LiveClass            LiveClass[]
   Certificate          Certificate[]
+  reviews              Review[]
 
   @@map("users")
 }
@@ -125,6 +126,8 @@ model Course {
   user_id           Int?
   user              User?               @relation(fields: [user_id], references: [id], onDelete: SetNull)
   is_active         Boolean             @default(true)
+  is_completed      Boolean             @default(false)
+  completed_at      DateTime?
   created_at        DateTime            @default(now())
   updated_at        DateTime            @updatedAt
   curriculums       Curriculum[]
@@ -133,6 +136,7 @@ model Course {
   discount          CourseDiscount?
   SubjectCompletion SubjectCompletion[]
   Certificate       Certificate[]
+  reviews           Review[]
 
   @@map("courses")
 }
@@ -526,4 +530,18 @@ model RequestToken {
   updated_at DateTime         @updatedAt
 
   @@map("request_tokens")
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course_id  Int
+  course     Course   @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  rating     Int
+  review     String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("reviews")
 }
