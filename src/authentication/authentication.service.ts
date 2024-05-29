@@ -15,7 +15,6 @@ import { google } from 'googleapis';
 import * as moment from 'moment';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { HashHelpers } from '../utils/hash.utils';
@@ -27,6 +26,7 @@ import {
 } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
+import { RegisterDto } from './dto/register.dto';
 
 // TODO: Login with Google
 
@@ -41,7 +41,7 @@ export class AuthenticationService {
     private readonly mailService: MailService,
   ) {}
 
-  async registerUser(payload: CreateUserDto) {
+  async registerUser(payload: RegisterDto) {
     const newUser = await this.usersService.create({
       ...payload,
       role: 'user',
