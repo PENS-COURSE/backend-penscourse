@@ -39,7 +39,7 @@ model User {
   ParticipantLiveClass ParticipantLiveClass[]
   UrlSignature         UrlSignature[]
   LiveClass            LiveClass[]
-  Certificate          Certificate[]
+  certificates         Certificate[]
   reviews              Review[]
 
   @@map("users")
@@ -135,7 +135,7 @@ model Course {
   enrollments       Enrollment[]
   discount          CourseDiscount?
   SubjectCompletion SubjectCompletion[]
-  Certificate       Certificate[]
+  certificates      Certificate[]
   reviews           Review[]
 
   @@map("courses")
@@ -484,6 +484,7 @@ enum CertificateType {
 
 model Certificate {
   id                    Int                @id @default(autoincrement())
+  uuid                  String             @unique @default(uuid())
   no_cert               String
   user_id               Int
   user                  User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -497,7 +498,7 @@ model Certificate {
   updated_at            DateTime           @updatedAt
   CertificateScore      CertificateScore[]
 
-  @@index([no_cert])
+  @@index([no_cert, uuid])
   @@map("certificates")
 }
 
@@ -516,20 +517,6 @@ model CertificateScore {
   updated_at     DateTime    @updatedAt
 
   @@map("certificate_scores")
-}
-
-enum RequestTokenType {
-  send_certificate
-}
-
-model RequestToken {
-  id         Int              @id @default(autoincrement())
-  token      String           @unique
-  type       RequestTokenType
-  created_at DateTime         @default(now())
-  updated_at DateTime         @updatedAt
-
-  @@map("request_tokens")
 }
 
 model Review {

@@ -17,7 +17,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Request } from 'express';
-import { CreateUserDto } from '../users/dto/create-user.dto';
 import { AuthenticationService } from './authentication.service';
 import {
   ForgotPasswordRequestDto,
@@ -26,6 +25,7 @@ import {
 } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
+import { RegisterDto } from './dto/register.dto';
 import { GoogleGuard } from './guards/google.guard';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { AllowUnauthorizedRequest } from './metadata/allow-unauthorized-request.decorator';
@@ -41,7 +41,7 @@ export class AuthenticationController {
   @ApiCreatedResponse()
   @HttpCode(201)
   @Post('register')
-  async registerUser(@Body() payload: CreateUserDto) {
+  async registerUser(@Body() payload: RegisterDto) {
     const data = await this.authenticationService.registerUser(payload);
 
     return {

@@ -212,7 +212,7 @@ export class CertificatesConsumer {
 
           await this.prisma.certificate.create({
             data: {
-              no_cert: patternCertificateId.replace('TYPE', 'C'),
+              no_cert: patternCertificateId.replace('TYPE', 'P'),
               user_id: user.id,
               type: 'competence',
               course_id: course.id,

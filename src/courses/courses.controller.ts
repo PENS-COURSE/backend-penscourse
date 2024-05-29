@@ -277,4 +277,46 @@ export class CoursesController {
       data,
     };
   }
+
+  @Auth('admin', 'dosen')
+  @ApiOperation({ summary: 'List Quizes (DOSEN / ADMIN)' })
+  @ApiParam({
+    name: 'course_slug',
+    required: true,
+    type: 'string',
+    description: 'Course Slug',
+  })
+  @ApiOkResponse()
+  @Get(':course_slug/list-quiz')
+  async listQuiz(@Param('course_slug') courseSlug: string) {
+    const data = await this.coursesService.listQuiz({
+      course_slug: courseSlug,
+    });
+
+    return {
+      message: 'Successfully retrieved quiz',
+      data,
+    };
+  }
+
+  @Auth('admin', 'dosen')
+  @ApiOperation({ summary: 'List Participants (DOSEN / ADMIN)' })
+  @ApiParam({
+    name: 'course_slug',
+    required: true,
+    type: 'string',
+    description: 'Course Slug',
+  })
+  @ApiOkResponse()
+  @Get(':course_slug/list-participant')
+  async listParticipant(@Param('course_slug') courseSlug: string) {
+    const data = await this.coursesService.listParticipant({
+      course_slug: courseSlug,
+    });
+
+    return {
+      message: 'Successfully retrieved participant',
+      data,
+    };
+  }
 }

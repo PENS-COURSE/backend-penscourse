@@ -1,5 +1,6 @@
 import { InjectQueue } from '@nestjs/bull';
 import { Injectable, NotFoundException, StreamableFile } from '@nestjs/common';
+import { User } from '@prisma/client';
 import { Queue } from 'bull';
 import { CoursesService } from '../courses/courses.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -133,6 +134,30 @@ export class CertificatesService {
 
     const buffer = await fetch(
       `${process.env.CERTIFICATE_SERVICE_PUBLIC_URL}${thumbnail.certificate_thumbnail}`,
+    ).then(async (res) => await res.arrayBuffer());
+
+    const uint8Array = new Uint8Array(buffer);
+    return new StreamableFile(uint8Array);
+  }
+
+  async requestDownloadCertificate({
+    certificate_uuid,
+    user,
+  }: {
+    certificate_uuid: string;
+    user: User;
+  }) {
+    const certificate = await this.prisma.certificate.findFirst({
+      where: {
+        uuid: certificate_uuid,
+        user_id: user.id,
+      },
+    });
+
+    if (!certificate) throw new NotFoundException('Sertifikat tidak ditemukan');
+
+    const buffer = await fetch(
+      `${process.env.CERTIFICATE_SERVICE_PUBLIC_URL}${certificate.certificate_url}`,
     ).then(async (res) => await res.arrayBuffer());
 
     const uint8Array = new Uint8Array(buffer);

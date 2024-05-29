@@ -1,14 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { $Enums } from '@prisma/client';
-import {
-  IsEmail,
-  IsEnum,
-  IsNotEmpty,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
 
-export class CreateUserDto {
+export class RegisterDto {
   @ApiProperty()
   @IsNotEmpty()
   @MaxLength(100)
@@ -28,11 +21,4 @@ export class CreateUserDto {
   @ApiProperty()
   @IsNotEmpty()
   password_confirmation: string;
-
-  avatar?: string;
-
-  @ApiProperty({ enum: $Enums.Role })
-  @IsNotEmpty()
-  @IsEnum($Enums.Role)
-  role: $Enums.Role;
 }

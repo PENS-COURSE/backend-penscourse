@@ -422,4 +422,52 @@ export class CoursesService {
 
     return null;
   }
+
+  async listQuiz({ course_slug }: { course_slug: string }) {
+    const course = await this.prisma.course.findFirst({
+      where: {
+        slug: course_slug,
+      },
+      include: {
+        curriculums: {
+          include: {
+            quizzes: {
+              select: {
+                id: true,
+                title: true,
+              },
+              where: {
+                is_active: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return course.curriculums.flatMap((curriculum) => curriculum.quizzes);
+  }
+
+  async listParticipant({ course_slug }: { course_slug: string }) {
+    const course = await this.prisma.course.findFirst({
+      where: {
+        slug: course_slug,
+      },
+      include: {
+        enrollments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return course.enrollments.flatMap((enrollment) => enrollment.user);
+  }
 }
