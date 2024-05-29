@@ -11,11 +11,10 @@ import { MailService } from './mail.service';
     MailerModule.forRootAsync({
       useFactory: async (config: ConfigService) => ({
         transport: {
-          host: 'sandbox.smtp.mailtrap.io',
-          port: 2525,
+          service: config.get('MAIL_SERVICE'),
           auth: {
-            user: '0af3fb66aae052',
-            pass: 'd0c8d87493ef40',
+            user: config.get('MAIL_USER'),
+            pass: config.get('MAIL_PASSWORD'),
           },
         },
         defaults: {
