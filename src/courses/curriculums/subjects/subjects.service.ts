@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -414,7 +410,7 @@ export class SubjectsService {
     });
   }
 
-  async openLiveClass({
+  async removeSubjectByUUID({
     subject_uuid,
     curriculum_uuid,
     course_slug,
@@ -423,52 +419,30 @@ export class SubjectsService {
     curriculum_uuid: string;
     course_slug: string;
   }) {
-    // TODO: Check user is instructor
-
-    const liveClass = await this.prisma.liveClass.findFirst({
-      where: {
-        id: subject_uuid,
-        curriculum_id: curriculum_uuid,
-      },
+    const subject = await this.findOneByUUID({
+      course_slug,
+      curriculum_uuid,
+      subject_uuid,
     });
 
-    if (!liveClass) {
-      throw new NotFoundException('Kelas online tidak ditemukan');
-    }
-
-    if (liveClass.is_open) {
-      throw new BadRequestException('Kelas online sudah dibuka');
-    }
-
-    const data = await this.prisma.liveClass.update({
-      where: {
-        id: liveClass.id,
-      },
-      data: {
-        is_open: true,
-      },
-    });
-
-    const enrollments = await this.prisma.enrollment.findMany({
-      where: {
-        course: {
-          slug: course_slug,
+    if (subject.type === 'file') {
+      return await this.prisma.fileContent.delete({
+        where: {
+          id: subject.id,
         },
-      },
-    });
-
-    const wording = notificationWording(
-      NotificationType.course_live_class_open,
-    );
-
-    await this.notificationService.sendNotification({
-      user_ids: enrollments.map((enrollment) => enrollment.user_id),
-      title: wording.title,
-      body: wording.body,
-      type: wording.type,
-      action_id: course_slug,
-    });
-
-    return data;
+      });
+    } else if (subject.type === 'video') {
+      return await this.prisma.videoContent.delete({
+        where: {
+          id: subject.id,
+        },
+      });
+    } else if (subject.type === 'live_class') {
+      return await this.prisma.liveClass.delete({
+        where: {
+          id: subject.id,
+        },
+      });
+    }
   }
 }
