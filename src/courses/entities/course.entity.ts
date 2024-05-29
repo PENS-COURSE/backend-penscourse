@@ -11,6 +11,11 @@ export class CourseEntity implements Course {
       this.user = new UserMinimalistEntity(user);
     }
   }
+  @ApiProperty()
+  is_completed: boolean;
+
+  @ApiProperty()
+  completed_at: Date;
 
   @ApiProperty()
   id: number;
