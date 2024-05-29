@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -32,7 +33,7 @@ import { UpdateLiveClassDto } from './dto/update-live-class.dto';
 import { UpdateVideoContentDto } from './dto/update-video-content.dto';
 import { SubjectsService } from './subjects.service';
 
-@ApiTags('Curriculum Subjects')
+@ApiTags('Course - Curriculums - Subjects')
 @ApiBearerAuth()
 @Controller('courses')
 export class SubjectsController {
@@ -362,13 +363,7 @@ export class SubjectsController {
   }
 
   @Auth('admin', 'dosen')
-  @ApiOperation({ summary: 'Open Live Class' })
-  @ApiParam({
-    name: 'subject_uuid',
-    required: true,
-    type: 'string',
-    description: 'Subject UUID',
-  })
+  @ApiOperation({ summary: 'Remove Subject' })
   @ApiParam({
     name: 'curriculum_uuid',
     required: true,
@@ -381,24 +376,29 @@ export class SubjectsController {
     type: 'string',
     description: 'Course Slug',
   })
+  @ApiParam({
+    name: 'subject_uuid',
+    required: true,
+    type: 'string',
+    description: 'Subject UUID',
+  })
   @ApiOkResponse()
-  @HttpCode(200)
-  @Patch(
-    ':course_slug/curriculums/:curriculum_uuid/subjects/:subject_uuid/live-class/open',
+  @Delete(
+    ':course_slug/curriculums/:curriculum_uuid/subjects/:subject_uuid/remove',
   )
-  async openLiveClass(
+  async removeSubjectByUUID(
     @Param('curriculum_uuid') curriculum_uuid: string,
     @Param('course_slug') course_slug: string,
     @Param('subject_uuid') subject_uuid: string,
   ) {
-    const data = await this.subjectsService.openLiveClass({
+    const data = await this.subjectsService.removeSubjectByUUID({
       subject_uuid,
       curriculum_uuid,
       course_slug,
     });
 
     return {
-      message: 'Berhasil membuka live class',
+      message: 'Successfully removed subject',
       data,
     };
   }
