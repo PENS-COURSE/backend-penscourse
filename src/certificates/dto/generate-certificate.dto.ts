@@ -1,7 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CertificateType } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsArray, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class GenerateCertificateDto {
   @ApiProperty()
@@ -11,19 +17,19 @@ export class GenerateCertificateDto {
 
   @ApiPropertyOptional()
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => Number)
   minimum_duration_liveclass?: number;
 
   @ApiPropertyOptional()
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => Number)
   minimum_daily_quiz_score?: number;
 
   @ApiPropertyOptional()
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => Number)
   minimum_final_quiz_score?: number;
 

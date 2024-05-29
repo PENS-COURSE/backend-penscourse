@@ -7,6 +7,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unauthorized-request.decorator';
 import { Auth } from '../utils/decorators/auth.decorator';
 import { WithoutModifiedResponse } from '../utils/decorators/without-modified-response.decorator';
@@ -41,6 +42,22 @@ export class CertificatesController {
   @Get('thumbnail/:thumbnail_path')
   async getThumbnail(@Param('thumbnail_path') thumbnail_path: string) {
     return await this.certificateService.getThumbnailBlob({ thumbnail_path });
+  }
+
+  @WithoutModifiedResponse()
+  @Auth('user')
+  @ApiOperation({ summary: 'Download Certificate' })
+  @ApiOkResponse()
+  @Header('Content-Type', 'application/pdf')
+  @Get('download/:certificate_uuid')
+  async requestDownloadCertificate(
+    @Param('certificate_uuid') certificate_uuid: string,
+    @CurrentUser() user: any,
+  ) {
+    return await this.certificateService.requestDownloadCertificate({
+      certificate_uuid,
+      user,
+    });
   }
 
   @EventPattern('certificate.generated')
