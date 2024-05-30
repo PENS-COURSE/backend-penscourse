@@ -19,6 +19,8 @@ export class CertificatesConsumer {
   async generatorCertificate(job: Job<GenerateCertificateDto>) {
     const payload = job.data;
 
+    console.log('Payload :', payload);
+
     const course = await this.prisma.course.findFirst({
       where: {
         slug: payload.course_slug,
