@@ -27,6 +27,7 @@ import { UsersModule } from './users/users.module';
 import { RolesGuard } from './utils/guards/roles.guard';
 import { EventModule } from './utils/library/event/event.module';
 import { LivekitModule } from './utils/library/livekit/livekit.module';
+import { LogoModule } from './logo/logo.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { LivekitModule } from './utils/library/livekit/livekit.module';
     BannersModule,
     EventModule,
     CertificatesModule,
+    LogoModule,
   ],
   controllers: [AppController],
   providers: [
