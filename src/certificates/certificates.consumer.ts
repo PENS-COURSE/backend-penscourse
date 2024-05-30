@@ -112,10 +112,14 @@ export class CertificatesConsumer {
           listScoreQuizDaily.reduce((acc, curr) => acc + curr, 0) /
           listScoreQuizDaily.length;
 
+        console.log('averageScoreDailyQuiz :', averageScoreDailyQuiz);
+
         // Average Score Final Quiz
         const averageScoreFinalQuiz =
           listScoreQuizFinal.reduce((acc, curr) => acc + curr, 0) /
           listScoreQuizFinal.length;
+
+        console.log('averageScoreFinalQuiz :', averageScoreFinalQuiz);
 
         // is User get competence certificate
         let isCompetenceCertificate = false;
