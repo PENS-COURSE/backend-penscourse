@@ -89,7 +89,7 @@ export class CertificatesConsumer {
               .quizzes.find((quiz) => quiz.id === quiz_id)
               .sessions.find(
                 (session) => session.user_id === participant_id,
-              ).score;
+              )?.score;
 
             if (quizScore) listScoreQuizFinal.push(quizScore);
             else listScoreQuizFinal.push(0);
