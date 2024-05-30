@@ -50,6 +50,8 @@ export class CertificatesConsumer {
       },
     });
 
+    console.log('Course :', course);
+
     const minimumScoreDailyQuiz = payload.minimum_daily_quiz_score ?? null;
     const minimumScoreFinalQuiz = payload.minimum_final_quiz_score ?? null;
     const minimumDurationLiveClass = payload.minimum_duration_liveclass ?? null;
