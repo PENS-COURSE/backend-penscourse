@@ -20,7 +20,7 @@ export class CertificatesService {
   async generateCertificate({ payload }: { payload: GenerateCertificateDto }) {
     const course = await this.prisma.course.findFirst({
       where: {
-        slug: 'dasar-dasar-sistem-telekomunikasi-qz94kv',
+        slug: payload.course_slug,
       },
       include: {
         enrollments: true,
