@@ -45,7 +45,7 @@ export class CertificatesService {
     await Promise.all(
       payload.list_daily_quiz_ids.map(async (quiz_id) => {
         // Check ids quiz
-        const quiz = course.curriculums
+        const quiz = course?.curriculums
           .map((curriculum) => curriculum.quizzes)
           .flat()
           .find((quiz) => quiz.id === quiz_id);

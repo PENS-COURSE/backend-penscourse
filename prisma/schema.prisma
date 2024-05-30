@@ -532,3 +532,13 @@ model Review {
 
   @@map("reviews")
 }
+
+model Logo {
+  id         Int      @id @default(autoincrement())
+  title      String
+  filename   String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("logos")
+}
