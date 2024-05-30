@@ -40,11 +40,6 @@ export class CertificatesConsumer {
                 ParticipantLiveClass: true,
               },
             },
-            quizzes: {
-              include: {
-                sessions: true,
-              },
-            },
           },
         },
       },
@@ -69,16 +64,14 @@ export class CertificatesConsumer {
         // Daily Quiz
         await Promise.all(
           payload.list_daily_quiz_ids.map(async (quiz_id) => {
-            const quizScore = course.curriculums
-              .find((curriculum) =>
-                curriculum.quizzes.find((quiz) => quiz.id === quiz_id),
-              )
-              .quizzes.find((quiz) => quiz.id === quiz_id)
-              .sessions.find(
-                (session) => session.user_id === participant_id,
-              )?.score;
+            const quizScore = await this.prisma.quizSession.findFirst({
+              where: {
+                quiz_id: quiz_id as string,
+                user_id: user.id,
+              },
+            });
 
-            if (quizScore) listScoreQuizDaily.push(quizScore);
+            if (quizScore) listScoreQuizDaily.push(quizScore?.score);
             else listScoreQuizDaily.push(0);
           }),
         );
@@ -86,16 +79,14 @@ export class CertificatesConsumer {
         // Final Quiz
         await Promise.all(
           payload.list_final_quiz_ids.map(async (quiz_id) => {
-            const quizScore = course.curriculums
-              .find((curriculum) =>
-                curriculum.quizzes.find((quiz) => quiz.id === quiz_id),
-              )
-              .quizzes.find((quiz) => quiz.id === quiz_id)
-              .sessions.find(
-                (session) => session.user_id === participant_id,
-              )?.score;
+            const quizScore = await this.prisma.quizSession.findFirst({
+              where: {
+                quiz_id: quiz_id as string,
+                user_id: user.id,
+              },
+            });
 
-            if (quizScore) listScoreQuizFinal.push(quizScore);
+            if (quizScore) listScoreQuizFinal.push(quizScore?.score);
             else listScoreQuizFinal.push(0);
           }),
         );
