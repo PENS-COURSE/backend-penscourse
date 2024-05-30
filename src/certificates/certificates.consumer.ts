@@ -1,5 +1,5 @@
 import { OnQueueFailed, Process, Processor } from '@nestjs/bull';
-import { Inject, Logger } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Job } from 'bull';
 import * as moment from 'moment';
@@ -72,7 +72,7 @@ export class CertificatesConsumer {
               .quizzes.find((quiz) => quiz.id === quiz_id)
               .sessions.find(
                 (session) => session.user_id === participant_id,
-              ).score;
+              )?.score;
 
             if (quizScore) listScoreQuizDaily.push(quizScore);
             else listScoreQuizDaily.push(0);
@@ -238,6 +238,6 @@ export class CertificatesConsumer {
 
   @OnQueueFailed()
   async handleError(job: Job, error: Error) {
-    Logger.error('CertificateConsumer -- Error:', error.message);
+    console.log(error);
   }
 }
