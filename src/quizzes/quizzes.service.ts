@@ -27,6 +27,12 @@ export class QuizzesService {
     );
 
     const data = await this.prismaService.$transaction(async (tx) => {
+      if (payload.duration < 5) {
+        throw new BadRequestException(
+          `Durasi quiz minimal 5 menit, dimohon untuk mengisi durasi quiz lebih dari 5 menit`,
+        );
+      }
+
       if (payload.generated_questions.all_curriculum_questions) {
         const questions = await tx.question.findMany({
           where: {
@@ -129,6 +135,12 @@ export class QuizzesService {
     );
 
     return await this.prismaService.$transaction(async (tx) => {
+      if (payload.duration < 5) {
+        throw new BadRequestException(
+          `Durasi quiz minimal 5 menit, dimohon untuk mengisi durasi quiz lebih dari 5 menit`,
+        );
+      }
+
       const data = await tx.quiz.update({
         where: {
           id: quiz_uuid,

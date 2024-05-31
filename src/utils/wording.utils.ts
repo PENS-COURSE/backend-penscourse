@@ -92,7 +92,7 @@ export const notificationWording = (notificationType: NotificationType) => {
       return {
         type: 'exam_time_almost_up',
         title: 'Waktu Ujian Hampir Habis',
-        body: 'Sisa waktu ujian Anda hanya 15 menit. Sebaiknya selesaikan pertanyaan yang tersisa dan periksa kembali jawaban Anda.',
+        body: 'Sisa waktu ujian Anda hanya 5 menit. Sebaiknya selesaikan pertanyaan yang tersisa dan periksa kembali jawaban Anda.',
       };
   }
 };

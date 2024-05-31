@@ -335,9 +335,9 @@ export class QuizService {
         .add(quiz.duration, 'm')
         .toISOString();
 
-      // Get Duration 15 minutes before end
+      // Get Duration 5 minutes before end
       const reminderDuration = moment(duration)
-        .subtract(15, 'minutes')
+        .subtract(5, 'minutes')
         .toISOString();
 
       const sendNotificationBeforeEnd = setTimeout(
@@ -356,7 +356,7 @@ export class QuizService {
         moment(reminderDuration).diff(moment(), 'milliseconds'),
       );
 
-      // Add Dynamic Scheduler for Send Notification 15 Minutes Before End
+      // Add Dynamic Scheduler for Send Notification 5 minutes before end
       this.schedulerRegistry.addTimeout(
         `quiz.session.${session.id}.reminder`,
         sendNotificationBeforeEnd,
