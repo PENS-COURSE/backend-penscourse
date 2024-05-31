@@ -1,10 +1,19 @@
-import { Body, Controller, Get, Header, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Header,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
@@ -19,6 +28,71 @@ import { HandleCertificateCreationDto } from './dto/upload-certificate.dto';
 @Controller('certificates')
 export class CertificatesController {
   constructor(private readonly certificateService: CertificatesService) {}
+
+  @Auth('user')
+  @ApiOperation({ summary: 'Get Certificates by User' })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 25 })
+  @ApiOkResponse()
+  @Get()
+  async getCertificatesByUser(
+    @CurrentUser() user: any,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ) {
+    const data = await this.certificateService.getCertificatesByUser({
+      user,
+      limit,
+      page,
+    });
+
+    return {
+      message: 'Successfully get certificates',
+      data,
+    };
+  }
+
+  @Auth('admin', 'dosen')
+  @ApiOperation({ summary: 'Get Certificates by Course' })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 25 })
+  @ApiOkResponse()
+  @Get('course/:course_slug')
+  async getCertificatesByCourse(
+    @Param('course_slug') courseSlug: string,
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+  ) {
+    const data = await this.certificateService.getCertificatesByCourse({
+      course_slug: courseSlug,
+      limit,
+      page,
+    });
+
+    return {
+      message: 'Successfully get certificates',
+      data,
+    };
+  }
+
+  @Auth()
+  @ApiOperation({ summary: 'Get Certificate by UUID' })
+  @ApiOkResponse()
+  @Get(':certificate_uuid')
+  async getCertificateByUuid(
+    @Param('certificate_uuid') certificateUUID: string,
+    @CurrentUser() user: any,
+  ) {
+    const data = await this.certificateService.getCertificateByUuid({
+      certificate_uuid: certificateUUID,
+      user,
+    });
+
+    return {
+      message: 'Successfully get certificate',
+      data,
+    };
+  }
 
   @Auth('admin', 'dosen')
   @ApiOperation({ summary: 'Generate Certificate' })
