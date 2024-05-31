@@ -16,6 +16,7 @@ import { CourseDiscountModule } from './course-discount/course-discount.module';
 import { CoursesModule } from './courses/courses.module';
 import { DepartmentsModule } from './departments/departments.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
+import { LogoModule } from './logo/logo.module';
 import { MailModule } from './mail/mail.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { OrdersModule } from './orders/orders.module';
@@ -27,10 +28,10 @@ import { UsersModule } from './users/users.module';
 import { RolesGuard } from './utils/guards/roles.guard';
 import { EventModule } from './utils/library/event/event.module';
 import { LivekitModule } from './utils/library/livekit/livekit.module';
-import { LogoModule } from './logo/logo.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     BullModule.forRoot({
       redis: {
         host: 'localhost',

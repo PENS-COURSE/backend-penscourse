@@ -32,7 +32,6 @@ export class AccessTokenGuard extends AuthGuard('jwt-access-token') {
 
     if (isAllowUnauthorizedRequest) {
       // Bypass Endpoint /login/google
-      console.log(context.switchToHttp().getRequest().url);
       if (
         context.switchToHttp().getRequest().url === '/api/streaming/webhook'
       ) {
