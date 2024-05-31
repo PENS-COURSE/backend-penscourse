@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
+import * as moment from 'moment';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserEntity } from '../users/entities/user.entity';
@@ -362,26 +363,15 @@ export class CoursesService {
   }
 
   async enrollCourse({ slug, user }: { slug: string; user: User }) {
-    const course = await this.findOneBySlug({ slug });
-
-    if (!course.is_active) {
-      throw new ForbiddenException();
-    }
-
-    if (!course.is_free) {
-      throw new BadRequestException('This course is not free');
-    }
-
-    const isEnrolled = await this.prisma.enrollment.findFirst({
-      where: {
-        course_id: course.id,
-        user_id: user.id,
-      },
+    const course = await this.checkIsEnrollment({
+      courseSlug: slug,
+      user: user,
     });
 
-    if (isEnrolled) {
-      throw new BadRequestException('You have already enrolled this course');
-    }
+    if (!course.is_free)
+      throw new ForbiddenException(
+        'Course ini tidak gratis, silahkan melakukan pembelian !',
+      );
 
     await this.prisma.enrollment.create({
       data: {
@@ -505,5 +495,45 @@ export class CoursesService {
     });
 
     return course.enrollments.flatMap((enrollment) => enrollment.user);
+  }
+
+  async checkIsEnrollment({
+    courseSlug,
+    user,
+  }: {
+    courseSlug: string;
+    user: User;
+  }) {
+    const course = await this.findOneBySlug({ slug: courseSlug });
+
+    const isEnrolled = await this.prisma.enrollment.findFirst({
+      where: {
+        course_id: course.id,
+        user_id: user.id,
+      },
+    });
+
+    if (isEnrolled) {
+      throw new BadRequestException('Anda sudah terdaftar pada kelas ini');
+    }
+
+    if (!course.is_active) {
+      throw new ForbiddenException();
+    }
+
+    if (course.is_completed) {
+      throw new BadRequestException('Kelas ini sudah selesai');
+    }
+
+    if (course.start_date) {
+      // Jika start_date sudah lewat tidak bisa enroll
+      if (moment(course.start_date).isBefore(new Date())) {
+        throw new BadRequestException(
+          'Kelas ini sudah dimulai, tidak bisa enroll',
+        );
+      }
+    }
+
+    return course;
   }
 }
