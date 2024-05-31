@@ -19,8 +19,6 @@ export class CertificatesConsumer {
   async generatorCertificate(job: Job<GenerateCertificateDto>) {
     const payload = job.data;
 
-    console.log('Payload :', payload);
-
     const course = await this.prisma.course.findFirst({
       where: {
         slug: payload.course_slug,
@@ -40,12 +38,15 @@ export class CertificatesConsumer {
                 ParticipantLiveClass: true,
               },
             },
+            quizzes: {
+              include: {
+                sessions: true,
+              },
+            },
           },
         },
       },
     });
-
-    console.log('Course :', course);
 
     const minimumScoreDailyQuiz = payload.minimum_daily_quiz_score ?? null;
     const minimumScoreFinalQuiz = payload.minimum_final_quiz_score ?? null;
@@ -64,12 +65,11 @@ export class CertificatesConsumer {
         // Daily Quiz
         await Promise.all(
           payload.list_daily_quiz_ids.map(async (quiz_id) => {
-            const quizScore = await this.prisma.quizSession.findFirst({
-              where: {
-                quiz_id: quiz_id as string,
-                user_id: user.id,
-              },
-            });
+            const quizScore = course?.curriculums
+              .map((curriculum) => curriculum.quizzes)
+              .flat()
+              .find((quiz) => quiz.id === quiz_id)
+              .sessions.find((session) => session.user_id === participant_id);
 
             if (quizScore) listScoreQuizDaily.push(quizScore?.score);
             else listScoreQuizDaily.push(0);
@@ -79,12 +79,11 @@ export class CertificatesConsumer {
         // Final Quiz
         await Promise.all(
           payload.list_final_quiz_ids.map(async (quiz_id) => {
-            const quizScore = await this.prisma.quizSession.findFirst({
-              where: {
-                quiz_id: quiz_id as string,
-                user_id: user.id,
-              },
-            });
+            const quizScore = course?.curriculums
+              .map((curriculum) => curriculum.quizzes)
+              .flat()
+              .find((quiz) => quiz.id === quiz_id)
+              .sessions.find((session) => session.user_id === participant_id);
 
             if (quizScore) listScoreQuizFinal.push(quizScore?.score);
             else listScoreQuizFinal.push(0);
@@ -112,14 +111,10 @@ export class CertificatesConsumer {
           listScoreQuizDaily.reduce((acc, curr) => acc + curr, 0) /
           listScoreQuizDaily.length;
 
-        console.log('averageScoreDailyQuiz :', averageScoreDailyQuiz);
-
         // Average Score Final Quiz
         const averageScoreFinalQuiz =
           listScoreQuizFinal.reduce((acc, curr) => acc + curr, 0) /
           listScoreQuizFinal.length;
-
-        console.log('averageScoreFinalQuiz :', averageScoreFinalQuiz);
 
         // is User get competence certificate
         let isCompetenceCertificate = false;
@@ -137,8 +132,6 @@ export class CertificatesConsumer {
           isCompetenceCertificate = false;
         }
 
-        console.log('isCompetenceCertificate :', isCompetenceCertificate);
-
         // is User get participation certificate
         let isParticipationCertificate = false;
         if (minimumDurationLiveClass) {
@@ -147,8 +140,6 @@ export class CertificatesConsumer {
         } else {
           isParticipationCertificate = false;
         }
-
-        console.log('isParticipationCertificate :', isParticipationCertificate);
 
         // Generate Certificate ID
         const year = new Date().getFullYear();
@@ -163,36 +154,90 @@ export class CertificatesConsumer {
 
         // Generate Certificate
         if (isCompetenceCertificate) {
-          console.log('Competence Generated ...');
-
-          const certificate = await this.prisma.certificate.create({
-            data: {
-              no_cert: patternCertificateId.replace('TYPE', 'C'),
-              user_id: user.id,
-              type: 'competence',
+          const certificate = await this.prisma.certificate.findFirst({
+            where: {
               course_id: course.id,
-              total_duration: durationToHour,
+              user_id: user.id,
             },
           });
 
-          if (averageScoreDailyQuiz) {
-            await this.prisma.certificateScore.create({
+          if (certificate) {
+            await this.prisma.certificate.update({
+              where: {
+                id: certificate.id,
+              },
               data: {
-                certificate_id: certificate.id,
-                quiz_type: 'daily',
-                score: averageScoreDailyQuiz,
+                total_duration: durationToHour,
               },
             });
-          }
 
-          if (averageScoreFinalQuiz) {
-            await this.prisma.certificateScore.create({
+            if (averageScoreDailyQuiz) {
+              const certificateScore =
+                await this.prisma.certificateScore.findFirst({
+                  where: {
+                    certificate_id: certificate.id,
+                    quiz_type: 'daily',
+                  },
+                });
+
+              await this.prisma.certificateScore.update({
+                where: {
+                  id: certificateScore.id,
+                },
+                data: {
+                  score: averageScoreDailyQuiz,
+                },
+              });
+            }
+
+            if (averageScoreFinalQuiz) {
+              const certificateScore =
+                await this.prisma.certificateScore.findFirst({
+                  where: {
+                    certificate_id: certificate.id,
+                    quiz_type: 'final',
+                  },
+                });
+
+              await this.prisma.certificateScore.update({
+                where: {
+                  id: certificateScore.id,
+                },
+                data: {
+                  score: averageScoreFinalQuiz,
+                },
+              });
+            }
+          } else {
+            await this.prisma.certificate.create({
               data: {
-                certificate_id: certificate.id,
-                quiz_type: 'final',
-                score: averageScoreFinalQuiz,
+                no_cert: patternCertificateId.replace('TYPE', 'C'),
+                user_id: user.id,
+                type: 'competence',
+                course_id: course.id,
+                total_duration: durationToHour,
               },
             });
+
+            if (averageScoreDailyQuiz) {
+              await this.prisma.certificateScore.create({
+                data: {
+                  certificate_id: certificate.id,
+                  quiz_type: 'daily',
+                  score: averageScoreDailyQuiz,
+                },
+              });
+            }
+
+            if (averageScoreFinalQuiz) {
+              await this.prisma.certificateScore.create({
+                data: {
+                  certificate_id: certificate.id,
+                  quiz_type: 'final',
+                  score: averageScoreFinalQuiz,
+                },
+              });
+            }
           }
 
           this.certificateService.emit('certificate.generate', {
@@ -207,17 +252,33 @@ export class CertificatesConsumer {
         }
 
         if (isParticipationCertificate) {
-          console.log('Participation Generated ...');
-
-          await this.prisma.certificate.create({
-            data: {
-              no_cert: patternCertificateId.replace('TYPE', 'P'),
-              user_id: user.id,
-              type: 'competence',
+          const certificate = await this.prisma.certificate.findFirst({
+            where: {
               course_id: course.id,
-              total_duration: durationToHour,
+              user_id: user.id,
             },
           });
+
+          if (certificate) {
+            await this.prisma.certificate.update({
+              where: {
+                id: certificate.id,
+              },
+              data: {
+                total_duration: durationToHour,
+              },
+            });
+          } else {
+            await this.prisma.certificate.create({
+              data: {
+                no_cert: patternCertificateId.replace('TYPE', 'P'),
+                user_id: user.id,
+                type: 'competence',
+                course_id: course.id,
+                total_duration: durationToHour,
+              },
+            });
+          }
 
           this.certificateService.emit('certificate.generate', {
             name: user.name,
