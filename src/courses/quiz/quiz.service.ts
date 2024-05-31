@@ -200,8 +200,8 @@ export class QuizService {
     // });
 
     // Get Total Question Generated
-    const totalQuestion = quiz.option_generated.total_question;
-    delete quiz.option_generated;
+    const totalQuestion = quiz?.option_generated?.total_question;
+    delete quiz?.option_generated;
 
     return {
       ...quiz,
