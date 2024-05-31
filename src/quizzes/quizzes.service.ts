@@ -21,8 +21,6 @@ export class QuizzesService {
   ) {}
 
   async createQuiz({ payload }: { payload: CreateQuizDto }) {
-    // TODO: Check User is Teacher & Course is handled by Teacher
-
     const checkCurriculum = await this.curriculumsService.findOneByUUID(
       payload.curriculum_uuid,
       payload.course_slug,
@@ -116,8 +114,6 @@ export class QuizzesService {
     payload: UpdateQuizDto;
     quiz_uuid: string;
   }) {
-    // TODO: Check User is Teacher & Course is handled by Teacher
-
     const checkQuiz = await this.prismaService.quiz.findUnique({
       where: {
         id: quiz_uuid,
@@ -261,8 +257,6 @@ export class QuizzesService {
   }
 
   async deleteQuiz({ quiz_uuid }: { quiz_uuid: string }) {
-    // TODO: Check User is Teacher & Course is handled by Teacher
-
     const checkQuiz = await this.prismaService.quiz.findUnique({
       where: {
         id: quiz_uuid,

@@ -9,7 +9,6 @@ import { createPaginator } from '../utils/pagination.utils';
 import { CreateCourseDiscountDto } from './dto/create-course-discount.dto';
 
 // TODO ADD SCHEDULER TO UPDATE DISCOUNTS
-// TODO ADD PAGINATION
 
 @Injectable()
 export class CourseDiscountService {

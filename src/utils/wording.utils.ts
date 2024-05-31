@@ -10,6 +10,8 @@ export enum NotificationType {
   transaction_waiting_payment,
   transaction_success_payment,
   transaction_error_payment,
+  certificate_generated,
+  exam_time_almost_up,
 }
 
 export const notificationWording = (notificationType: NotificationType) => {
@@ -79,6 +81,18 @@ export const notificationWording = (notificationType: NotificationType) => {
         type: 'transaction_error_payment',
         title: 'Transaksi',
         body: 'Maafkan ketidaknyamanan ini. Transaksi Anda tidak dapat diproses saat ini karena adanya kesalahan pada server kami. Mohon coba lagi nanti atau hubungi tim dukungan kami untuk bantuan lebih lanjut. Terima kasih atas pemahaman Anda. 🛠️',
+      };
+    case NotificationType.certificate_generated:
+      return {
+        type: 'certificate_received',
+        title: 'Sertifikat',
+        body: 'Selamat! Anda telah menerima sertifikat [nameCourse]. Sertifikat ini dapat diunduh dan digunakan sebagai bukti pencapaian Anda. Teruskan perjalanan pembelajaran Anda dan jangan ragu untuk menjelajahi kursus lainnya. Sukses selalu! 🎓',
+      };
+    case NotificationType.exam_time_almost_up:
+      return {
+        type: 'exam_time_almost_up',
+        title: 'Waktu Ujian Hampir Habis',
+        body: 'Sisa waktu ujian Anda hanya 15 menit. Sebaiknya selesaikan pertanyaan yang tersisa dan periksa kembali jawaban Anda.',
       };
   }
 };

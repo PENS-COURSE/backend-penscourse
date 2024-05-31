@@ -23,8 +23,6 @@ import { CurriculumsService } from './curriculums.service';
 import { CreateCurriculumDto } from './dto/create-curriculum.dto';
 import { UpdateCurriculumDto } from './dto/update-curriculum.dto';
 
-// TODO: Check User is Teacher & Course is handled by Teacher
-
 @ApiTags('Course - Curriculums')
 @Controller('courses')
 export class CurriculumsController {

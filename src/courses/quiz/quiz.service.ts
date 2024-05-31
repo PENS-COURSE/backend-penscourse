@@ -10,9 +10,14 @@ import { Prisma, User } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import * as moment from 'moment';
 import { QuestionEntity } from '../../entities/quiz.entity';
+import { NotificationsService } from '../../notifications/notifications.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { QuizzesService } from '../../quizzes/quizzes.service';
 import { createPaginator } from '../../utils/pagination.utils';
+import {
+  NotificationType,
+  notificationWording,
+} from '../../utils/wording.utils';
 import { CoursesService } from '../courses.service';
 import { AnswerQuizDto } from './dto/answer-quiz.dto';
 
@@ -23,6 +28,7 @@ export class QuizService {
     private readonly prisma: PrismaService,
     private readonly quizzesService: QuizzesService,
     private readonly coursesService: CoursesService,
+    private readonly notificationService: NotificationsService,
     private schedulerRegistry: SchedulerRegistry,
   ) {}
 
@@ -329,6 +335,33 @@ export class QuizService {
         .add(quiz.duration, 'm')
         .toISOString();
 
+      // Get Duration 15 minutes before end
+      const reminderDuration = moment(duration)
+        .subtract(15, 'minutes')
+        .toISOString();
+
+      const sendNotificationBeforeEnd = setTimeout(
+        async () => {
+          const wording = notificationWording(
+            NotificationType.exam_time_almost_up,
+          );
+
+          await this.notificationService.sendNotification({
+            user_ids: [user.id],
+            title: wording.title,
+            body: wording.body,
+            type: wording.type,
+          });
+        },
+        moment(reminderDuration).diff(moment(), 'milliseconds'),
+      );
+
+      // Add Dynamic Scheduler for Send Notification 15 Minutes Before End
+      this.schedulerRegistry.addTimeout(
+        `quiz.session.${session.id}.reminder`,
+        sendNotificationBeforeEnd,
+      );
+
       const timeOut = setTimeout(
         async () => {
           await this.submitQuiz({ session_id: session.id, user });
@@ -505,6 +538,14 @@ export class QuizService {
         }
       }),
     );
+
+    const getReminder = this.schedulerRegistry.getTimeout(
+      `quiz.session.${session.id}.reminder`,
+    );
+    if (getReminder)
+      this.schedulerRegistry.deleteTimeout(
+        `quiz.session.${session.id}.reminder`,
+      );
 
     const timeout = this.schedulerRegistry.getTimeout(
       `quiz.session.${session.id}`,

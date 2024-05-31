@@ -9,10 +9,11 @@ import { User } from '@prisma/client';
 import { Queue } from 'bull';
 import { plainToInstance } from 'class-transformer';
 import { CoursesService } from '../courses/courses.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserEntity } from '../users/entities/user.entity';
-import { UsersService } from '../users/users.service';
 import { createPaginator } from '../utils/pagination.utils';
+import { NotificationType, notificationWording } from '../utils/wording.utils';
 import { GenerateCertificateDto } from './dto/generate-certificate.dto';
 import { HandleCertificateCreationDto } from './dto/upload-certificate.dto';
 
@@ -21,7 +22,7 @@ export class CertificatesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly courseService: CoursesService,
-    private readonly userService: UsersService,
+    private readonly notificationService: NotificationsService,
     @InjectQueue('certificates') private readonly certificatesQueue: Queue,
   ) {}
 
@@ -122,6 +123,9 @@ export class CertificatesService {
       where: {
         no_cert: certificate_id,
       },
+      include: {
+        course: true,
+      },
     });
 
     if (certificate) {
@@ -135,7 +139,19 @@ export class CertificatesService {
         },
       });
 
-      // TODO: Send Notification to User
+      const wording = notificationWording(
+        NotificationType.certificate_generated,
+      );
+
+      await this.notificationService.sendNotification({
+        user_ids: [certificate.user_id],
+        title: wording.title,
+        body: wording.body.replace('[nameCourse]', certificate.course.name),
+        type: wording.type,
+        action_id: certificate.uuid,
+      });
+
+      // Todo: Send Email
     }
   }
 

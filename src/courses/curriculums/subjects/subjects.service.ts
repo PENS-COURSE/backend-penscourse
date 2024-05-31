@@ -15,9 +15,6 @@ import { UpdateFileContentDto } from './dto/update-file-content.dto';
 import { UpdateLiveClassDto } from './dto/update-live-class.dto';
 import { UpdateVideoContentDto } from './dto/update-video-content.dto';
 
-// TODO: Generate Certificate when course is completed
-// TODO: Send Certificate to all students when course is completed (Email, Download)
-
 @Injectable()
 export class SubjectsService {
   constructor(
