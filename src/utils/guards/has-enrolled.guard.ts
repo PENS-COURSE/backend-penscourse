@@ -31,10 +31,6 @@ export class HasEnrolledGuard implements CanActivate {
         course_id: course.id,
       },
     });
-    console.log(
-      '🚀 ~ HasEnrolledGuard ~ canActivate ~ enrollment:',
-      enrollment,
-    );
 
     if (!enrollment)
       throw new ForbiddenException('Anda belum terdaftar di kelas ini');

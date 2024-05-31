@@ -2,8 +2,10 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { Prisma, User } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import * as moment from 'moment';
@@ -16,10 +18,12 @@ import { AnswerQuizDto } from './dto/answer-quiz.dto';
 
 @Injectable()
 export class QuizService {
+  private readonly logger = new Logger(QuizService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly quizzesService: QuizzesService,
     private readonly coursesService: CoursesService,
+    private schedulerRegistry: SchedulerRegistry,
   ) {}
 
   async findAllQuiz({
@@ -325,6 +329,18 @@ export class QuizService {
         .add(quiz.duration, 'm')
         .toISOString();
 
+      const timeOut = setTimeout(
+        async () => {
+          await this.submitQuiz({ session_id: session.id, user });
+
+          this.logger.log(`Quiz ${quiz.title} for user ${user.id} has ended`);
+        },
+        moment(duration).diff(moment(), 'milliseconds'),
+      );
+
+      // Add Dynamic Scheduler for Submit Quiz Automatically after duration ended
+      this.schedulerRegistry.addTimeout(`quiz.session.${session.id}`, timeOut);
+
       return {
         quiz,
         questions: serializeQuestion,
@@ -489,6 +505,12 @@ export class QuizService {
         }
       }),
     );
+
+    const timeout = this.schedulerRegistry.getTimeout(
+      `quiz.session.${session.id}`,
+    );
+    if (timeout)
+      this.schedulerRegistry.deleteTimeout(`quiz.session.${session.id}`);
 
     await this.prisma.quizSession.update({
       where: {
