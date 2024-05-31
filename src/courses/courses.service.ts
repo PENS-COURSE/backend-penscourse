@@ -126,7 +126,19 @@ export class CoursesService {
       options: { page },
       map: async (courses) => {
         const mappedCourses = courses.map(async (course) => {
-          const isEnrolled = user?.role == 'user' && course.enrollments.length;
+          let isEnrolled = false;
+          if (user?.role == 'user' && course.enrollments.length) {
+            isEnrolled = true;
+          } else if (user?.role == 'admin') {
+            isEnrolled = true;
+          } else if (user?.id == course.user_id) {
+            isEnrolled = true;
+          } else {
+            isEnrolled = false;
+          }
+          const isReviewed = course.reviews.find(
+            (review) => review.user_id == user?.id,
+          );
 
           delete course.enrollments;
 
@@ -146,13 +158,14 @@ export class CoursesService {
             is_enrolled: isEnrolled ? true : false,
             ratings: averageRating || 0,
             total_user_rating: totalUserRating,
+            is_reviewed: isReviewed ? true : false,
           };
 
           if (user && user?.role == 'user') {
             return data;
           }
 
-          delete data.is_enrolled;
+          delete data.is_reviewed;
 
           return new CourseEntity(data);
         });
@@ -217,24 +230,47 @@ export class CoursesService {
     if (throwException && !data)
       throw new NotFoundException('Course not found');
 
-    const isEnrolled = user?.role == 'user' && data.enrollments.length;
+    let isEnrolled = false;
+    if (user?.role == 'user' && data.enrollments.length) {
+      isEnrolled = true;
+    } else if (user?.role == 'admin') {
+      isEnrolled = true;
+    } else if (user?.id == data.user_id) {
+      isEnrolled = true;
+    } else {
+      isEnrolled = false;
+    }
+
     const totalRating = data.reviews.reduce(
       (acc, review) => acc + review.rating,
       0,
     );
+    const isReviewed = data.reviews.find(
+      (review) => review.user_id == user?.id,
+    );
+
     const averageRating = totalRating / data.reviews.length;
     const totalUserRating = data.reviews.length;
 
     delete data?.reviews;
     delete data?.enrollments;
 
-    return {
+    const response = {
       ...data,
       is_enrolled: isEnrolled ? true : false,
       ratings: averageRating || 0,
       total_user_rating: totalUserRating,
+      is_reviewed: isReviewed ? true : false,
       user: plainToInstance(UserEntity, data.user, {}),
     };
+
+    if (user && user?.role == 'user') {
+      return response;
+    }
+
+    delete response.is_reviewed;
+
+    return response;
   }
 
   async update({
