@@ -37,8 +37,8 @@ const main = async () => {
       await quiz();
       break;
     default:
-      console.error('Model not found');
-      process.exit(1);
+      dynamicConfigurations();
+      break;
   }
 };
 
@@ -1388,6 +1388,243 @@ const quiz = async () => {
   );
 
   console.log(`Successfully created quiz for each courses`);
+};
+
+const dynamicConfigurations = async () => {
+  console.log(`Creating dynamic configurations`);
+  const xendit = await prisma.dynamicConfigurations.findMany({
+    where: {
+      title: {
+        mode: 'insensitive',
+        contains: 'XENDIT',
+      },
+    },
+  });
+
+  if (xendit.length === 0) {
+    await prisma.dynamicConfigurations.create({
+      data: {
+        title: 'Xendit',
+        slug: StringHelper.slug('Xendit'),
+        can_delete: false,
+        DynamicConfigurationValues: {
+          createMany: {
+            data: [
+              {
+                key: 'XENDIT_API_KEY',
+                value: process.env.XENDIT_API_KEY ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+              {
+                key: 'XENDIT_PUBLIC_KEY',
+                value: process.env.XENDIT_PUBLIC_KEY ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+              {
+                key: 'XENDIT_WEBHOOK_TOKEN',
+                value: process.env.XENDIT_WEBHOOK_TOKEN ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+              {
+                key: 'XENDIT_SUCCESS_REDIRECT_URL',
+                value: process.env.XENDIT_SUCCESS_REDIRECT_URL ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+              {
+                key: 'XENDIT_FAILURE_REDIRECT_URL',
+                value: process.env.XENDIT_FAILURE_REDIRECT_URL ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+            ],
+            skipDuplicates: true,
+          },
+        },
+      },
+    });
+  }
+
+  const mail = await prisma.dynamicConfigurations.findMany({
+    where: {
+      title: {
+        mode: 'insensitive',
+        contains: 'MAIL',
+      },
+    },
+  });
+
+  if (mail.length === 0) {
+    await prisma.dynamicConfigurations.create({
+      data: {
+        title: 'Mail',
+        slug: StringHelper.slug('Mail'),
+        can_delete: false,
+        DynamicConfigurationValues: {
+          createMany: {
+            data: [
+              {
+                key: 'MAIL_FROM',
+                value: process.env.MAIL_FROM ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+              {
+                key: 'MAIL_SERVICE',
+                value: process.env.MAIL_SERVICE ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+              {
+                key: 'MAIL_USER',
+                value: process.env.MAIL_USER ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+              {
+                key: 'MAIL_PASSWORD',
+                value: process.env.MAIL_PASSWORD ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+            ],
+            skipDuplicates: true,
+          },
+        },
+      },
+    });
+  }
+
+  const oneSignal = await prisma.dynamicConfigurations.findMany({
+    where: {
+      title: {
+        mode: 'insensitive',
+        contains: 'ONESIGNAL',
+      },
+    },
+  });
+
+  if (oneSignal.length === 0) {
+    await prisma.dynamicConfigurations.create({
+      data: {
+        title: 'OneSignal',
+        slug: StringHelper.slug('OneSignal'),
+        can_delete: false,
+        DynamicConfigurationValues: {
+          createMany: {
+            data: [
+              {
+                key: 'ONESIGNAL_APP_ID',
+                value: process.env.ONESIGNAL_APP_ID ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+              {
+                key: 'ONESIGNAL_USER_KEY',
+                value: process.env.ONESIGNAL_USER_KEY ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+              {
+                key: 'ONESIGNAL_APP_KEY',
+                value: process.env.ONESIGNAL_APP_KEY ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+            ],
+            skipDuplicates: true,
+          },
+        },
+      },
+    });
+  }
+
+  const services = await prisma.dynamicConfigurations.findMany({
+    where: {
+      title: {
+        mode: 'insensitive',
+        contains: 'SERVICES',
+      },
+    },
+  });
+
+  if (services.length === 0) {
+    await prisma.dynamicConfigurations.create({
+      data: {
+        title: 'Services',
+        slug: StringHelper.slug('Services'),
+        can_delete: false,
+        DynamicConfigurationValues: {
+          createMany: {
+            data: [
+              {
+                key: 'SERVICE_STREAMING_URL_APP',
+                value: process.env.STREAMING_SERVICE_URL ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+              {
+                key: 'SERVICE_CERTIFICATE_PUBLIC_URL',
+                value: process.env.CERTIFICATE_SERVICE_PUBLIC_URL ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+            ],
+            skipDuplicates: true,
+          },
+        },
+      },
+    });
+  }
+
+  const liveKit = await prisma.dynamicConfigurations.findMany({
+    where: {
+      title: {
+        mode: 'insensitive',
+        contains: 'LIVEKIT',
+      },
+    },
+  });
+
+  if (liveKit.length === 0) {
+    await prisma.dynamicConfigurations.create({
+      data: {
+        title: 'LiveKit',
+        slug: StringHelper.slug('LiveKit'),
+        can_delete: false,
+        DynamicConfigurationValues: {
+          createMany: {
+            data: [
+              {
+                key: 'LIVEKIT_API_SECRET',
+                value: process.env.LIVEKIT_API_SECRET ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+              {
+                key: 'LIVEKIT_API_KEY',
+                value: process.env.LIVEKIT_API_KEY ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+              {
+                key: 'LIVEKIT_API_HOST',
+                value: process.env.LIVEKIT_API_HOST ?? '',
+                type: 'string',
+                can_delete: false,
+              },
+            ],
+            skipDuplicates: true,
+          },
+        },
+      },
+    });
+  }
+
+  console.log(`Successfully created dynamic configurations`);
 };
 
 main()

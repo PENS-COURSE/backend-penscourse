@@ -1,6 +1,6 @@
 import { BullModule } from '@nestjs/bull';
 import { Global, Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { PrismaService } from 'nestjs-prisma';
 import { OneSignalModule } from 'onesignal-api-client-nest';
 import { UsersModule } from '../users/users.module';
 import { NotificationsController } from './notifications.controller';
@@ -12,11 +12,28 @@ import { NotificationsService } from './notifications.service';
   imports: [
     BullModule.registerQueue({ name: 'notifications' }),
     OneSignalModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
-        appId: configService.get<string>('ONESIGNAL_APP_ID'),
-        restApiKey: configService.get<string>('ONESIGNAL_APP_KEY'),
-      }),
+      inject: [PrismaService],
+      useFactory: async (prisma: PrismaService) => {
+        const oneSignal = await prisma.dynamicConfigurations.findFirst({
+          where: {
+            title: 'OneSignal',
+          },
+          include: {
+            DynamicConfigurationValues: true,
+          },
+        });
+
+        return {
+          appId:
+            oneSignal?.DynamicConfigurationValues.find(
+              (value) => value.key === 'ONESIGNAL_APP_ID',
+            )?.value ?? process.env.ONESIGNAL_APP_ID,
+          restApiKey:
+            oneSignal?.DynamicConfigurationValues.find(
+              (value) => value.key === 'ONESIGNAL_APP_KEY',
+            )?.value ?? process.env.ONESIGNAL_APP_KEY,
+        };
+      },
     }),
     UsersModule,
   ],

@@ -51,10 +51,7 @@ export class StreamingController {
 
     return {
       message: 'Join URL generated',
-      data: {
-        url: `${process.env.STREAMING_SERVICE_URL}?signed=${data}`,
-        signature: data,
-      },
+      data,
     };
   }
 

@@ -58,7 +58,7 @@ export class CacheManagerService {
    * Remove cache by pattern
    */
   async removeCacheByPattern({ key }: { key: string }) {
-    const keys = await this.getCacheByPattern({ key: 'findMany*' });
+    const keys = await this.getCacheByPattern({ key: key });
     return await Promise.all(keys.map((key) => this.deleteCache({ key })));
   }
 
@@ -72,12 +72,10 @@ export class CacheManagerService {
     key: string;
     filter: string;
   }) {
-    console.log('removeCacheByPatternWithFilter', key, filter);
     const keys = await this.getCacheByPattern({ key });
     return await Promise.all(
       keys.map((key) => {
         if (key.includes(filter)) {
-          console.log('keyFiltered', key);
           return this.deleteCache({ key });
         }
       }),

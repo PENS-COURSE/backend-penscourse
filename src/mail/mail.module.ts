@@ -2,7 +2,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { BullModule } from '@nestjs/bull';
 import { Global, Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { PrismaService } from 'nestjs-prisma';
 import { join } from 'path';
 import { MailProcessor } from './mail.processor';
 import { MailService } from './mail.service';
@@ -12,26 +12,48 @@ import { MailService } from './mail.service';
   imports: [
     BullModule.registerQueue({ name: 'mail' }),
     MailerModule.forRootAsync({
-      useFactory: async (config: ConfigService) => ({
-        transport: {
-          service: config.get('MAIL_SERVICE'),
-          auth: {
-            user: config.get('MAIL_USER'),
-            pass: config.get('MAIL_PASSWORD'),
+      useFactory: async (prisma: PrismaService) => {
+        const mail = await prisma.dynamicConfigurations.findFirst({
+          where: {
+            title: 'Mail',
           },
-        },
-        defaults: {
-          from: config.get('MAIL_FROM'),
-        },
-        template: {
-          dir: join(__dirname, '..', '..', 'mail/templates'),
-          adapter: new HandlebarsAdapter(),
-          options: {
-            strict: true,
+          include: {
+            DynamicConfigurationValues: true,
           },
-        },
-      }),
-      inject: [ConfigService],
+        });
+
+        return {
+          transport: {
+            service:
+              mail?.DynamicConfigurationValues.find(
+                (value) => value.key === 'MAIL_SERVICE',
+              )?.value ?? process.env.MAIL_SERVICE,
+            auth: {
+              user:
+                mail?.DynamicConfigurationValues.find(
+                  (value) => value.key === 'MAIL_USER',
+                )?.value ?? process.env.MAIL_USER,
+              pass:
+                mail?.DynamicConfigurationValues.find(
+                  (value) => value.key === 'MAIL_PASSWORD',
+                )?.value ?? process.env.MAIL_PASSWORD,
+            },
+          },
+          defaults: {
+            from: mail?.DynamicConfigurationValues.find(
+              (value) => value.key === 'MAIL_FROM',
+            )?.value,
+          },
+          template: {
+            dir: join(__dirname, '..', '..', 'mail/templates'),
+            adapter: new HandlebarsAdapter(),
+            options: {
+              strict: true,
+            },
+          },
+        };
+      },
+      inject: [PrismaService],
     }),
   ],
   providers: [MailService, MailProcessor],
