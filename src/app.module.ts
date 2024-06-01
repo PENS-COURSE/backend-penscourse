@@ -16,6 +16,7 @@ import { CommonModule } from './common/common.module';
 import { CourseDiscountModule } from './course-discount/course-discount.module';
 import { CoursesModule } from './courses/courses.module';
 import { DepartmentsModule } from './departments/departments.module';
+import { DynamicConfigurationsModule } from './dynamic-configurations/dynamic-configurations.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { LogoModule } from './logo/logo.module';
 import { MailModule } from './mail/mail.module';
@@ -80,6 +81,7 @@ import { LivekitModule } from './utils/library/livekit/livekit.module';
     CertificatesModule,
     LogoModule,
     CacheManagerModule,
+    DynamicConfigurationsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -231,7 +231,26 @@ export class StreamingService {
 
       const encryptedData = HashHelpers.encryptAES(url.id);
 
-      return btoa(encryptedData);
+      const config = await this.prisma.dynamicConfigurations.findFirst({
+        where: {
+          title: 'Services',
+        },
+        include: {
+          DynamicConfigurationValues: true,
+        },
+      });
+
+      const CERTIFICATE_SERVICE_PUBLIC_URL =
+        config?.DynamicConfigurationValues.find(
+          (value) => value.key === 'SERVICE_STREAMING_URL_APP',
+        )?.value ?? process.env.STREAMING_SERVICE_URL;
+
+      const encryptedDataBase64 = btoa(encryptedData);
+
+      return {
+        url: `${CERTIFICATE_SERVICE_PUBLIC_URL}?signed=${encryptedDataBase64}`,
+        signature: encryptedData,
+      };
     });
   }
 
@@ -344,11 +363,25 @@ export class StreamingService {
 
     const base64EncryptedData = btoa(encryptedData);
 
+    const config = await this.prisma.dynamicConfigurations.findFirst({
+      where: {
+        title: 'Services',
+      },
+      include: {
+        DynamicConfigurationValues: true,
+      },
+    });
+
+    const CERTIFICATE_SERVICE_PUBLIC_URL =
+      config?.DynamicConfigurationValues.find(
+        (value) => value.key === 'SERVICE_STREAMING_URL_APP',
+      )?.value ?? process.env.STREAMING_SERVICE_URL;
+
     try {
       const response = await axios.post(
         process.env.RECORDING_SERVICE_URL + '/start-recording',
         {
-          url: process.env.STREAMING_SERVICE_URL + base64EncryptedData,
+          url: CERTIFICATE_SERVICE_PUBLIC_URL + base64EncryptedData,
           slug: roomSlug,
         },
         {

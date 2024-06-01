@@ -176,8 +176,22 @@ export class CertificatesService {
       throw new NotFoundException('Thumbnail tidak ditemukan');
     }
 
+    const config = await this.prisma.dynamicConfigurations.findFirst({
+      where: {
+        title: 'Services',
+      },
+      include: {
+        DynamicConfigurationValues: true,
+      },
+    });
+
+    const CERTIFICATE_SERVICE_PUBLIC_URL =
+      config?.DynamicConfigurationValues.find(
+        (value) => value.key === 'SERVICE_CERTIFICATE_PUBLIC_URL',
+      )?.value ?? process.env.CERTIFICATE_SERVICE_PUBLIC_URL;
+
     const buffer = await fetch(
-      `${process.env.CERTIFICATE_SERVICE_PUBLIC_URL}${thumbnail.certificate_thumbnail}`,
+      `${CERTIFICATE_SERVICE_PUBLIC_URL}/${thumbnail.certificate_thumbnail}`,
     ).then(async (res) => await res.arrayBuffer());
 
     const uint8Array = new Uint8Array(buffer);
@@ -200,8 +214,22 @@ export class CertificatesService {
 
     if (!certificate) throw new NotFoundException('Sertifikat tidak ditemukan');
 
+    const config = await this.prisma.dynamicConfigurations.findFirst({
+      where: {
+        title: 'Services',
+      },
+      include: {
+        DynamicConfigurationValues: true,
+      },
+    });
+
+    const CERTIFICATE_SERVICE_PUBLIC_URL =
+      config?.DynamicConfigurationValues.find(
+        (value) => value.key === 'SERVICE_CERTIFICATE_PUBLIC_URL',
+      )?.value ?? process.env.CERTIFICATE_SERVICE_PUBLIC_URL;
+
     const buffer = await fetch(
-      `${process.env.CERTIFICATE_SERVICE_PUBLIC_URL}${certificate.certificate_url}`,
+      `${CERTIFICATE_SERVICE_PUBLIC_URL}/${certificate.certificate_url}`,
     ).then(async (res) => await res.arrayBuffer());
 
     const uint8Array = new Uint8Array(buffer);

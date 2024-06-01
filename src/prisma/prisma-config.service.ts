@@ -62,7 +62,6 @@ export class PrismaConfigService implements PrismaOptionsFactory {
             params.action === 'createMany' ||
             params.action === 'upsert'
           ) {
-            console.log(params);
             if (params.model === 'User') {
               await this.cacheManager.removeCacheByPattern({
                 key: `*User*`,
@@ -85,6 +84,12 @@ export class PrismaConfigService implements PrismaOptionsFactory {
               await this.cacheManager.removeCacheByPatternWithFilter({
                 key: `*${params.model}*`,
                 filter: JSON.stringify({ user_id: userId }),
+              });
+            }
+
+            if (params.model !== 'User' && params.args.where?.id) {
+              await this.cacheManager.removeCacheByPattern({
+                key: `*${params.model}*`,
               });
             }
 
