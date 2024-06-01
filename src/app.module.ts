@@ -21,6 +21,7 @@ import { LogoModule } from './logo/logo.module';
 import { MailModule } from './mail/mail.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { OrdersModule } from './orders/orders.module';
+import { PrismaConfigService } from './prisma/prisma-config.service';
 import { ProfileModule } from './profile/profile.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
 import { StreamingModule } from './streaming/streaming.module';
@@ -39,8 +40,9 @@ import { LivekitModule } from './utils/library/livekit/livekit.module';
         port: parseInt(process.env.REDIS_PORT) || 6379,
       },
     }),
-    PrismaModule.forRoot({
+    PrismaModule.forRootAsync({
       isGlobal: true,
+      useClass: PrismaConfigService,
     }),
     UsersModule,
     AuthenticationModule,
