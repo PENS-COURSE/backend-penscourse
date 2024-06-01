@@ -9,6 +9,7 @@ import { User } from '@prisma/client';
 import { Queue } from 'bull';
 import { plainToInstance } from 'class-transformer';
 import { CoursesService } from '../courses/courses.service';
+import { MailService } from '../mail/mail.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserEntity } from '../users/entities/user.entity';
@@ -23,6 +24,7 @@ export class CertificatesService {
     private readonly prisma: PrismaService,
     private readonly courseService: CoursesService,
     private readonly notificationService: NotificationsService,
+    private readonly mailService: MailService,
     @InjectQueue('certificates') private readonly certificatesQueue: Queue,
   ) {}
 
@@ -125,6 +127,7 @@ export class CertificatesService {
       },
       include: {
         course: true,
+        user: true,
       },
     });
 
@@ -151,7 +154,14 @@ export class CertificatesService {
         action_id: certificate.uuid,
       });
 
-      // Todo: Send Email
+      await this.mailService.sendMail({
+        data: {
+          name: certificate.user.name,
+        },
+        subject: 'PENS Online Classroom: Sertifikat Anda Telah Dibuat',
+        template: 'certificate',
+        to: certificate.user.email,
+      });
     }
   }
 

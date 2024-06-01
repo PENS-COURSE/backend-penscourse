@@ -1,9 +1,10 @@
-import { MailerService } from '@nestjs-modules/mailer';
+import { InjectQueue } from '@nestjs/bull';
 import { Injectable } from '@nestjs/common';
+import { Queue } from 'bull';
 
 @Injectable()
 export class MailService {
-  constructor(private readonly mailerService: MailerService) {}
+  constructor(@InjectQueue('mail') private readonly mailQueue: Queue) {}
 
   async sendMail<T>({
     data,
@@ -16,11 +17,11 @@ export class MailService {
     to: string;
     subject: string;
   }) {
-    const mail = await this.mailerService.sendMail({
+    const mail = await this.mailQueue.add('sendMail', {
+      data,
+      template,
       to,
       subject,
-      template: `./${template}`,
-      context: data,
     });
 
     return mail;
