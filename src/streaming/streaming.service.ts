@@ -9,9 +9,11 @@ import { REQUEST } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { User } from '@prisma/client';
 import axios from 'axios';
+import { plainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { WebhookEvent } from 'livekit-server-sdk';
 import { PrismaService } from '../prisma/prisma.service';
+import { UserEntity } from '../users/entities/user.entity';
 import { HashHelpers } from '../utils/hash.utils';
 import { LivekitService } from '../utils/library/livekit/livekit.service';
 import { StreamingPayloadURL } from './interface/streaming-payload-url';
@@ -40,6 +42,8 @@ export class StreamingService {
         },
       });
 
+      if (!liveClass) throw new NotFoundException('Ruangan tidak ditemukan');
+
       if (user.role !== 'admin') {
         if (
           liveClass.curriculum.course.user_id !== user.id &&
@@ -52,7 +56,7 @@ export class StreamingService {
 
       const data = await this.prisma.liveClass.update({
         where: {
-          id: liveClass.id,
+          id: liveClass?.id,
         },
         data: {
           is_open: true,
@@ -61,13 +65,15 @@ export class StreamingService {
         },
       });
 
+      console.log('data :>> ', data);
+
       return data;
     });
   }
 
   async closeStreaming({ roomSlug, user }: { roomSlug: string; user: User }) {
     return await this.prisma.$transaction(async (tx) => {
-      const liveClass = await this.prisma.liveClass.findFirst({
+      const liveClass = await tx.liveClass.findFirst({
         where: {
           slug: roomSlug,
         },
@@ -80,6 +86,8 @@ export class StreamingService {
         },
       });
 
+      if (!liveClass) throw new NotFoundException('Ruangan tidak ditemukan');
+
       if (user.role !== 'admin') {
         if (
           liveClass.curriculum.course.user_id !== user.id &&
@@ -88,7 +96,7 @@ export class StreamingService {
           throw new ForbiddenException('Anda tidak memiliki akses');
       }
 
-      const data = await this.prisma.liveClass.update({
+      const data = await tx.liveClass.update({
         where: {
           id: liveClass.id,
         },
@@ -98,10 +106,11 @@ export class StreamingService {
         },
       });
 
-      const isRecording = await this.statusRecord({ roomSlug });
-      if (isRecording) {
-        await this.stopRecord({ roomSlug: roomSlug });
-      }
+      // TODO: CHECK RECORDING
+      // const isRecording = await this.statusRecord({ roomSlug });
+      // if (isRecording) {
+      //   await this.stopRecord({ roomSlug: roomSlug });
+      // }
 
       // LiveKit Close Room
       await this.liveKitService.deleteRoom(roomSlug);
@@ -128,7 +137,28 @@ export class StreamingService {
 
       if (!liveClass) throw new NotFoundException('Ruangan tidak ditemukan');
 
-      // TODO: Check Enrollment
+      if (
+        user.id !== liveClass.curriculum.course.user_id &&
+        user?.role === 'user'
+      ) {
+        if (!liveClass.is_open)
+          throw new ForbiddenException(
+            'Ruangan belum dibuka, silahkan coba lagi nanti',
+          );
+      }
+
+      // Check Enrollment
+      if (user.role === 'user') {
+        const isEnrolled = await this.prisma.enrollment.findFirst({
+          where: {
+            user_id: user.id,
+            course_id: liveClass.curriculum.course_id,
+          },
+        });
+
+        if (!isEnrolled)
+          throw new ForbiddenException('Anda belum terdaftar pada kelas ini');
+      }
 
       const roomToken = await this.liveKitService.createToken({
         roomName: liveClass.slug,
@@ -136,18 +166,8 @@ export class StreamingService {
         isAdmin:
           user.id === liveClass.curriculum.course.user_id ||
           user.role === 'admin',
+        token: this.request.headers.authorization,
       });
-
-      if (
-        user.id !== liveClass.curriculum.course.user_id ||
-        user.role !== 'dosen' ||
-        'admin'
-      ) {
-        if (!liveClass.is_open)
-          throw new ForbiddenException(
-            'Ruangan belum dibuka, silahkan coba lagi nanti',
-          );
-      }
 
       // Expired in 1 minutes
       const expiredAt = new Date();
@@ -477,6 +497,55 @@ export class StreamingService {
     }
   }
 
+  async getDetailLiveClass({ roomSlug }: { roomSlug: string }) {
+    const liveClass = await this.prisma.liveClass.findFirst({
+      where: {
+        slug: roomSlug,
+      },
+      include: {
+        curriculum: {
+          include: {
+            course: {
+              include: {
+                reviews: true,
+                user: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!liveClass) throw new NotFoundException('Ruangan tidak ditemukan');
+
+    const totalRating = liveClass.curriculum.course?.reviews.reduce(
+      (acc, review) => acc + review.rating,
+      0,
+    );
+    const averageRating =
+      totalRating / liveClass.curriculum?.course?.reviews.length;
+    const totalUserRating = liveClass.curriculum?.course?.reviews.length;
+
+    const user = plainToInstance(
+      UserEntity,
+      liveClass.curriculum?.course?.user,
+      {},
+    );
+
+    return {
+      title: liveClass.title,
+      description: liveClass.description,
+      course: {
+        title: liveClass.curriculum?.course?.name,
+        description: liveClass.curriculum?.course?.description,
+        ratings: averageRating || 0,
+        total_user_rating: totalUserRating,
+        grade_level: liveClass.curriculum?.course?.grade_level,
+        user: user,
+      },
+    };
+  }
+
   private async logParticipant({ event, room, participant }: WebhookEvent) {
     const liveClass = await this.prisma.liveClass.findFirst({
       where: {
@@ -649,7 +718,7 @@ export class StreamingService {
       });
 
       if (event === 'participant_left' && moderator) {
-        // Close room after 15 minutes if moderator left
+        // Close room after 5 minutes if moderator left
         const timeout = setTimeout(
           async () => {
             await this.liveKitService.deleteRoom(room.name);
@@ -664,7 +733,7 @@ export class StreamingService {
               },
             });
           },
-          1000 * 60 * 15,
+          1000 * 60 * 5,
         );
 
         const isRecording = await this.prisma.recording

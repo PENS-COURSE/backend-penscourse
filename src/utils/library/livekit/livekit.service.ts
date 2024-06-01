@@ -24,11 +24,13 @@ export class LivekitService {
     user,
     isAdmin,
     isGuest,
+    token,
   }: {
     roomName: string;
     user?: User;
     isAdmin: boolean;
     isGuest?: boolean;
+    token?: string;
   }) {
     const accessToken = new AccessToken(
       this.configService.get('LIVEKIT_API_KEY'),
@@ -41,6 +43,7 @@ export class LivekitService {
               user_id: user.id,
               user_name: user.name,
               role: isGuest ? 'guest' : user.role,
+              token,
             }),
       },
     );

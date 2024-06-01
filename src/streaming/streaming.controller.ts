@@ -21,10 +21,7 @@ export class StreamingController {
 
     return {
       message: 'Room opened',
-      data: {
-        url: `${process.env.STREAMING_SERVICE_URL}?signed=${data}`,
-        signature: data,
-      },
+      data: data,
     };
   }
 
@@ -118,6 +115,20 @@ export class StreamingController {
 
     return {
       message: 'Record status fetched',
+      data,
+    };
+  }
+
+  @AllowUnauthorizedRequest()
+  @Get(':slug/detail')
+  @ApiOkResponse()
+  async getDetailLiveClass(@Param('slug') slug: string) {
+    const data = await this.streamingService.getDetailLiveClass({
+      roomSlug: slug,
+    });
+
+    return {
+      message: 'Live class detail fetched',
       data,
     };
   }
