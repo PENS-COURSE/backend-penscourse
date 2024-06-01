@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
+import { PrismaService } from 'nestjs-prisma';
 import { CommonService } from '../common/common.service';
 import { CoursesService } from '../courses/courses.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { createPaginator } from '../utils/pagination.utils';
 

@@ -4,10 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, Question } from '@prisma/client';
+import { PrismaService } from 'nestjs-prisma';
 import { CurriculumsService } from '../courses/curriculums/curriculums.service';
 import { QuizSession } from '../entities/quiz.entity';
 import { NotificationsService } from '../notifications/notifications.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { ArrayHelpers } from '../utils/array.utils';
 import { NotificationType, notificationWording } from '../utils/wording.utils';
 import { CreateQuizDto, UpdateQuizDto } from './dto/payload-quiz.dto';

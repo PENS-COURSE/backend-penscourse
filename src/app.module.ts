@@ -5,6 +5,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import * as Joi from 'joi';
+import { PrismaModule } from 'nestjs-prisma';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthenticationModule } from './authentication/authentication.module';
@@ -20,11 +21,11 @@ import { LogoModule } from './logo/logo.module';
 import { MailModule } from './mail/mail.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { OrdersModule } from './orders/orders.module';
-import { PrismaModule } from './prisma/prisma.module';
 import { ProfileModule } from './profile/profile.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
 import { StreamingModule } from './streaming/streaming.module';
 import { UsersModule } from './users/users.module';
+import { CacheManagerModule } from './utils/cache-manager/cache-manager.module';
 import { RolesGuard } from './utils/guards/roles.guard';
 import { EventModule } from './utils/library/event/event.module';
 import { LivekitModule } from './utils/library/livekit/livekit.module';
@@ -34,11 +35,13 @@ import { LivekitModule } from './utils/library/livekit/livekit.module';
     ScheduleModule.forRoot(),
     BullModule.forRoot({
       redis: {
-        host: 'localhost',
-        port: 6379,
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT) || 6379,
       },
     }),
-    PrismaModule,
+    PrismaModule.forRoot({
+      isGlobal: true,
+    }),
     UsersModule,
     AuthenticationModule,
     ConfigModule.forRoot({
@@ -74,6 +77,7 @@ import { LivekitModule } from './utils/library/livekit/livekit.module';
     EventModule,
     CertificatesModule,
     LogoModule,
+    CacheManagerModule,
   ],
   controllers: [AppController],
   providers: [

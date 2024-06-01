@@ -14,7 +14,7 @@ import { Request } from 'express';
 import { google } from 'googleapis';
 import * as moment from 'moment';
 import { MailService } from '../mail/mail.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from 'nestjs-prisma';
 import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { HashHelpers } from '../utils/hash.utils';

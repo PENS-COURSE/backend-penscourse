@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from 'nestjs-prisma';
 import { HashHelpers } from '../utils/hash.utils';
 import { createPaginator } from '../utils/pagination.utils';
 import { StorageHelpers } from '../utils/storage.utils';

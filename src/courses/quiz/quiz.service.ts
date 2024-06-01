@@ -9,9 +9,9 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { Prisma, User } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import * as moment from 'moment';
+import { PrismaService } from 'nestjs-prisma';
 import { QuestionEntity } from '../../entities/quiz.entity';
 import { NotificationsService } from '../../notifications/notifications.service';
-import { PrismaService } from '../../prisma/prisma.service';
 import { QuizzesService } from '../../quizzes/quizzes.service';
 import { createPaginator } from '../../utils/pagination.utils';
 import {

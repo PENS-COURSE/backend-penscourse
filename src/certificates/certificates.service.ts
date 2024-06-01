@@ -8,10 +8,10 @@ import {
 import { User } from '@prisma/client';
 import { Queue } from 'bull';
 import { plainToInstance } from 'class-transformer';
+import { PrismaService } from 'nestjs-prisma';
 import { CoursesService } from '../courses/courses.service';
 import { MailService } from '../mail/mail.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { createPaginator } from '../utils/pagination.utils';
 import { NotificationType, notificationWording } from '../utils/wording.utils';

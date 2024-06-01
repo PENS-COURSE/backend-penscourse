@@ -7,8 +7,8 @@ import {
 import { Prisma, User } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import * as moment from 'moment';
+import { PrismaService } from 'nestjs-prisma';
 import { NotificationsService } from '../notifications/notifications.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { createPaginator } from '../utils/pagination.utils';
 import { StringHelper } from '../utils/slug.utils';

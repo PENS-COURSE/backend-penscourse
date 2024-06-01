@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from 'nestjs-prisma';
 import { UsersService } from '../../users/users.service';
 import { createPaginator } from '../../utils/pagination.utils';
 import { CoursesService } from '../courses.service';

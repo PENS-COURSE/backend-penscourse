@@ -3,7 +3,7 @@ import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { Job } from 'bull';
 import * as moment from 'moment';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from 'nestjs-prisma';
 import { StringHelper } from '../utils/slug.utils';
 import { GenerateCertificateDto } from './dto/generate-certificate.dto';
 

@@ -4,8 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
+import { PrismaService } from 'nestjs-prisma';
 import { CoursesService } from '../courses/courses.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { createPaginator } from '../utils/pagination.utils';
 import { StringHelper } from '../utils/slug.utils';
 import { StorageHelpers } from '../utils/storage.utils';

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import { PrismaService } from 'nestjs-prisma';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
-import { PrismaService } from '../../prisma/prisma.service';
 import { HashHelpers } from '../../utils/hash.utils';
 import { StringHelper } from '../../utils/slug.utils';
 

@@ -6,10 +6,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { $Enums, User } from '@prisma/client';
 import * as moment from 'moment';
+import { PrismaService } from 'nestjs-prisma';
 import { CoursesService } from '../courses/courses.service';
 import { OrderEntity, OrderWithPayment } from '../entities/order.entity';
 import { NotificationsService } from '../notifications/notifications.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { Xendit } from '../utils/library/xendit/entity/xendit.entity';
 import { XenditService } from '../utils/library/xendit/xendit.service';
 import { createPaginator } from '../utils/pagination.utils';
