@@ -106,7 +106,7 @@ export class UsersService {
       },
       data: {
         ...updateUserDto,
-        name: updateUserDto.name.trim(),
+        name: updateUserDto.name ? updateUserDto.name.trim() : undefined,
       },
     });
 
