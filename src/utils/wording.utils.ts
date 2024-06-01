@@ -6,6 +6,7 @@ export enum NotificationType {
   course_new_certificate,
   course_reminder_quiz,
   course_live_class_open,
+  course_live_class_close,
   course_enrollment_free_success,
   transaction_waiting_payment,
   transaction_success_payment,
@@ -34,6 +35,12 @@ export const notificationWording = (notificationType: NotificationType) => {
         title: 'Mata Kuliah',
         body: 'Kami senang memberitahu Anda bahwa ada jadwal rapat online baru yang telah ditetapkan. Pastikan untuk mengikuti sesi ini untuk mendapatkan informasi terkini dan terlibat dalam diskusi yang bermanfaat. Sampai jumpa di sana!',
       };
+    case NotificationType.course_live_class_close:
+      return {
+        type: 'course_live_class_close',
+        title: 'Mata Kuliah',
+        body: 'Kelas streaming [nameSubject] kita telah selesai. Terima kasih telah berpartisipasi dan berkontribusi dalam sesi ini. Semoga Anda mendapatkan wawasan baru dan pengalaman yang berharga. Sampai jumpa di kesempatan berikutnya! 🖥️👋',
+      };
     case NotificationType.course_new_quiz:
       return {
         type: 'course_new_quiz',
@@ -56,7 +63,7 @@ export const notificationWording = (notificationType: NotificationType) => {
       return {
         type: 'course_live_class_open',
         title: 'Mata Kuliah',
-        body: 'Online meeting kita sudah dibuka. Ayo bergabung dan jangan lewatkan kesempatan untuk berinteraksi, belajar, dan berdiskusi bersama. Sambutlah wawasan baru dan nikmati sesi ini! 🤝🖥️',
+        body: 'Kelas streaming [nameSubject] kita sudah dibuka. Ayo bergabung dan jangan lewatkan kesempatan untuk berinteraksi, belajar, dan berdiskusi bersama. Sambutlah wawasan baru dan nikmati sesi ini! 🤝🖥️',
       };
     case NotificationType.course_enrollment_free_success:
       return {

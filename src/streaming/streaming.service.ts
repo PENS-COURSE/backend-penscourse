@@ -12,10 +12,12 @@ import axios from 'axios';
 import { plainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { WebhookEvent } from 'livekit-server-sdk';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { HashHelpers } from '../utils/hash.utils';
 import { LivekitService } from '../utils/library/livekit/livekit.service';
+import { NotificationType, notificationWording } from '../utils/wording.utils';
 import { StreamingPayloadURL } from './interface/streaming-payload-url';
 
 @Injectable()
@@ -24,6 +26,7 @@ export class StreamingService {
     private liveKitService: LivekitService,
     private prisma: PrismaService,
     private schedulerRegistry: SchedulerRegistry,
+    private notificationService: NotificationsService,
     @Inject(REQUEST) private request: Request,
   ) {}
 
@@ -36,7 +39,11 @@ export class StreamingService {
         include: {
           curriculum: {
             include: {
-              course: true,
+              course: {
+                include: {
+                  enrollments: true,
+                },
+              },
             },
           },
         },
@@ -52,7 +59,20 @@ export class StreamingService {
           throw new ForbiddenException('Anda tidak memiliki akses');
       }
 
-      // TODO: Send Notification
+      // Send Notification
+      const wording = notificationWording(
+        NotificationType.course_live_class_open,
+      );
+
+      await this.notificationService.sendNotification({
+        user_ids: liveClass.curriculum.course.enrollments.map(
+          (enrollment) => enrollment.user_id,
+        ),
+        title: wording.title,
+        body: wording.body.replace('[nameSubject]', liveClass.title),
+        type: wording.type,
+        action_id: liveClass.slug,
+      });
 
       const data = await this.prisma.liveClass.update({
         where: {
@@ -80,7 +100,11 @@ export class StreamingService {
         include: {
           curriculum: {
             include: {
-              course: true,
+              course: {
+                include: {
+                  enrollments: true,
+                },
+              },
             },
           },
         },
@@ -104,6 +128,21 @@ export class StreamingService {
           is_open: false,
           status: 'ended',
         },
+      });
+
+      // Send Notification
+      const wording = notificationWording(
+        NotificationType.course_live_class_open,
+      );
+
+      await this.notificationService.sendNotification({
+        user_ids: liveClass.curriculum.course.enrollments.map(
+          (enrollment) => enrollment.user_id,
+        ),
+        title: wording.title,
+        body: wording.body.replace('[nameSubject]', liveClass.title),
+        type: wording.type,
+        action_id: liveClass.slug,
       });
 
       // TODO: CHECK RECORDING
