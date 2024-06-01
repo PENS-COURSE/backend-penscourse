@@ -213,6 +213,7 @@ export class AuthenticationService {
           update: {
             otp: otpHashed,
             expired_at: moment().add(minuteToExpire, 'minutes').toDate(),
+            verified_at: null,
           },
         });
 
