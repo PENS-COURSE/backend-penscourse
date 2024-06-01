@@ -136,8 +136,6 @@ export class AuthenticationService {
         where: { google_id },
       });
 
-      console.log(user);
-
       const token = await this.generateJwtToken(user);
 
       await this.updateRefreshToken({
@@ -213,7 +211,7 @@ export class AuthenticationService {
             expired_at: moment().add(minuteToExpire, 'minutes').toDate(),
           },
           update: {
-            otp: OTP.toString(),
+            otp: otpHashed,
             expired_at: moment().add(minuteToExpire, 'minutes').toDate(),
           },
         });
