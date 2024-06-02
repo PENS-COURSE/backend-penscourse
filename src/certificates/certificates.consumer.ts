@@ -226,7 +226,7 @@ export class CertificatesConsumer {
               });
             }
           } else {
-            await this.prisma.certificate.create({
+            const certificateNew = await this.prisma.certificate.create({
               data: {
                 no_cert: patternCertificateId.replace('TYPE', 'C'),
                 user_id: user.id,
@@ -239,7 +239,7 @@ export class CertificatesConsumer {
             if (averageScoreDailyQuiz) {
               await this.prisma.certificateScore.create({
                 data: {
-                  certificate_id: certificate.id,
+                  certificate_id: certificateNew.id,
                   quiz_type: 'daily',
                   score: averageScoreDailyQuiz,
                 },
@@ -249,7 +249,7 @@ export class CertificatesConsumer {
             if (averageScoreFinalQuiz) {
               await this.prisma.certificateScore.create({
                 data: {
-                  certificate_id: certificate.id,
+                  certificate_id: certificateNew.id,
                   quiz_type: 'final',
                   score: averageScoreFinalQuiz,
                 },
