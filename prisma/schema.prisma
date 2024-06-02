@@ -41,6 +41,7 @@ model User {
   LiveClass            LiveClass[]
   certificates         Certificate[]
   reviews              Review[]
+  voucher_redemptions  VoucherRedemption[]
 
   @@map("users")
 }
@@ -274,17 +275,18 @@ enum PaymentStatusType {
 }
 
 model Order {
-  id             String            @unique @default(uuid()) @db.Uuid
-  user_id        Int
-  user           User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  course_id      Int
-  course         Course            @relation(fields: [course_id], references: [id], onDelete: Cascade)
-  total_price    Int
-  total_discount Int?
-  xendit_id      String?
-  status         PaymentStatusType @default(pending)
-  created_at     DateTime          @default(now())
-  updated_at     DateTime          @updatedAt
+  id                String              @unique @default(uuid()) @db.Uuid
+  user_id           Int
+  user              User                @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course_id         Int
+  course            Course              @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  total_price       Int
+  total_discount    Int?
+  xendit_id         String?
+  status            PaymentStatusType   @default(pending)
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  VoucherRedemption VoucherRedemption[]
 
   @@map("orders")
 }
@@ -575,4 +577,42 @@ model DynamicConfigurationValues {
   updated_at               DateTime                 @updatedAt
 
   @@map("dynamic_configuration_values")
+}
+
+enum DiscountType {
+  percentage
+  fixed
+}
+
+model Voucher {
+  id              Int                 @id @default(autoincrement())
+  code            String              @unique
+  discount_type   DiscountType
+  discount_amount Decimal             @db.Decimal(10, 2)
+  min_purchase    Decimal             @db.Decimal(10, 2)
+  max_discount    Decimal?            @db.Decimal(10, 2)
+  start_date      DateTime
+  end_date        DateTime
+  usage_limit     Int?
+  is_active       Boolean             @default(true)
+  created_at      DateTime            @default(now())
+  updated_at      DateTime            @updatedAt
+  redemptions     VoucherRedemption[]
+
+  @@map("vouchers")
+}
+
+model VoucherRedemption {
+  id              Int      @id @default(autoincrement())
+  user_id         Int
+  user            User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  voucher_id      Int
+  voucher         Voucher  @relation(fields: [voucher_id], references: [id], onDelete: Cascade)
+  order_id        String   @db.Uuid
+  order           Order    @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  discount_amount Decimal  @db.Decimal(10, 2)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  @@map("voucher_redemptions")
 }

@@ -19,7 +19,8 @@ const main = async () => {
       await admin()
         .then(async () => await users())
         .then(async () => await departments())
-        .then(async () => await curriculums());
+        .then(async () => await curriculums())
+        .then(async () => await dynamicConfigurations());
       break;
     case 'admin':
       await admin();
