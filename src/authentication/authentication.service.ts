@@ -156,7 +156,9 @@ export class AuthenticationService {
       clientSecret: this.configService.get<string>('GOOGLE_CLIENT_SECRET'),
     });
 
-    client.setCredentials({ access_token });
+    const { tokens } = await client.getToken(access_token);
+
+    client.setCredentials(tokens);
 
     const oauth2 = google.oauth2({
       auth: client,

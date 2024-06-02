@@ -5,7 +5,6 @@ import {
   HttpCode,
   Post,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -16,7 +15,6 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { Request } from 'express';
 import { AuthenticationService } from './authentication.service';
 import {
   ForgotPasswordRequestDto,
@@ -26,7 +24,6 @@ import {
 import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
 import { RegisterDto } from './dto/register.dto';
-import { GoogleGuard } from './guards/google.guard';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { AllowUnauthorizedRequest } from './metadata/allow-unauthorized-request.decorator';
 import { IsRefreshToken } from './metadata/is-refreshtoken.decorator';
@@ -96,23 +93,6 @@ export class AuthenticationController {
   }
 
   @AllowUnauthorizedRequest()
-  @UseGuards(GoogleGuard)
-  @ApiOperation({ summary: 'Google Callback' })
-  @ApiOkResponse()
-  @HttpCode(200)
-  @Get('login/google/callback')
-  async loginWithGoogleCallback(@Req() req: Request) {
-    const data = await this.authenticationService.loginWithGoogleID({
-      google_id: req.user['google_id'],
-    });
-
-    return {
-      message: 'Successfully logged in user',
-      data,
-    };
-  }
-
-  @AllowUnauthorizedRequest()
   @ApiQuery({
     name: 'access_token',
     type: String,
@@ -131,16 +111,6 @@ export class AuthenticationController {
       message: 'Successfully logged in user',
       data,
     };
-  }
-
-  @UseGuards(GoogleGuard)
-  @AllowUnauthorizedRequest()
-  @ApiOperation({ summary: 'Login with Google' })
-  @ApiOkResponse()
-  @HttpCode(200)
-  @Get('login/google')
-  async loginWithGoogle() {
-    return 'OK';
   }
 
   @AllowUnauthorizedRequest()
