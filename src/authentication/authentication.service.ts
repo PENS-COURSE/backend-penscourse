@@ -13,8 +13,8 @@ import { instanceToPlain } from 'class-transformer';
 import { Request } from 'express';
 import { google } from 'googleapis';
 import * as moment from 'moment';
-import { MailService } from '../mail/mail.service';
 import { PrismaService } from 'nestjs-prisma';
+import { MailService } from '../mail/mail.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { HashHelpers } from '../utils/hash.utils';
@@ -27,8 +27,6 @@ import {
 import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
 import { RegisterDto } from './dto/register.dto';
-
-// TODO: Login with Google
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthenticationService {

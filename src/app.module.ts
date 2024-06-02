@@ -31,6 +31,7 @@ import { CacheManagerModule } from './utils/cache-manager/cache-manager.module';
 import { RolesGuard } from './utils/guards/roles.guard';
 import { EventModule } from './utils/library/event/event.module';
 import { LivekitModule } from './utils/library/livekit/livekit.module';
+import { VouchersModule } from './vouchers/vouchers.module';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { LivekitModule } from './utils/library/livekit/livekit.module';
     LogoModule,
     CacheManagerModule,
     DynamicConfigurationsModule,
+    VouchersModule,
   ],
   controllers: [AppController],
   providers: [
