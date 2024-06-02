@@ -41,7 +41,7 @@ export class BannersController {
     const data = await this.bannersService.create(createBannerDto, file);
 
     return {
-      message: '',
+      message: 'Successfully created banner!',
       data,
     };
   }
@@ -54,7 +54,7 @@ export class BannersController {
     const data = await this.bannersService.findAll();
 
     return {
-      message: '',
+      message: 'Successfully get all banners!',
       data,
     };
   }
@@ -67,7 +67,7 @@ export class BannersController {
     const data = await this.bannersService.findAllForAdmin();
 
     return {
-      message: '',
+      message: 'Successfully get all banners!',
       data,
     };
   }
@@ -80,7 +80,7 @@ export class BannersController {
     const data = await this.bannersService.findOne(+id);
 
     return {
-      message: '',
+      message: 'Successfully get one banner!',
       data,
     };
   }
@@ -99,7 +99,7 @@ export class BannersController {
     const data = await this.bannersService.update(+id, updateBannerDto, file);
 
     return {
-      message: '',
+      message: 'Successfully updated banner!',
       data,
     };
   }
@@ -112,7 +112,7 @@ export class BannersController {
     const data = await this.bannersService.remove(+id);
 
     return {
-      message: '',
+      message: 'Successfully removed banner!',
       data,
     };
   }

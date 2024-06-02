@@ -3,13 +3,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { PrismaService } from 'nestjs-prisma';
 import { CoursesService } from '../courses/courses.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { createPaginator } from '../utils/pagination.utils';
 import { CreateCourseDiscountDto } from './dto/create-course-discount.dto';
 
 // TODO ADD SCHEDULER TO UPDATE DISCOUNTS
-// TODO ADD PAGINATION
 
 @Injectable()
 export class CourseDiscountService {

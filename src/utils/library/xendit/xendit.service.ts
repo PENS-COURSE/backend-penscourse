@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { REQUEST } from '@nestjs/core';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { Request } from 'express';
+import { MODULE_OPTIONS_TOKEN } from './config.module-definition';
 import { Xendit, XenditCallback } from './entity/xendit.entity';
 import {
   PayloadInvoiceData,
@@ -18,7 +19,7 @@ export class XenditService {
   private readonly currency: string;
 
   constructor(
-    @Inject('CONFIG_OPTIONS') private options: XenditOptions,
+    @Inject(MODULE_OPTIONS_TOKEN) private options: XenditOptions,
     @Inject(REQUEST) private request: Request,
     private configService: ConfigService,
   ) {

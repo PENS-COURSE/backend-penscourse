@@ -6,8 +6,9 @@ import {
 } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
+import * as moment from 'moment';
+import { PrismaService } from 'nestjs-prisma';
 import { NotificationsService } from '../notifications/notifications.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { createPaginator } from '../utils/pagination.utils';
 import { StringHelper } from '../utils/slug.utils';
@@ -16,8 +17,6 @@ import { NotificationType, notificationWording } from '../utils/wording.utils';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { CourseEntity } from './entities/course.entity';
-
-// TODO: Filter Course (Done, Active, Inactive, On Progress, Completed)
 
 @Injectable()
 export class CoursesService {
@@ -126,7 +125,19 @@ export class CoursesService {
       options: { page },
       map: async (courses) => {
         const mappedCourses = courses.map(async (course) => {
-          const isEnrolled = user?.role == 'user' && course.enrollments.length;
+          let isEnrolled = false;
+          if (user?.role == 'user' && course.enrollments.length) {
+            isEnrolled = true;
+          } else if (user?.role == 'admin') {
+            isEnrolled = true;
+          } else if (user?.id == course.user_id) {
+            isEnrolled = true;
+          } else {
+            isEnrolled = false;
+          }
+          const isReviewed = course.reviews.find(
+            (review) => review.user_id == user?.id,
+          );
 
           delete course.enrollments;
 
@@ -146,13 +157,14 @@ export class CoursesService {
             is_enrolled: isEnrolled ? true : false,
             ratings: averageRating || 0,
             total_user_rating: totalUserRating,
+            is_reviewed: isReviewed ? true : false,
           };
 
           if (user && user?.role == 'user') {
             return data;
           }
 
-          delete data.is_enrolled;
+          delete data.is_reviewed;
 
           return new CourseEntity(data);
         });
@@ -217,24 +229,47 @@ export class CoursesService {
     if (throwException && !data)
       throw new NotFoundException('Course not found');
 
-    const isEnrolled = user?.role == 'user' && data.enrollments.length;
+    let isEnrolled = false;
+    if (user?.role == 'user' && data.enrollments.length) {
+      isEnrolled = true;
+    } else if (user?.role == 'admin') {
+      isEnrolled = true;
+    } else if (user?.id == data.user_id) {
+      isEnrolled = true;
+    } else {
+      isEnrolled = false;
+    }
+
     const totalRating = data.reviews.reduce(
       (acc, review) => acc + review.rating,
       0,
     );
+    const isReviewed = data.reviews.find(
+      (review) => review.user_id == user?.id,
+    );
+
     const averageRating = totalRating / data.reviews.length;
     const totalUserRating = data.reviews.length;
 
     delete data?.reviews;
     delete data?.enrollments;
 
-    return {
+    const response = {
       ...data,
       is_enrolled: isEnrolled ? true : false,
       ratings: averageRating || 0,
       total_user_rating: totalUserRating,
+      is_reviewed: isReviewed ? true : false,
       user: plainToInstance(UserEntity, data.user, {}),
     };
+
+    if (user && user?.role == 'user') {
+      return response;
+    }
+
+    delete response.is_reviewed;
+
+    return response;
   }
 
   async update({
@@ -326,26 +361,15 @@ export class CoursesService {
   }
 
   async enrollCourse({ slug, user }: { slug: string; user: User }) {
-    const course = await this.findOneBySlug({ slug });
-
-    if (!course.is_active) {
-      throw new ForbiddenException();
-    }
-
-    if (!course.is_free) {
-      throw new BadRequestException('This course is not free');
-    }
-
-    const isEnrolled = await this.prisma.enrollment.findFirst({
-      where: {
-        course_id: course.id,
-        user_id: user.id,
-      },
+    const course = await this.checkIsEnrollment({
+      courseSlug: slug,
+      user: user,
     });
 
-    if (isEnrolled) {
-      throw new BadRequestException('You have already enrolled this course');
-    }
+    if (!course.is_free)
+      throw new ForbiddenException(
+        'Course ini tidak gratis, silahkan melakukan pembelian !',
+      );
 
     await this.prisma.enrollment.create({
       data: {
@@ -469,5 +493,45 @@ export class CoursesService {
     });
 
     return course.enrollments.flatMap((enrollment) => enrollment.user);
+  }
+
+  async checkIsEnrollment({
+    courseSlug,
+    user,
+  }: {
+    courseSlug: string;
+    user: User;
+  }) {
+    const course = await this.findOneBySlug({ slug: courseSlug });
+
+    const isEnrolled = await this.prisma.enrollment.findFirst({
+      where: {
+        course_id: course.id,
+        user_id: user.id,
+      },
+    });
+
+    if (isEnrolled) {
+      throw new BadRequestException('Anda sudah terdaftar pada kelas ini');
+    }
+
+    if (!course.is_active) {
+      throw new ForbiddenException();
+    }
+
+    if (course.is_completed) {
+      throw new BadRequestException('Kelas ini sudah selesai');
+    }
+
+    if (course.start_date) {
+      // Jika start_date sudah lewat tidak bisa enroll
+      if (moment(course.start_date).isBefore(new Date())) {
+        throw new BadRequestException(
+          'Kelas ini sudah dimulai, tidak bisa enroll',
+        );
+      }
+    }
+
+    return course;
   }
 }

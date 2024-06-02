@@ -14,7 +14,7 @@ import { Request } from 'express';
 import { google } from 'googleapis';
 import * as moment from 'moment';
 import { MailService } from '../mail/mail.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from 'nestjs-prisma';
 import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { HashHelpers } from '../utils/hash.utils';
@@ -136,8 +136,6 @@ export class AuthenticationService {
         where: { google_id },
       });
 
-      console.log(user);
-
       const token = await this.generateJwtToken(user);
 
       await this.updateRefreshToken({
@@ -213,8 +211,9 @@ export class AuthenticationService {
             expired_at: moment().add(minuteToExpire, 'minutes').toDate(),
           },
           update: {
-            otp: OTP.toString(),
+            otp: otpHashed,
             expired_at: moment().add(minuteToExpire, 'minutes').toDate(),
+            verified_at: null,
           },
         });
 

@@ -2,24 +2,34 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { Prisma, User } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import * as moment from 'moment';
+import { PrismaService } from 'nestjs-prisma';
 import { QuestionEntity } from '../../entities/quiz.entity';
-import { PrismaService } from '../../prisma/prisma.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 import { QuizzesService } from '../../quizzes/quizzes.service';
 import { createPaginator } from '../../utils/pagination.utils';
+import {
+  NotificationType,
+  notificationWording,
+} from '../../utils/wording.utils';
 import { CoursesService } from '../courses.service';
 import { AnswerQuizDto } from './dto/answer-quiz.dto';
 
 @Injectable()
 export class QuizService {
+  private readonly logger = new Logger(QuizService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly quizzesService: QuizzesService,
     private readonly coursesService: CoursesService,
+    private readonly notificationService: NotificationsService,
+    private schedulerRegistry: SchedulerRegistry,
   ) {}
 
   async findAllQuiz({
@@ -196,8 +206,8 @@ export class QuizService {
     // });
 
     // Get Total Question Generated
-    const totalQuestion = quiz.option_generated.total_question;
-    delete quiz.option_generated;
+    const totalQuestion = quiz?.option_generated?.total_question;
+    delete quiz?.option_generated;
 
     return {
       ...quiz,
@@ -324,6 +334,45 @@ export class QuizService {
       const duration = moment(session.created_at)
         .add(quiz.duration, 'm')
         .toISOString();
+
+      // Get Duration 5 minutes before end
+      const reminderDuration = moment(duration)
+        .subtract(5, 'minutes')
+        .toISOString();
+
+      const sendNotificationBeforeEnd = setTimeout(
+        async () => {
+          const wording = notificationWording(
+            NotificationType.exam_time_almost_up,
+          );
+
+          await this.notificationService.sendNotification({
+            user_ids: [user.id],
+            title: wording.title,
+            body: wording.body,
+            type: wording.type,
+          });
+        },
+        moment(reminderDuration).diff(moment(), 'milliseconds'),
+      );
+
+      // Add Dynamic Scheduler for Send Notification 5 minutes before end
+      this.schedulerRegistry.addTimeout(
+        `quiz.session.${session.id}.reminder`,
+        sendNotificationBeforeEnd,
+      );
+
+      const timeOut = setTimeout(
+        async () => {
+          await this.submitQuiz({ session_id: session.id, user });
+
+          this.logger.log(`Quiz ${quiz.title} for user ${user.id} has ended`);
+        },
+        moment(duration).diff(moment(), 'milliseconds'),
+      );
+
+      // Add Dynamic Scheduler for Submit Quiz Automatically after duration ended
+      this.schedulerRegistry.addTimeout(`quiz.session.${session.id}`, timeOut);
 
       return {
         quiz,
@@ -489,6 +538,20 @@ export class QuizService {
         }
       }),
     );
+
+    const getReminder = this.schedulerRegistry.getTimeout(
+      `quiz.session.${session.id}.reminder`,
+    );
+    if (getReminder)
+      this.schedulerRegistry.deleteTimeout(
+        `quiz.session.${session.id}.reminder`,
+      );
+
+    const timeout = this.schedulerRegistry.getTimeout(
+      `quiz.session.${session.id}`,
+    );
+    if (timeout)
+      this.schedulerRegistry.deleteTimeout(`quiz.session.${session.id}`);
 
     await this.prisma.quizSession.update({
       where: {

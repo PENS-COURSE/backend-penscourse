@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from '@prisma/client';
+import { PrismaService } from 'nestjs-prisma';
 import { NotificationsService } from '../../../notifications/notifications.service';
-import { PrismaService } from '../../../prisma/prisma.service';
 import { StringHelper } from '../../../utils/slug.utils';
 import {
   NotificationType,
@@ -14,9 +14,6 @@ import { AddVideoContentDto } from './dto/add-video-content.dto';
 import { UpdateFileContentDto } from './dto/update-file-content.dto';
 import { UpdateLiveClassDto } from './dto/update-live-class.dto';
 import { UpdateVideoContentDto } from './dto/update-video-content.dto';
-
-// TODO: Generate Certificate when course is completed
-// TODO: Send Certificate to all students when course is completed (Email, Download)
 
 @Injectable()
 export class SubjectsService {

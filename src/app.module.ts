@@ -5,6 +5,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import * as Joi from 'joi';
+import { PrismaModule } from 'nestjs-prisma';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthenticationModule } from './authentication/authentication.module';
@@ -15,29 +16,35 @@ import { CommonModule } from './common/common.module';
 import { CourseDiscountModule } from './course-discount/course-discount.module';
 import { CoursesModule } from './courses/courses.module';
 import { DepartmentsModule } from './departments/departments.module';
+import { DynamicConfigurationsModule } from './dynamic-configurations/dynamic-configurations.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
+import { LogoModule } from './logo/logo.module';
 import { MailModule } from './mail/mail.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { OrdersModule } from './orders/orders.module';
-import { PrismaModule } from './prisma/prisma.module';
+import { PrismaConfigService } from './prisma/prisma-config.service';
 import { ProfileModule } from './profile/profile.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
 import { StreamingModule } from './streaming/streaming.module';
 import { UsersModule } from './users/users.module';
+import { CacheManagerModule } from './utils/cache-manager/cache-manager.module';
 import { RolesGuard } from './utils/guards/roles.guard';
 import { EventModule } from './utils/library/event/event.module';
 import { LivekitModule } from './utils/library/livekit/livekit.module';
-import { LogoModule } from './logo/logo.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     BullModule.forRoot({
       redis: {
-        host: 'localhost',
-        port: 6379,
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT) || 6379,
       },
     }),
-    PrismaModule,
+    PrismaModule.forRootAsync({
+      isGlobal: true,
+      useClass: PrismaConfigService,
+    }),
     UsersModule,
     AuthenticationModule,
     ConfigModule.forRoot({
@@ -73,6 +80,8 @@ import { LogoModule } from './logo/logo.module';
     EventModule,
     CertificatesModule,
     LogoModule,
+    CacheManagerModule,
+    DynamicConfigurationsModule,
   ],
   controllers: [AppController],
   providers: [

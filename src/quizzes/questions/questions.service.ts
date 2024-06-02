@@ -4,8 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as csvParser from 'csv-parser';
+import { PrismaService } from 'nestjs-prisma';
 import { Readable } from 'stream';
-import { PrismaService } from '../../prisma/prisma.service';
 import {
   CreateQuizQuestionDto,
   UpdateQuizQuestionDto,

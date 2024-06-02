@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from 'nestjs-prisma';
 import { StringHelper } from '../../utils/slug.utils';
 import { CoursesService } from '../courses.service';
 import { CreateCurriculumDto } from './dto/create-curriculum.dto';

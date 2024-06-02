@@ -6,10 +6,13 @@ export enum NotificationType {
   course_new_certificate,
   course_reminder_quiz,
   course_live_class_open,
+  course_live_class_close,
   course_enrollment_free_success,
   transaction_waiting_payment,
   transaction_success_payment,
   transaction_error_payment,
+  certificate_generated,
+  exam_time_almost_up,
 }
 
 export const notificationWording = (notificationType: NotificationType) => {
@@ -31,6 +34,12 @@ export const notificationWording = (notificationType: NotificationType) => {
         type: 'course_new_live_class',
         title: 'Mata Kuliah',
         body: 'Kami senang memberitahu Anda bahwa ada jadwal rapat online baru yang telah ditetapkan. Pastikan untuk mengikuti sesi ini untuk mendapatkan informasi terkini dan terlibat dalam diskusi yang bermanfaat. Sampai jumpa di sana!',
+      };
+    case NotificationType.course_live_class_close:
+      return {
+        type: 'course_live_class_close',
+        title: 'Mata Kuliah',
+        body: 'Kelas streaming [nameSubject] kita telah selesai. Terima kasih telah berpartisipasi dan berkontribusi dalam sesi ini. Semoga Anda mendapatkan wawasan baru dan pengalaman yang berharga. Sampai jumpa di kesempatan berikutnya! 🖥️👋',
       };
     case NotificationType.course_new_quiz:
       return {
@@ -54,7 +63,7 @@ export const notificationWording = (notificationType: NotificationType) => {
       return {
         type: 'course_live_class_open',
         title: 'Mata Kuliah',
-        body: 'Online meeting kita sudah dibuka. Ayo bergabung dan jangan lewatkan kesempatan untuk berinteraksi, belajar, dan berdiskusi bersama. Sambutlah wawasan baru dan nikmati sesi ini! 🤝🖥️',
+        body: 'Kelas streaming [nameSubject] kita sudah dibuka. Ayo bergabung dan jangan lewatkan kesempatan untuk berinteraksi, belajar, dan berdiskusi bersama. Sambutlah wawasan baru dan nikmati sesi ini! 🤝🖥️',
       };
     case NotificationType.course_enrollment_free_success:
       return {
@@ -79,6 +88,18 @@ export const notificationWording = (notificationType: NotificationType) => {
         type: 'transaction_error_payment',
         title: 'Transaksi',
         body: 'Maafkan ketidaknyamanan ini. Transaksi Anda tidak dapat diproses saat ini karena adanya kesalahan pada server kami. Mohon coba lagi nanti atau hubungi tim dukungan kami untuk bantuan lebih lanjut. Terima kasih atas pemahaman Anda. 🛠️',
+      };
+    case NotificationType.certificate_generated:
+      return {
+        type: 'certificate_received',
+        title: 'Sertifikat',
+        body: 'Selamat! Anda telah menerima sertifikat [nameCourse]. Sertifikat ini dapat diunduh dan digunakan sebagai bukti pencapaian Anda. Teruskan perjalanan pembelajaran Anda dan jangan ragu untuk menjelajahi kursus lainnya. Sukses selalu! 🎓',
+      };
+    case NotificationType.exam_time_almost_up:
+      return {
+        type: 'exam_time_almost_up',
+        title: 'Waktu Ujian Hampir Habis',
+        body: 'Sisa waktu ujian Anda hanya 5 menit. Sebaiknya selesaikan pertanyaan yang tersisa dan periksa kembali jawaban Anda.',
       };
   }
 };

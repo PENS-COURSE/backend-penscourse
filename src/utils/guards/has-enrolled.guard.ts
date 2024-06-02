@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
 export class HasEnrolledGuard implements CanActivate {
@@ -31,10 +31,6 @@ export class HasEnrolledGuard implements CanActivate {
         course_id: course.id,
       },
     });
-    console.log(
-      '🚀 ~ HasEnrolledGuard ~ canActivate ~ enrollment:',
-      enrollment,
-    );
 
     if (!enrollment)
       throw new ForbiddenException('Anda belum terdaftar di kelas ini');

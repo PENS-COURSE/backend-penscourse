@@ -542,3 +542,37 @@ model Logo {
 
   @@map("logos")
 }
+
+model DynamicConfigurations {
+  id                         Int                          @id @default(autoincrement())
+  slug                       String                       @unique
+  title                      String
+  description                String?
+  can_delete                 Boolean                      @default(true)
+  created_at                 DateTime                     @default(now())
+  updated_at                 DateTime                     @updatedAt
+  DynamicConfigurationValues DynamicConfigurationValues[]
+
+  @@index([title])
+  @@map("dynamic_configurations")
+}
+
+enum DynamicConfigurationType {
+  string
+  number
+  boolean
+}
+
+model DynamicConfigurationValues {
+  id                       Int                      @id @default(autoincrement())
+  dynamic_configuration_id Int
+  dynamic_configuration    DynamicConfigurations    @relation(fields: [dynamic_configuration_id], references: [id], onDelete: Cascade)
+  key                      String
+  value                    String
+  type                     DynamicConfigurationType
+  can_delete               Boolean                  @default(true)
+  created_at               DateTime                 @default(now())
+  updated_at               DateTime                 @updatedAt
+
+  @@map("dynamic_configuration_values")
+}

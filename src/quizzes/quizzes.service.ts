@@ -4,10 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, Question } from '@prisma/client';
+import { PrismaService } from 'nestjs-prisma';
 import { CurriculumsService } from '../courses/curriculums/curriculums.service';
 import { QuizSession } from '../entities/quiz.entity';
 import { NotificationsService } from '../notifications/notifications.service';
-import { PrismaService } from '../prisma/prisma.service';
 import { ArrayHelpers } from '../utils/array.utils';
 import { NotificationType, notificationWording } from '../utils/wording.utils';
 import { CreateQuizDto, UpdateQuizDto } from './dto/payload-quiz.dto';
@@ -21,37 +21,96 @@ export class QuizzesService {
   ) {}
 
   async createQuiz({ payload }: { payload: CreateQuizDto }) {
-    // TODO: Check User is Teacher & Course is handled by Teacher
-
     const checkCurriculum = await this.curriculumsService.findOneByUUID(
       payload.curriculum_uuid,
       payload.course_slug,
     );
 
-    return await this.prismaService.quiz.create({
-      data: {
-        title: payload.title,
-        duration: payload.duration,
-        curriculum_id: checkCurriculum.id,
-        description: payload.description,
-        start_date: payload.start_date,
-        end_date: payload.end_date,
-        is_active: false,
-        is_ended: false,
-        show_result: payload.show_result,
-        pass_grade: payload.pass_grade,
-        option_generated: {
-          create: {
-            easy: payload.generated_questions.easy_percentage,
-            medium: payload.generated_questions.medium_percentage,
-            hard: payload.generated_questions.hard_percentage,
-            all_curriculum:
-              payload.generated_questions.all_curriculum_questions,
-            total_question: payload.generated_questions.total_questions,
+    const data = await this.prismaService.$transaction(async (tx) => {
+      if (payload.duration < 5) {
+        throw new BadRequestException(
+          `Durasi quiz minimal 5 menit, dimohon untuk mengisi durasi quiz lebih dari 5 menit`,
+        );
+      }
+
+      if (payload.generated_questions.all_curriculum_questions) {
+        const questions = await tx.question.findMany({
+          where: {
+            quiz: {
+              curriculum: {
+                course: {
+                  slug: payload.course_slug,
+                },
+              },
+            },
           },
-        },
-      },
+        });
+
+        return await tx.quiz.create({
+          data: {
+            title: payload.title,
+            duration: payload.duration,
+            curriculum_id: checkCurriculum.id,
+            description: payload.description,
+            start_date: payload.start_date,
+            end_date: payload.end_date,
+            is_active: false,
+            is_ended: false,
+            show_result: payload.show_result,
+            pass_grade: payload.pass_grade,
+            option_generated: {
+              create: {
+                easy: payload.generated_questions.easy_percentage,
+                medium: payload.generated_questions.medium_percentage,
+                hard: payload.generated_questions.hard_percentage,
+                all_curriculum:
+                  payload.generated_questions.all_curriculum_questions,
+                total_question: payload.generated_questions.total_questions,
+              },
+            },
+            questions: {
+              createMany: {
+                data: questions.map((question) => {
+                  delete question.id;
+                  delete question.quiz_id;
+
+                  return {
+                    ...question,
+                  };
+                }),
+              },
+            },
+          },
+        });
+      } else {
+        return await tx.quiz.create({
+          data: {
+            title: payload.title,
+            duration: payload.duration,
+            curriculum_id: checkCurriculum.id,
+            description: payload.description,
+            start_date: payload.start_date,
+            end_date: payload.end_date,
+            is_active: false,
+            is_ended: false,
+            show_result: payload.show_result,
+            pass_grade: payload.pass_grade,
+            option_generated: {
+              create: {
+                easy: payload.generated_questions.easy_percentage,
+                medium: payload.generated_questions.medium_percentage,
+                hard: payload.generated_questions.hard_percentage,
+                all_curriculum:
+                  payload.generated_questions.all_curriculum_questions,
+                total_question: payload.generated_questions.total_questions,
+              },
+            },
+          },
+        });
+      }
     });
+
+    return data;
   }
 
   async updateQuiz({
@@ -61,8 +120,6 @@ export class QuizzesService {
     payload: UpdateQuizDto;
     quiz_uuid: string;
   }) {
-    // TODO: Check User is Teacher & Course is handled by Teacher
-
     const checkQuiz = await this.prismaService.quiz.findUnique({
       where: {
         id: quiz_uuid,
@@ -78,6 +135,12 @@ export class QuizzesService {
     );
 
     return await this.prismaService.$transaction(async (tx) => {
+      if (payload.duration < 5) {
+        throw new BadRequestException(
+          `Durasi quiz minimal 5 menit, dimohon untuk mengisi durasi quiz lebih dari 5 menit`,
+        );
+      }
+
       const data = await tx.quiz.update({
         where: {
           id: quiz_uuid,
@@ -142,6 +205,63 @@ export class QuizzesService {
             action_id: payload.course_slug,
           });
         }
+
+        console.log(data.option_generated.all_curriculum);
+        console.log(data.questions.length);
+
+        if (
+          data.option_generated.all_curriculum &&
+          data.questions.length >= 0
+        ) {
+          const questions = await tx.question.findMany({
+            where: {
+              quiz: {
+                curriculum: {
+                  course: {
+                    slug: payload.course_slug,
+                  },
+                },
+                questions: {
+                  none: {
+                    quiz_id: quiz_uuid,
+                  },
+                },
+              },
+            },
+          });
+
+          const newQuestions = questions.filter((question) => {
+            // If Title is same, then it's same question
+            return !data.questions.some(
+              (q) =>
+                q.question.toLowerCase() == question.question.toLowerCase(),
+            );
+          });
+
+          console.log(newQuestions);
+
+          await tx.quiz.update({
+            where: {
+              id: quiz_uuid,
+            },
+            data: {
+              questions: {
+                createMany: {
+                  data: newQuestions.map((question) => {
+                    delete question.id;
+                    delete question.quiz_id;
+
+                    return {
+                      ...question,
+                    };
+                  }),
+                },
+              },
+            },
+          });
+        }
+
+        delete data.questions;
       }
 
       return data;
@@ -149,8 +269,6 @@ export class QuizzesService {
   }
 
   async deleteQuiz({ quiz_uuid }: { quiz_uuid: string }) {
-    // TODO: Check User is Teacher & Course is handled by Teacher
-
     const checkQuiz = await this.prismaService.quiz.findUnique({
       where: {
         id: quiz_uuid,
@@ -353,6 +471,12 @@ export class QuizzesService {
     if (data.option_generated.total_question < 1) {
       throw new BadRequestException(
         `Minimal soal yang di generate adalah 1, dimohon untuk mengupdate jumlah soal yang di menjadi lebih dari 1`,
+      );
+    }
+
+    if (data.questions.length < data.option_generated.total_question * 2) {
+      throw new BadRequestException(
+        `Total pertanyaan yang dihasilkan harus setidaknya ${data.option_generated.total_question * 2}, tetapi hanya ${data.questions.length} yang disediakan.`,
       );
     }
 
