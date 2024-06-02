@@ -6,6 +6,7 @@ import { PrismaClient } from '@prisma/client';
 import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 import * as bodyParser from 'body-parser';
+import * as compression from 'compression';
 import * as express from 'express';
 import { AppModule } from './app.module';
 import { RolesGuard } from './utils/guards/roles.guard';
@@ -43,6 +44,7 @@ async function bootstrap() {
 
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+  app.use(compression({ level: 1 }));
 
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new SentryFilter(httpAdapter));
