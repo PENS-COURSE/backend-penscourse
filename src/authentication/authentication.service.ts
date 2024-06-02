@@ -11,7 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { instanceToPlain } from 'class-transformer';
 import { Request } from 'express';
-import { google } from 'googleapis';
+import { OAuth2Client } from 'google-auth-library';
 import * as moment from 'moment';
 import { PrismaService } from 'nestjs-prisma';
 import { MailService } from '../mail/mail.service';
@@ -30,6 +30,7 @@ import { RegisterDto } from './dto/register.dto';
 
 @Injectable({ scope: Scope.REQUEST })
 export class AuthenticationService {
+  client: OAuth2Client;
   constructor(
     @Inject(REQUEST) private readonly request: Request,
     private readonly prisma: PrismaService,
@@ -37,7 +38,11 @@ export class AuthenticationService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
-  ) {}
+  ) {
+    this.client = new OAuth2Client(
+      this.configService.get<string>('GOOGLE_CLIENT_ID'),
+    );
+  }
 
   async registerUser(payload: RegisterDto) {
     const newUser = await this.usersService.create({
@@ -151,45 +156,37 @@ export class AuthenticationService {
   }
 
   async loginWithGoogleAccessToken({ access_token }: { access_token: string }) {
-    const client = new google.auth.OAuth2({
-      clientId: this.configService.get<string>('GOOGLE_CLIENT_ID'),
-      clientSecret: this.configService.get<string>('GOOGLE_CLIENT_SECRET'),
-    });
+    try {
+      const ticket = await this.client.verifyIdToken({
+        idToken: access_token,
+      });
+      const payload = ticket.getPayload();
+      console.log(payload);
 
-    const { tokens } = await client.getToken(access_token);
+      await this.prisma.user.upsert({
+        where: {
+          email: payload.email,
+        },
+        create: {
+          name: payload.name.trim(),
+          email: payload.email,
+          role: 'user',
+          password: await HashHelpers.hashPassword(StringHelper.random(12)),
+          google_id: payload.sub,
+        },
+        update: {
+          name: payload.name.trim(),
+          email: payload.email,
+          google_id: payload.sub,
+        },
+      });
 
-    client.setCredentials(tokens);
+      const user = await this.loginWithGoogleID({ google_id: payload.sub });
 
-    const oauth2 = google.oauth2({
-      auth: client,
-      version: 'v2',
-    });
-
-    const { data } = await oauth2.userinfo.get();
-
-    await this.prisma.user.upsert({
-      where: {
-        email: data.email,
-      },
-      create: {
-        name: data.name.trim(),
-        email: data.email,
-        role: 'user',
-        password: await HashHelpers.hashPassword(StringHelper.random(12)),
-        avatar: data.picture,
-        google_id: data.id,
-      },
-      update: {
-        name: data.name.trim(),
-        email: data.email,
-        avatar: data.picture,
-        google_id: data.id,
-      },
-    });
-
-    const user = await this.loginWithGoogleID({ google_id: data.id });
-
-    return user;
+      return user;
+    } catch (error) {
+      console.error('Google Login Error: ', error);
+    }
   }
 
   async forgotPasswordRequest(payload: ForgotPasswordRequestDto) {

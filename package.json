@@ -62,7 +62,7 @@
     "compression": "^1.7.4",
     "crypto-js": "^4.2.0",
     "csv-parser": "^3.0.0",
-    "googleapis": "^134.0.0",
+    "google-auth-library": "^9.10.0",
     "handlebars": "^4.7.8",
     "joi": "^17.12.3",
     "livekit-server-sdk": "^1.2.7",
