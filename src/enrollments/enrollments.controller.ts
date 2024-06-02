@@ -23,7 +23,7 @@ import { EnrollmentsService } from './enrollments.service';
 export class EnrollmentsController {
   constructor(private readonly enrollmentsService: EnrollmentsService) {}
 
-  @Auth('user')
+  @Auth()
   @ApiBearerAuth()
   @HttpCode(200)
   @ApiOperation({ summary: 'Get all enrollments' })
