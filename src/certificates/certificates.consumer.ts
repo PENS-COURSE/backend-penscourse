@@ -139,6 +139,11 @@ export class CertificatesConsumer {
           isCompetenceCertificate = false;
         }
 
+        console.log(
+          `isCompetenceCertificate - ${user.id}`,
+          isCompetenceCertificate,
+        );
+
         // is User get participation certificate
         let isParticipationCertificate = false;
         if (minimumDurationLiveClass) {
@@ -147,6 +152,11 @@ export class CertificatesConsumer {
         } else {
           isParticipationCertificate = false;
         }
+
+        console.log(
+          `isParticipationCertificate - ${user.id}`,
+          isParticipationCertificate,
+        );
 
         // Generate Certificate ID
         const year = new Date().getFullYear();
