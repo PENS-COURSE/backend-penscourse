@@ -5,7 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { SchedulerRegistry } from '@nestjs/schedule';
+import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 import { Prisma, User } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import * as moment from 'moment';
@@ -57,6 +57,12 @@ export class QuizService {
         filterStatus = {
           is_active: true,
           is_ended: false,
+          sessions: {
+            some: {
+              user_id: user.id,
+              is_ended: false,
+            },
+          },
           OR: [
             {
               start_date: {
@@ -71,19 +77,19 @@ export class QuizService {
               end_date: null,
             },
             {
-              sessions: {
-                some: {
-                  user_id: user.id,
-                  is_ended: false,
+              AND: [
+                {
+                  sessions: {
+                    some: {
+                      user_id: user.id,
+                      is_ended: false,
+                    },
+                    none: {
+                      user_id: user.id,
+                    },
+                  },
                 },
-              },
-            },
-            {
-              sessions: {
-                none: {
-                  user_id: user.id,
-                },
-              },
+              ],
             },
           ],
         };
@@ -285,6 +291,48 @@ export class QuizService {
       if (moment().isAfter(duration)) {
         throw new ForbiddenException('Waktu Quiz sudah habis');
       }
+
+      // Get Duration 5 minutes before end
+      const reminderDuration = moment(duration)
+        .subtract(5, 'minutes')
+        .toISOString();
+
+      const sendNotificationBeforeEnd = setTimeout(
+        async () => {
+          const wording = notificationWording(
+            NotificationType.exam_time_almost_up,
+          );
+
+          await this.notificationService.sendNotification({
+            user_ids: [user.id],
+            title: wording.title,
+            body: wording.body,
+            type: wording.type,
+          });
+        },
+        moment(reminderDuration).diff(moment(), 'milliseconds'),
+      );
+
+      // Add Dynamic Scheduler for Send Notification 5 minutes before end
+      this.schedulerRegistry.addTimeout(
+        `quiz.session.${checkSession.id}.reminder`,
+        sendNotificationBeforeEnd,
+      );
+
+      const timeOut = setTimeout(
+        async () => {
+          await this.submitQuiz({ session_id: checkSession.id, user });
+
+          this.logger.log(`Quiz ${quiz.title} for user ${user.id} has ended`);
+        },
+        moment(duration).diff(moment(), 'milliseconds'),
+      );
+
+      // Add Dynamic Scheduler for Submit Quiz Automatically after duration ended
+      this.schedulerRegistry.addTimeout(
+        `quiz.session.${checkSession.id}`,
+        timeOut,
+      );
 
       const serializeQuestion = checkSession.questions.map((question) => {
         return {
@@ -542,17 +590,18 @@ export class QuizService {
       }),
     );
 
-    const getReminder = this.schedulerRegistry.getTimeout(
-      `quiz.session.${session.id}.reminder`,
-    );
+    const getReminder = this.schedulerRegistry
+      .getTimeouts()
+      .find((timeout) => timeout === `quiz.session.${session.id}.reminder`);
+
     if (getReminder)
       this.schedulerRegistry.deleteTimeout(
         `quiz.session.${session.id}.reminder`,
       );
 
-    const timeout = this.schedulerRegistry.getTimeout(
-      `quiz.session.${session.id}`,
-    );
+    const timeout = this.schedulerRegistry
+      .getTimeouts()
+      .find((timeout) => timeout === `quiz.session.${session.id}`);
     if (timeout)
       this.schedulerRegistry.deleteTimeout(`quiz.session.${session.id}`);
 
@@ -597,5 +646,119 @@ export class QuizService {
       score: session.score,
       is_passed: session.score >= quiz.pass_grade,
     };
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async handleTimeout() {
+    const sessions = await this.prisma.quizSession.findMany({
+      where: {
+        is_ended: false,
+      },
+      include: {
+        quiz: true,
+        user: true,
+      },
+    });
+
+    // Send Notification for User that Quiz is about to end
+    await Promise.all(
+      sessions.map(async (session) => {
+        const getReminder = this.schedulerRegistry
+          .getTimeouts()
+          .find((timeout) => timeout === `quiz.session.${session.id}.reminder`);
+
+        if (!getReminder) {
+          const duration = moment(session.created_at)
+            .add(session.quiz.duration, 'm')
+            .toISOString();
+
+          const reminderDuration = moment(duration)
+            .subtract(5, 'minutes')
+            .toISOString();
+
+          if (moment().isAfter(reminderDuration)) {
+            const wording = notificationWording(
+              NotificationType.exam_time_almost_up,
+            );
+
+            await this.notificationService.sendNotification({
+              user_ids: [session.user.id],
+              title: wording.title,
+              body: wording.body,
+              type: wording.type,
+            });
+          } else {
+            const sendNotificationBeforeEnd = setTimeout(
+              async () => {
+                const wording = notificationWording(
+                  NotificationType.exam_time_almost_up,
+                );
+
+                await this.notificationService.sendNotification({
+                  user_ids: [session.user.id],
+                  title: wording.title,
+                  body: wording.body,
+                  type: wording.type,
+                });
+              },
+              moment(reminderDuration).diff(moment(), 'milliseconds'),
+            );
+
+            // Add Dynamic Scheduler for Send Notification 5 minutes before end
+            this.schedulerRegistry.addTimeout(
+              `quiz.session.${session.id}.reminder`,
+              sendNotificationBeforeEnd,
+            );
+          }
+        }
+      }),
+    );
+
+    // Check if session is already ended
+    await Promise.all(
+      sessions.map(async (session) => {
+        const timeout = this.schedulerRegistry
+          .getTimeouts()
+          .find((timeout) => timeout === `quiz.session.${session.id}`);
+        if (timeout)
+          this.schedulerRegistry.deleteTimeout(`quiz.session.${session.id}`);
+        else {
+          const duration = moment(session.created_at)
+            .add(session.quiz.duration, 'm')
+            .toISOString();
+
+          if (moment().isAfter(duration)) {
+            await this.submitQuiz({
+              session_id: session.id,
+              user: session.user,
+            });
+
+            this.logger.log(
+              `Quiz ${session.quiz.title} for user ${session.user.id} has ended`,
+            );
+          } else {
+            const timeOut = setTimeout(
+              async () => {
+                await this.submitQuiz({
+                  session_id: session.id,
+                  user: session.user,
+                });
+
+                this.logger.log(
+                  `Quiz ${session.quiz.title} for user ${session.user.id} has ended`,
+                );
+              },
+              moment(duration).diff(moment(), 'milliseconds'),
+            );
+
+            // Add Dynamic Scheduler for Submit Quiz Automatically after duration ended
+            this.schedulerRegistry.addTimeout(
+              `quiz.session.${session.id}`,
+              timeOut,
+            );
+          }
+        }
+      }),
+    );
   }
 }

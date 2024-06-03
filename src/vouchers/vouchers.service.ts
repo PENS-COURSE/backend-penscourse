@@ -1,21 +1,21 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { User } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { PrismaService } from 'nestjs-prisma';
-import { OrdersService } from '../orders/orders.service';
 import {
   ApplyVoucherDto,
   CreateVoucherDto,
   UpdateVoucherDto,
 } from './dto/voucher.dto';
 
-@Injectable()
+@Injectable({})
 export class VouchersService {
-  constructor(
-    private prisma: PrismaService,
-    private orderService: OrdersService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   async createVoucher({ payload }: { payload: CreateVoucherDto }) {
     const {
@@ -191,10 +191,14 @@ export class VouchersService {
   }) {
     const { code, order_id } = payload;
 
-    const order = await this.orderService.findOne({
-      orderId: order_id,
-      user,
+    const order = await this.prisma.order.findFirst({
+      where: {
+        id: order_id,
+        user_id: user.id,
+      },
     });
+
+    if (!order) throw new NotFoundException('Order tidak ditemukan');
 
     const voucher = await this.getVoucherByCode({ code });
 
@@ -249,10 +253,14 @@ export class VouchersService {
   }) {
     const { code, order_id } = payload;
 
-    const order = await this.orderService.findOne({
-      orderId: order_id,
-      user,
+    const order = await this.prisma.order.findFirst({
+      where: {
+        id: order_id,
+        user_id: user.id,
+      },
     });
+
+    if (!order) throw new NotFoundException('Order tidak ditemukan');
 
     const voucher = await this.getVoucherByCode({ code });
 
