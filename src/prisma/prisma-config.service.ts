@@ -62,6 +62,13 @@ export class PrismaConfigService implements PrismaOptionsFactory {
             params.action === 'createMany' ||
             params.action === 'upsert'
           ) {
+            const userId =
+              params.args.where?.user_id ||
+              params.args.data?.user_id ||
+              params.args.data?.user?.user_id ||
+              params.args.where?.user?.user_id ||
+              params.args.where?.user?.user_id;
+
             if (params.model === 'User') {
               await this.cacheManager.removeCacheByPattern({
                 key: `*User*`,
@@ -75,12 +82,6 @@ export class PrismaConfigService implements PrismaOptionsFactory {
               params.args.where?.user?.user_id ||
               params.args.where?.user?.user_id
             ) {
-              const userId =
-                params.args.where?.user_id ||
-                params.args.data?.user_id ||
-                params.args.data?.user?.user_id ||
-                params.args.where?.user?.user_id ||
-                params.args.where?.user?.user_id;
               await this.cacheManager.removeCacheByPatternWithFilter({
                 key: `*${params.model}*`,
                 filter: JSON.stringify({ user_id: userId }),
@@ -90,6 +91,26 @@ export class PrismaConfigService implements PrismaOptionsFactory {
             if (params.model !== 'User' && params.args.where?.id) {
               await this.cacheManager.removeCacheByPattern({
                 key: `*${params.model}*`,
+              });
+
+              await this.cacheManager.removeCacheByPatternWithFilter({
+                key: `*${params.model}*`,
+                filter: JSON.stringify({ id: params.args.where.id }),
+              });
+
+              await this.cacheManager.removeCacheByPatternWithFilter({
+                key: `*${params.model}*`,
+                filter: JSON.stringify({ user_id: userId }),
+              });
+            }
+
+            if (params.model === 'Enrollment') {
+              await this.cacheManager.removeCacheByPattern({
+                key: `*Enrollment*`,
+              });
+
+              await this.cacheManager.removeCacheByPattern({
+                key: `*Course*`,
               });
             }
 
