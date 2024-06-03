@@ -111,6 +111,50 @@ export class PrismaConfigService implements PrismaOptionsFactory {
               });
             }
 
+            if (
+              params.model === 'Curriculum' ||
+              params.model === 'Course' ||
+              params.model === 'LiveClass' ||
+              params.model === 'Quiz' ||
+              params.model === 'QuizSession' ||
+              params.model === 'Question' ||
+              params.model === 'QuestionAnswer' ||
+              params.model === 'FileContent' ||
+              params.model === 'VideoContent'
+            ) {
+              await this.cacheManager.removeCacheByPattern({
+                key: `*Course*`,
+              });
+
+              await this.cacheManager.removeCacheByPattern({
+                key: `*LiveClass*`,
+              });
+
+              await this.cacheManager.removeCacheByPattern({
+                key: `*Quiz*`,
+              });
+
+              await this.cacheManager.removeCacheByPattern({
+                key: `*Curriculum*`,
+              });
+
+              await this.cacheManager.removeCacheByPattern({
+                key: `*Question*`,
+              });
+
+              await this.cacheManager.removeCacheByPattern({
+                key: `*QuestionAnswer*`,
+              });
+
+              await this.cacheManager.removeCacheByPattern({
+                key: `*FileContent*`,
+              });
+
+              await this.cacheManager.removeCacheByPattern({
+                key: `*VideoContent*`,
+              });
+            }
+
             await this.cacheManager.removeCacheByPattern({
               key: `*${params.model}*`,
             });
