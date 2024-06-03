@@ -287,10 +287,12 @@ export class CertificatesService {
 
   async getCertificatesByCourse({
     course_slug,
+    user,
     page,
     limit,
   }: {
     course_slug: string;
+    user: User;
     page: number;
     limit: number;
   }) {
@@ -312,6 +314,7 @@ export class CertificatesService {
       args: {
         where: {
           course_id: course.id,
+          user_id: user.role === 'user' ? user.id : undefined,
         },
         include: {
           user: true,

@@ -52,7 +52,7 @@ export class CertificatesController {
     };
   }
 
-  @Auth('admin', 'dosen')
+  @Auth()
   @ApiOperation({ summary: 'Get Certificates by Course' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 25 })
@@ -60,11 +60,13 @@ export class CertificatesController {
   @Get('course/:course_slug')
   async getCertificatesByCourse(
     @Param('course_slug') courseSlug: string,
+    @CurrentUser() user: any,
     @Query('page') page: number,
     @Query('limit') limit: number,
   ) {
     const data = await this.certificateService.getCertificatesByCourse({
       course_slug: courseSlug,
+      user,
       limit,
       page,
     });
