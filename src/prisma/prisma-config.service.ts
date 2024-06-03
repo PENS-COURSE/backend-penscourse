@@ -14,36 +14,7 @@ export class PrismaConfigService implements PrismaOptionsFactory {
       middlewares: [
         async (params, next) => {
           if (params.action === 'findMany') {
-            if (
-              params.model === 'User' ||
-              params.model === 'Notification' ||
-              params.model === 'Banner' ||
-              params.model === 'Logo' ||
-              params.model === 'Review'
-            ) {
-              const key = `findMany:${params.model}:${JSON.stringify(params.args)}`;
-              const cached = await this.cacheManager.getCache({
-                key,
-              });
-
-              if (cached) {
-                return cached;
-              }
-
-              const result = await next(params);
-              await this.cacheManager.setCache({
-                key,
-                value: result,
-              });
-
-              return result;
-            } else {
-              return next(params);
-            }
-          }
-
-          if (params.action === 'findUnique' || params.action === 'findFirst') {
-            const key = `${params.action}:${params.model}:${JSON.stringify(params.args)}`;
+            const key = `findMany:${params.model}:${JSON.stringify(params.args)}`;
             const cached = await this.cacheManager.getCache({
               key,
             });
@@ -53,14 +24,42 @@ export class PrismaConfigService implements PrismaOptionsFactory {
             }
 
             const result = await next(params);
-            if (result) {
-              await this.cacheManager.setCache({
-                key,
-                value: result,
-              });
-            }
+            await this.cacheManager.setCache({
+              key,
+              value: result,
+              ttl: 300,
+            });
 
             return result;
+          }
+
+          if (params.action === 'findUnique' || params.action === 'findFirst') {
+            if (
+              params.model === 'ForgotPassword' ||
+              params.model === 'SessionLogin'
+            ) {
+              return next(params);
+            } else {
+              const key = `${params.action}:${params.model}:${JSON.stringify(params.args)}`;
+              const cached = await this.cacheManager.getCache({
+                key,
+              });
+
+              if (cached) {
+                return cached;
+              }
+
+              const result = await next(params);
+              if (result) {
+                await this.cacheManager.setCache({
+                  key,
+                  value: result,
+                  ttl: 300,
+                });
+              }
+
+              return result;
+            }
           }
 
           if (
@@ -95,6 +94,20 @@ export class PrismaConfigService implements PrismaOptionsFactory {
               await this.cacheManager.removeCacheByPatternWithFilter({
                 key: `*${params.model}*`,
                 filter: JSON.stringify({ user_id: userId }),
+              });
+            }
+
+            if (params.model === 'Enrollment') {
+              await this.cacheManager.removeCacheByPattern({
+                key: `*Enrollment*`,
+              });
+
+              await this.cacheManager.removeCacheByPattern({
+                key: `*Course*`,
+              });
+
+              await this.cacheManager.removeCacheByPattern({
+                key: `*User*`,
               });
             }
 
