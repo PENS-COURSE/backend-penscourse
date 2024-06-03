@@ -14,22 +14,32 @@ export class PrismaConfigService implements PrismaOptionsFactory {
       middlewares: [
         async (params, next) => {
           if (params.action === 'findMany') {
-            const key = `findMany:${params.model}:${JSON.stringify(params.args)}`;
-            const cached = await this.cacheManager.getCache({
-              key,
-            });
+            if (
+              params.model === 'User' ||
+              params.model === 'Notification' ||
+              params.model === 'Banner' ||
+              params.model === 'Logo' ||
+              params.model === 'Review'
+            ) {
+              const key = `findMany:${params.model}:${JSON.stringify(params.args)}`;
+              const cached = await this.cacheManager.getCache({
+                key,
+              });
 
-            if (cached) {
-              return cached;
+              if (cached) {
+                return cached;
+              }
+
+              const result = await next(params);
+              await this.cacheManager.setCache({
+                key,
+                value: result,
+              });
+
+              return result;
+            } else {
+              return next(params);
             }
-
-            const result = await next(params);
-            await this.cacheManager.setCache({
-              key,
-              value: result,
-            });
-
-            return result;
           }
 
           if (params.action === 'findUnique' || params.action === 'findFirst') {
@@ -88,31 +98,9 @@ export class PrismaConfigService implements PrismaOptionsFactory {
               });
             }
 
-            if (params.model !== 'User' && params.args.where?.id) {
-              await this.cacheManager.removeCacheByPattern({
-                key: `*${params.model}*`,
-              });
-
-              await this.cacheManager.removeCacheByPatternWithFilter({
-                key: `*${params.model}*`,
-                filter: JSON.stringify({ id: params.args.where.id }),
-              });
-
-              await this.cacheManager.removeCacheByPatternWithFilter({
-                key: `*${params.model}*`,
-                filter: JSON.stringify({ user_id: userId }),
-              });
-            }
-
-            if (params.model === 'Enrollment') {
-              await this.cacheManager.removeCacheByPattern({
-                key: `*Enrollment*`,
-              });
-
-              await this.cacheManager.removeCacheByPattern({
-                key: `*Course*`,
-              });
-            }
+            await this.cacheManager.removeCacheByPattern({
+              key: `*${params.model}*`,
+            });
 
             return next(params);
           }
