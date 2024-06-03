@@ -108,6 +108,7 @@ export class CurriculumsService {
                 return {
                   ...quiz,
                   is_taken: isTaken && isUserEnrolled ? true : false,
+                  is_submitted: !!isTaken?.is_ended,
                 };
               }),
             ),

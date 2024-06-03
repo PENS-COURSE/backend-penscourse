@@ -57,11 +57,6 @@ export class QuizService {
         filterStatus = {
           is_active: true,
           is_ended: false,
-          sessions: {
-            none: {
-              user_id: user.id,
-            },
-          },
           OR: [
             {
               start_date: {
@@ -80,6 +75,13 @@ export class QuizService {
                 some: {
                   user_id: user.id,
                   is_ended: false,
+                },
+              },
+            },
+            {
+              sessions: {
+                none: {
+                  user_id: user.id,
                 },
               },
             },
@@ -174,6 +176,7 @@ export class QuizService {
                 score: isTaken?.score,
                 is_passed: isTaken?.score >= quiz.pass_grade,
               },
+              is_submitted: !!isTaken?.is_ended,
               is_taken: !!isTaken,
             };
           }),
