@@ -249,7 +249,7 @@ export class StreamingService {
 
       return {
         url: `${CERTIFICATE_SERVICE_PUBLIC_URL}?signed=${encryptedDataBase64}`,
-        signature: encryptedData,
+        signature: encryptedDataBase64,
       };
     });
   }
