@@ -285,8 +285,10 @@ export class QuizService {
       }
 
       const duration = moment(checkSession.created_at)
-        .add(quiz.duration, 'm')
+        .add(quiz.duration, 'minutes')
         .toISOString();
+
+      console.log('duration', duration);
 
       if (moment().isAfter(duration)) {
         throw new ForbiddenException('Waktu Quiz sudah habis');
@@ -299,6 +301,8 @@ export class QuizService {
 
       const sendNotificationBeforeEnd = setTimeout(
         async () => {
+          console.log(`Quiz ${quiz.title} for user ${user.id} is about to end`);
+
           const wording = notificationWording(
             NotificationType.exam_time_almost_up,
           );
@@ -313,26 +317,40 @@ export class QuizService {
         moment(reminderDuration).diff(moment(), 'milliseconds'),
       );
 
-      // Add Dynamic Scheduler for Send Notification 5 minutes before end
-      this.schedulerRegistry.addTimeout(
-        `quiz.session.${checkSession.id}.reminder`,
-        sendNotificationBeforeEnd,
-      );
+      const getReminder = this.schedulerRegistry
+        .getTimeouts()
+        .find(
+          (timeout) => timeout === `quiz.session.${checkSession.id}.reminder`,
+        );
+      if (!getReminder) {
+        // Add Dynamic Scheduler for Send Notification 5 minutes before end
+        this.schedulerRegistry.addTimeout(
+          `quiz.session.${checkSession.id}.reminder`,
+          sendNotificationBeforeEnd,
+        );
+      }
 
       const timeOut = setTimeout(
         async () => {
+          console.log(`Quiz ${quiz.title} for user ${user.id} has ended`);
+
           await this.submitQuiz({ session_id: checkSession.id, user });
 
-          this.logger.log(`Quiz ${quiz.title} for user ${user.id} has ended`);
+          console.log(`Quiz ${quiz.title} for user ${user.id} has ended`);
         },
         moment(duration).diff(moment(), 'milliseconds'),
       );
 
-      // Add Dynamic Scheduler for Submit Quiz Automatically after duration ended
-      this.schedulerRegistry.addTimeout(
-        `quiz.session.${checkSession.id}`,
-        timeOut,
-      );
+      const getTimeout = this.schedulerRegistry
+        .getTimeouts()
+        .find((timeout) => timeout === `quiz.session.${checkSession.id}`);
+      if (!getTimeout) {
+        // Add Dynamic Scheduler for Submit Quiz Automatically after duration ended
+        this.schedulerRegistry.addTimeout(
+          `quiz.session.${checkSession.id}`,
+          timeOut,
+        );
+      }
 
       const serializeQuestion = checkSession.questions.map((question) => {
         return {
@@ -383,8 +401,10 @@ export class QuizService {
       });
 
       const duration = moment(session.created_at)
-        .add(quiz.duration, 'm')
+        .add(quiz.duration, 'minutes')
         .toISOString();
+
+      console.log('duration', duration);
 
       // Get Duration 5 minutes before end
       const reminderDuration = moment(duration)
@@ -393,6 +413,8 @@ export class QuizService {
 
       const sendNotificationBeforeEnd = setTimeout(
         async () => {
+          console.log(`Quiz ${quiz.title} for user ${user.id} is about to end`);
+
           const wording = notificationWording(
             NotificationType.exam_time_almost_up,
           );
@@ -407,23 +429,36 @@ export class QuizService {
         moment(reminderDuration).diff(moment(), 'milliseconds'),
       );
 
-      // Add Dynamic Scheduler for Send Notification 5 minutes before end
-      this.schedulerRegistry.addTimeout(
-        `quiz.session.${session.id}.reminder`,
-        sendNotificationBeforeEnd,
-      );
+      const getReminder = this.schedulerRegistry
+        .getTimeouts()
+        .find((timeout) => timeout === `quiz.session.${session.id}.reminder`);
+      if (!getReminder) {
+        // Add Dynamic Scheduler for Send Notification 5 minutes before end
+        this.schedulerRegistry.addTimeout(
+          `quiz.session.${session.id}.reminder`,
+          sendNotificationBeforeEnd,
+        );
+      }
 
       const timeOut = setTimeout(
         async () => {
-          await this.submitQuiz({ session_id: session.id, user });
+          console.log(`Quiz ${quiz.title} for user ${user.id} has ended`);
 
-          this.logger.log(`Quiz ${quiz.title} for user ${user.id} has ended`);
+          await this.submitQuiz({ session_id: session.id, user });
         },
         moment(duration).diff(moment(), 'milliseconds'),
       );
 
-      // Add Dynamic Scheduler for Submit Quiz Automatically after duration ended
-      this.schedulerRegistry.addTimeout(`quiz.session.${session.id}`, timeOut);
+      const getTimeout = this.schedulerRegistry
+        .getTimeouts()
+        .find((timeout) => timeout === `quiz.session.${session.id}`);
+      if (!getTimeout) {
+        // Add Dynamic Scheduler for Submit Quiz Automatically after duration ended
+        this.schedulerRegistry.addTimeout(
+          `quiz.session.${session.id}`,
+          timeOut,
+        );
+      }
 
       return {
         quiz,
@@ -544,6 +579,8 @@ export class QuizService {
         },
       },
     });
+
+    console.log(`Submit Quiz for user ${user.id} with session ${session_id}`);
 
     if (!session) {
       throw new ForbiddenException('Session tidak ditemukan');
@@ -669,7 +706,7 @@ export class QuizService {
 
         if (!getReminder) {
           const duration = moment(session.created_at)
-            .add(session.quiz.duration, 'm')
+            .add(session.quiz.duration, 'minutes')
             .toISOString();
 
           const reminderDuration = moment(duration)
@@ -724,7 +761,7 @@ export class QuizService {
           this.schedulerRegistry.deleteTimeout(`quiz.session.${session.id}`);
         else {
           const duration = moment(session.created_at)
-            .add(session.quiz.duration, 'm')
+            .add(session.quiz.duration, 'minutes')
             .toISOString();
 
           if (moment().isAfter(duration)) {
@@ -733,7 +770,7 @@ export class QuizService {
               user: session.user,
             });
 
-            this.logger.log(
+            console.log(
               `Quiz ${session.quiz.title} for user ${session.user.id} has ended`,
             );
           } else {
@@ -744,7 +781,7 @@ export class QuizService {
                   user: session.user,
                 });
 
-                this.logger.log(
+                console.log(
                   `Quiz ${session.quiz.title} for user ${session.user.id} has ended`,
                 );
               },
