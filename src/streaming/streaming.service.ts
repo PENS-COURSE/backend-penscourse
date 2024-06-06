@@ -13,7 +13,6 @@ import { plainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { WebhookEvent } from 'livekit-server-sdk';
 import { PrismaService } from 'nestjs-prisma';
-import { LiveClassService } from '../live-class/live-class.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { HashHelpers } from '../utils/hash.utils';
@@ -28,7 +27,6 @@ export class StreamingService {
     private prisma: PrismaService,
     private schedulerRegistry: SchedulerRegistry,
     private notificationService: NotificationsService,
-    private liveClassService: LiveClassService,
     @Inject(REQUEST) private request: Request,
   ) {}
 
@@ -86,8 +84,6 @@ export class StreamingService {
           status: 'ongoing',
         },
       });
-
-      this.liveClassService.socket.emit('open-room', data);
 
       return data;
     });
@@ -155,8 +151,6 @@ export class StreamingService {
 
       // LiveKit Close Room
       await this.liveKitService.deleteRoom(roomSlug);
-
-      this.liveClassService.socket.emit('close-room', data);
 
       return data;
     });
@@ -808,8 +802,6 @@ export class StreamingService {
                 status: 'ended',
               },
             });
-
-            this.liveClassService.socket.emit('close-room', data);
           },
           1000 * 60 * 5,
         );
