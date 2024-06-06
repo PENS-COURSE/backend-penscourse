@@ -18,6 +18,7 @@ import { CoursesModule } from './courses/courses.module';
 import { DepartmentsModule } from './departments/departments.module';
 import { DynamicConfigurationsModule } from './dynamic-configurations/dynamic-configurations.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
+import { LiveClassModule } from './live-class/live-class.module';
 import { LogoModule } from './logo/logo.module';
 import { MailModule } from './mail/mail.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -84,6 +85,7 @@ import { VouchersModule } from './vouchers/vouchers.module';
     CacheManagerModule,
     DynamicConfigurationsModule,
     VouchersModule,
+    LiveClassModule,
   ],
   controllers: [AppController],
   providers: [

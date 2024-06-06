@@ -13,6 +13,7 @@ import { plainToInstance } from 'class-transformer';
 import { Request } from 'express';
 import { WebhookEvent } from 'livekit-server-sdk';
 import { PrismaService } from 'nestjs-prisma';
+import { LiveClassService } from '../live-class/live-class.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { HashHelpers } from '../utils/hash.utils';
@@ -27,6 +28,7 @@ export class StreamingService {
     private prisma: PrismaService,
     private schedulerRegistry: SchedulerRegistry,
     private notificationService: NotificationsService,
+    private liveClassService: LiveClassService,
     @Inject(REQUEST) private request: Request,
   ) {}
 
@@ -85,7 +87,7 @@ export class StreamingService {
         },
       });
 
-      console.log('data :>> ', data);
+      this.liveClassService.socket.emit('open-room', data);
 
       return data;
     });
@@ -153,6 +155,8 @@ export class StreamingService {
 
       // LiveKit Close Room
       await this.liveKitService.deleteRoom(roomSlug);
+
+      this.liveClassService.socket.emit('close-room', data);
 
       return data;
     });
@@ -795,7 +799,7 @@ export class StreamingService {
           async () => {
             await this.liveKitService.deleteRoom(room.name);
 
-            await this.prisma.liveClass.update({
+            const data = await this.prisma.liveClass.update({
               where: {
                 slug: room.name,
               },
@@ -804,30 +808,32 @@ export class StreamingService {
                 status: 'ended',
               },
             });
+
+            this.liveClassService.socket.emit('close-room', data);
           },
           1000 * 60 * 5,
         );
 
-        const isRecording = await this.prisma.recording
-          .findMany({
-            where: {
-              live_class: {
-                slug: room.name,
-              },
-              created_at: {
-                gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
-              },
-            },
-            orderBy: {
-              created_at: 'desc',
-            },
-            take: 1,
-          })
-          .then((data) => data[0]);
+        // const isRecording = await this.prisma.recording
+        //   .findMany({
+        //     where: {
+        //       live_class: {
+        //         slug: room.name,
+        //       },
+        //       created_at: {
+        //         gte: new Date(new Date().getTime() - 24 * 60 * 60 * 1000),
+        //       },
+        //     },
+        //     orderBy: {
+        //       created_at: 'desc',
+        //     },
+        //     take: 1,
+        //   })
+        //   .then((data) => data[0]);
 
-        if (isRecording) {
-          await this.stopRecord({ roomSlug: room.name });
-        }
+        // if (isRecording) {
+        //   await this.stopRecord({ roomSlug: room.name });
+        // }
 
         this.schedulerRegistry.addTimeout(`close-room-${room.name}`, timeout);
       } else if (event === 'participant_joined' && moderator) {

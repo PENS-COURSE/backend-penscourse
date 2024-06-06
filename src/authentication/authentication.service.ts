@@ -14,6 +14,7 @@ import { Request } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import * as moment from 'moment';
 import { PrismaService } from 'nestjs-prisma';
+import { Socket } from 'socket.io';
 import { MailService } from '../mail/mail.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
@@ -389,5 +390,20 @@ export class AuthenticationService {
       access_token: accessToken,
       refresh_token: refreshToken,
     };
+  }
+
+  async handleUserFromSocket(socket: Socket) {
+    let token = socket.handshake.headers.authorization;
+    if (!token) throw new ForbiddenException('Access Denied');
+
+    token = token.split(' ')[1];
+
+    let user = await this.jwtService.verifyAsync(token, {
+      secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
+    });
+
+    user = await this.usersService.findOneByID(user.sub);
+
+    return user;
   }
 }
