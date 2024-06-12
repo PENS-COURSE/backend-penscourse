@@ -9,7 +9,6 @@ import { CurriculumsService } from '../courses/curriculums/curriculums.service';
 import { QuizSession } from '../entities/quiz.entity';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ArrayHelpers } from '../utils/array.utils';
-import { NotificationType, notificationWording } from '../utils/wording.utils';
 import { CreateQuizDto, UpdateQuizDto } from './dto/payload-quiz.dto';
 
 @Injectable()
@@ -44,44 +43,66 @@ export class QuizzesService {
               },
             },
           },
+          include: {
+            answer: true,
+          },
         });
 
-        return await tx.quiz.create({
+        const data = await tx.quiz.create({
           data: {
-            title: payload.title,
-            duration: payload.duration,
+            title: payload?.title,
+            duration: payload?.duration,
             curriculum_id: checkCurriculum.id,
-            description: payload.description,
-            start_date: payload.start_date,
-            end_date: payload.end_date,
+            description: payload?.description,
+            start_date: payload?.start_date,
+            end_date: payload?.end_date,
             is_active: false,
             is_ended: false,
-            show_result: payload.show_result,
-            pass_grade: payload.pass_grade,
+            show_result: payload?.show_result,
+            pass_grade: payload?.pass_grade,
             option_generated: {
               create: {
-                easy: payload.generated_questions.easy_percentage,
-                medium: payload.generated_questions.medium_percentage,
-                hard: payload.generated_questions.hard_percentage,
+                easy: payload?.generated_questions?.easy_percentage,
+                medium: payload?.generated_questions?.medium_percentage,
+                hard: payload?.generated_questions?.hard_percentage,
                 all_curriculum:
-                  payload.generated_questions.all_curriculum_questions,
-                total_question: payload.generated_questions.total_questions,
-              },
-            },
-            questions: {
-              createMany: {
-                data: questions.map((question) => {
-                  delete question.id;
-                  delete question.quiz_id;
-
-                  return {
-                    ...question,
-                  };
-                }),
+                  payload?.generated_questions?.all_curriculum_questions,
+                total_question: payload?.generated_questions?.total_questions,
               },
             },
           },
         });
+
+        await Promise.all(
+          questions.map(async (question) => {
+            delete question.id;
+            delete question.quiz_id;
+
+            await tx.question.create({
+              data: {
+                level: question.level,
+                option_a: question.option_a,
+                option_b: question.option_b,
+                option_c: question.option_c,
+                option_d: question.option_d,
+                option_e: question.option_e,
+                question: question.question,
+                question_type: question.question_type,
+                answer: {
+                  createMany: {
+                    data: question.answer.map((answer) => ({
+                      answer: answer.answer,
+                    })),
+                  },
+                },
+                curriculum_id: question.curriculum_id,
+                quiz_id: data.id,
+              },
+            });
+          }),
+        );
+
+        return data;
       } else {
         return await tx.quiz.create({
           data: {
@@ -151,28 +172,28 @@ export class QuizzesService {
           curriculum: true,
         },
         data: {
-          title: payload.title,
-          duration: payload.duration,
+          title: payload?.title,
+          duration: payload?.duration,
           curriculum_id: checkCurriculum.id,
-          description: payload.description,
-          start_date: payload.start_date,
-          end_date: payload.end_date,
-          is_active: payload.is_active,
-          is_ended: payload.is_ended,
-          show_result: payload.show_result,
-          pass_grade: payload.pass_grade,
+          description: payload?.description,
+          start_date: payload?.start_date,
+          end_date: payload?.end_date,
+          is_active: payload?.is_active,
+          is_ended: payload?.is_ended,
+          show_result: payload?.show_result,
+          pass_grade: payload?.pass_grade,
           option_generated: {
             update: {
               where: {
                 quiz_id: quiz_uuid,
               },
               data: {
-                easy: payload.generated_questions.easy_percentage,
-                medium: payload.generated_questions.medium_percentage,
-                hard: payload.generated_questions.hard_percentage,
+                easy: payload?.generated_questions?.easy_percentage,
+                medium: payload?.generated_questions?.medium_percentage,
+                hard: payload?.generated_questions?.hard_percentage,
                 all_curriculum:
-                  payload.generated_questions.all_curriculum_questions,
-                total_question: payload.generated_questions.total_questions,
+                  payload?.generated_questions?.all_curriculum_questions,
+                total_question: payload?.generated_questions?.total_questions,
               },
             },
           },
@@ -192,73 +213,83 @@ export class QuizzesService {
 
           // Validation Quiz
           await this.validationQuiz({ data });
-
-          const wording = notificationWording(NotificationType.course_new_quiz);
-
-          await this.notificationService.sendNotification({
-            user_ids: course.enrollments.map(
-              (enrollment) => enrollment.user_id,
-            ),
-            title: wording.title,
-            body: wording.body,
-            type: wording.type,
-            action_id: payload.course_slug,
-          });
         }
 
-        console.log(data.option_generated.all_curriculum);
-        console.log(data.questions.length);
-
         if (
-          data.option_generated.all_curriculum &&
-          data.questions.length >= 0
+          payload?.generated_questions?.all_curriculum_questions ===
+          data?.option_generated?.all_curriculum
         ) {
-          const questions = await tx.question.findMany({
-            where: {
-              quiz: {
-                curriculum: {
-                  course: {
-                    slug: payload.course_slug,
+          if (
+            data?.option_generated?.all_curriculum &&
+            data.questions.length >= 0
+          ) {
+            const questions = await tx.question.findMany({
+              where: {
+                quiz: {
+                  curriculum: {
+                    course: {
+                      slug: payload.course_slug,
+                    },
+                  },
+                  questions: {
+                    none: {
+                      quiz_id: quiz_uuid,
+                    },
                   },
                 },
-                questions: {
-                  none: {
+              },
+              include: {
+                answer: true,
+              },
+            });
+
+            const newQuestions = questions.filter((question) => {
+              // If Title is same, then it's same question
+              return !data.questions.some(
+                (q) =>
+                  q.question.toLowerCase() == question.question.toLowerCase() &&
+                  q.curriculum_id == question.curriculum_id,
+              );
+            });
+
+            await Promise.all(
+              newQuestions.map(async (question) => {
+                delete question.id;
+                delete question.quiz_id;
+
+                await tx.question.create({
+                  data: {
+                    level: question.level,
+                    option_a: question.option_a,
+                    option_b: question.option_b,
+                    option_c: question.option_c,
+                    option_d: question.option_d,
+                    option_e: question.option_e,
+                    question: question.question,
+                    question_type: question.question_type,
+                    answer: {
+                      createMany: {
+                        data: question.answer.map((answer) => ({
+                          answer: answer.answer,
+                        })),
+                      },
+                    },
+                    curriculum_id: question.curriculum_id,
                     quiz_id: quiz_uuid,
                   },
-                },
-              },
-            },
-          });
-
-          const newQuestions = questions.filter((question) => {
-            // If Title is same, then it's same question
-            return !data.questions.some(
-              (q) =>
-                q.question.toLowerCase() == question.question.toLowerCase(),
+                });
+              }),
             );
-          });
-
-          console.log(newQuestions);
-
-          await tx.quiz.update({
-            where: {
-              id: quiz_uuid,
-            },
-            data: {
-              questions: {
-                createMany: {
-                  data: newQuestions.map((question) => {
-                    delete question.id;
-                    delete question.quiz_id;
-
-                    return {
-                      ...question,
-                    };
-                  }),
+          } else {
+            await tx.question.deleteMany({
+              where: {
+                quiz_id: quiz_uuid,
+                curriculum_id: {
+                  not: null,
                 },
               },
-            },
-          });
+            });
+          }
         }
 
         delete data.questions;
@@ -481,10 +512,13 @@ export class QuizzesService {
     }
 
     if (
+      data.option_generated.easy &&
+      data.option_generated.medium &&
+      data.option_generated.hard &&
       data.option_generated.easy +
         data.option_generated.medium +
         data.option_generated.hard !=
-      100
+        100
     ) {
       throw new BadRequestException(
         `Jumlah persentase soal harus 100%, dimohon untuk mengupdate persentase soal`,

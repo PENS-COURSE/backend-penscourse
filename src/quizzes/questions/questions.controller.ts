@@ -5,7 +5,6 @@ import {
   Delete,
   Get,
   HttpCode,
-  Param,
   Patch,
   Post,
   Query,
@@ -24,6 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { memoryStorage } from 'multer';
 import { Auth } from '../../utils/decorators/auth.decorator';
+import { UUIDParam } from '../../utils/decorators/uuid-param.decorator';
 import {
   CreateQuizQuestionCSVDto,
   CreateQuizQuestionDto,
@@ -41,7 +41,7 @@ export class QuestionsController {
   @HttpCode(200)
   @ApiOkResponse()
   @Get(':quiz_uuid/questions')
-  async getQuestions(@Param('quiz_uuid') quiz_uuid: string) {
+  async getQuestions(@UUIDParam('quiz_uuid') quiz_uuid: string) {
     const data = await this.questionsService.getQuestions({
       quiz_uuid,
     });
@@ -57,8 +57,8 @@ export class QuestionsController {
   @ApiOkResponse()
   @Get(':quiz_uuid/questions/:question_uuid')
   async getQuestion(
-    @Param('quiz_uuid') quiz_uuid: string,
-    @Param('question_uuid') question_uuid: string,
+    @UUIDParam('quiz_uuid') quiz_uuid: string,
+    @UUIDParam('question_uuid') question_uuid: string,
   ) {
     const data = await this.questionsService.getQuestion({
       quiz_uuid,
@@ -77,7 +77,7 @@ export class QuestionsController {
   @Post(':quiz_uuid/questions/create')
   async createQuestion(
     @Body() payload: CreateQuizQuestionDto,
-    @Param('quiz_uuid') quiz_uuid: string,
+    @UUIDParam('quiz_uuid') quiz_uuid: string,
   ) {
     const data = await this.questionsService.createQuestion({
       payload,
@@ -96,8 +96,8 @@ export class QuestionsController {
   @Patch(':quiz_uuid/questions/:question_uuid/update')
   async updateQuestion(
     @Body() payload: UpdateQuizQuestionDto,
-    @Param('quiz_uuid') quiz_uuid: string,
-    @Param('question_uuid') question_uuid: string,
+    @UUIDParam('quiz_uuid') quiz_uuid: string,
+    @UUIDParam('question_uuid') question_uuid: string,
   ) {
     const data = await this.questionsService.updateQuestion({
       payload,
@@ -116,8 +116,8 @@ export class QuestionsController {
   @ApiOkResponse()
   @Delete(':quiz_uuid/questions/:question_uuid/delete')
   async removeQuestion(
-    @Param('quiz_uuid') quiz_uuid: string,
-    @Param('question_uuid') question_uuid: string,
+    @UUIDParam('quiz_uuid') quiz_uuid: string,
+    @UUIDParam('question_uuid') question_uuid: string,
   ) {
     const data = await this.questionsService.removeQuestion({
       quiz_uuid,

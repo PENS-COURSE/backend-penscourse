@@ -19,6 +19,7 @@ import { $Enums } from '@prisma/client';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unauthorized-request.decorator';
 import { Auth } from '../utils/decorators/auth.decorator';
+import { UUIDParam } from '../utils/decorators/uuid-param.decorator';
 import { OrdersService } from './orders.service';
 
 @ApiTags('Orders')
@@ -70,7 +71,7 @@ export class OrdersController {
     description: 'Order UUID',
   })
   @Get(':uuid')
-  async findOne(@CurrentUser() user: any, @Param('uuid') uuid: string) {
+  async findOne(@CurrentUser() user: any, @UUIDParam('uuid') uuid: string) {
     const data = await this.ordersService.findOne({ user, orderId: uuid });
 
     return {
