@@ -25,111 +25,117 @@ export class QuizzesService {
       payload.course_slug,
     );
 
-    const data = await this.prismaService.$transaction(async (tx) => {
-      if (payload.duration < 5) {
-        throw new BadRequestException(
-          `Durasi quiz minimal 5 menit, dimohon untuk mengisi durasi quiz lebih dari 5 menit`,
-        );
-      }
+    const data = await this.prismaService.$transaction(
+      async (tx) => {
+        if (payload.duration < 5) {
+          throw new BadRequestException(
+            `Durasi quiz minimal 5 menit, dimohon untuk mengisi durasi quiz lebih dari 5 menit`,
+          );
+        }
 
-      if (payload.generated_questions.all_curriculum_questions) {
-        const questions = await tx.question.findMany({
-          where: {
-            quiz: {
-              curriculum: {
-                course: {
-                  slug: payload.course_slug,
-                },
-              },
-            },
-          },
-          include: {
-            answer: true,
-          },
-        });
-
-        const data = await tx.quiz.create({
-          data: {
-            title: payload?.title,
-            duration: payload?.duration,
-            curriculum_id: checkCurriculum.id,
-            description: payload?.description,
-            start_date: payload?.start_date,
-            end_date: payload?.end_date,
-            is_active: false,
-            is_ended: false,
-            show_result: payload?.show_result,
-            pass_grade: payload?.pass_grade,
-            option_generated: {
-              create: {
-                easy: payload?.generated_questions?.easy_percentage,
-                medium: payload?.generated_questions?.medium_percentage,
-                hard: payload?.generated_questions?.hard_percentage,
-                all_curriculum:
-                  payload?.generated_questions?.all_curriculum_questions,
-                total_question: payload?.generated_questions?.total_questions,
-              },
-            },
-          },
-        });
-
-        await Promise.all(
-          questions.map(async (question) => {
-            delete question.id;
-            delete question.quiz_id;
-
-            await tx.question.create({
-              data: {
-                level: question.level,
-                option_a: question.option_a,
-                option_b: question.option_b,
-                option_c: question.option_c,
-                option_d: question.option_d,
-                option_e: question.option_e,
-                question: question.question,
-                question_type: question.question_type,
-                answer: {
-                  createMany: {
-                    data: question.answer.map((answer) => ({
-                      answer: answer.answer,
-                    })),
+        if (payload.generated_questions.all_curriculum_questions) {
+          const questions = await tx.question.findMany({
+            where: {
+              quiz: {
+                curriculum: {
+                  course: {
+                    slug: payload.course_slug,
                   },
                 },
-                curriculum_id: question.curriculum_id,
-                quiz_id: data.id,
-              },
-            });
-          }),
-        );
-
-        return data;
-      } else {
-        return await tx.quiz.create({
-          data: {
-            title: payload.title,
-            duration: payload.duration,
-            curriculum_id: checkCurriculum.id,
-            description: payload.description,
-            start_date: payload.start_date,
-            end_date: payload.end_date,
-            is_active: false,
-            is_ended: false,
-            show_result: payload.show_result,
-            pass_grade: payload.pass_grade,
-            option_generated: {
-              create: {
-                easy: payload.generated_questions.easy_percentage,
-                medium: payload.generated_questions.medium_percentage,
-                hard: payload.generated_questions.hard_percentage,
-                all_curriculum:
-                  payload.generated_questions.all_curriculum_questions,
-                total_question: payload.generated_questions.total_questions,
               },
             },
-          },
-        });
-      }
-    });
+            include: {
+              answer: true,
+            },
+          });
+
+          const data = await tx.quiz.create({
+            data: {
+              title: payload?.title,
+              duration: payload?.duration,
+              curriculum_id: checkCurriculum.id,
+              description: payload?.description,
+              start_date: payload?.start_date,
+              end_date: payload?.end_date,
+              is_active: false,
+              is_ended: false,
+              show_result: payload?.show_result,
+              pass_grade: payload?.pass_grade,
+              option_generated: {
+                create: {
+                  easy: payload?.generated_questions?.easy_percentage,
+                  medium: payload?.generated_questions?.medium_percentage,
+                  hard: payload?.generated_questions?.hard_percentage,
+                  all_curriculum:
+                    payload?.generated_questions?.all_curriculum_questions,
+                  total_question: payload?.generated_questions?.total_questions,
+                },
+              },
+            },
+          });
+
+          await Promise.all(
+            questions.map(async (question) => {
+              delete question.id;
+              delete question.quiz_id;
+
+              await tx.question.create({
+                data: {
+                  level: question.level,
+                  option_a: question.option_a,
+                  option_b: question.option_b,
+                  option_c: question.option_c,
+                  option_d: question.option_d,
+                  option_e: question.option_e,
+                  question: question.question,
+                  question_type: question.question_type,
+                  answer: {
+                    createMany: {
+                      data: question.answer.map((answer) => ({
+                        answer: answer.answer,
+                      })),
+                    },
+                  },
+                  curriculum_id: question.curriculum_id,
+                  quiz_id: data.id,
+                },
+              });
+            }),
+          );
+
+          return data;
+        } else {
+          return await tx.quiz.create({
+            data: {
+              title: payload.title,
+              duration: payload.duration,
+              curriculum_id: checkCurriculum.id,
+              description: payload.description,
+              start_date: payload.start_date,
+              end_date: payload.end_date,
+              is_active: false,
+              is_ended: false,
+              show_result: payload.show_result,
+              pass_grade: payload.pass_grade,
+              option_generated: {
+                create: {
+                  easy: payload.generated_questions.easy_percentage,
+                  medium: payload.generated_questions.medium_percentage,
+                  hard: payload.generated_questions.hard_percentage,
+                  all_curriculum:
+                    payload.generated_questions.all_curriculum_questions,
+                  total_question: payload.generated_questions.total_questions,
+                },
+              },
+            },
+          });
+        }
+      },
+      {
+        maxWait: 30000,
+        timeout: 30000,
+      },
+    );
 
     return data;
   }
@@ -155,148 +161,155 @@ export class QuizzesService {
       payload.course_slug,
     );
 
-    return await this.prismaService.$transaction(async (tx) => {
-      if (payload.duration < 5) {
-        throw new BadRequestException(
-          `Durasi quiz minimal 5 menit, dimohon untuk mengisi durasi quiz lebih dari 5 menit`,
-        );
-      }
+    return await this.prismaService.$transaction(
+      async (tx) => {
+        if (payload.duration < 5) {
+          throw new BadRequestException(
+            `Durasi quiz minimal 5 menit, dimohon untuk mengisi durasi quiz lebih dari 5 menit`,
+          );
+        }
 
-      const data = await tx.quiz.update({
-        where: {
-          id: quiz_uuid,
-        },
-        include: {
-          option_generated: true,
-          questions: true,
-          curriculum: true,
-        },
-        data: {
-          title: payload?.title,
-          duration: payload?.duration,
-          curriculum_id: checkCurriculum.id,
-          description: payload?.description,
-          start_date: payload?.start_date,
-          end_date: payload?.end_date,
-          is_active: payload?.is_active,
-          is_ended: payload?.is_ended,
-          show_result: payload?.show_result,
-          pass_grade: payload?.pass_grade,
-          option_generated: {
-            update: {
-              where: {
-                quiz_id: quiz_uuid,
-              },
-              data: {
-                easy: payload?.generated_questions?.easy_percentage,
-                medium: payload?.generated_questions?.medium_percentage,
-                hard: payload?.generated_questions?.hard_percentage,
-                all_curriculum:
-                  payload?.generated_questions?.all_curriculum_questions,
-                total_question: payload?.generated_questions?.total_questions,
+        const data = await tx.quiz.update({
+          where: {
+            id: quiz_uuid,
+          },
+          include: {
+            option_generated: true,
+            questions: true,
+            curriculum: true,
+          },
+          data: {
+            title: payload?.title,
+            duration: payload?.duration,
+            curriculum_id: checkCurriculum.id,
+            description: payload?.description,
+            start_date: payload?.start_date,
+            end_date: payload?.end_date,
+            is_active: payload?.is_active,
+            is_ended: payload?.is_ended,
+            show_result: payload?.show_result,
+            pass_grade: payload?.pass_grade,
+            option_generated: {
+              update: {
+                where: {
+                  quiz_id: quiz_uuid,
+                },
+                data: {
+                  easy: payload?.generated_questions?.easy_percentage,
+                  medium: payload?.generated_questions?.medium_percentage,
+                  hard: payload?.generated_questions?.hard_percentage,
+                  all_curriculum:
+                    payload?.generated_questions?.all_curriculum_questions,
+                  total_question: payload?.generated_questions?.total_questions,
+                },
               },
             },
           },
-        },
-      });
+        });
 
-      if (data) {
-        if (data.is_active) {
-          const course = await tx.course.findFirst({
-            where: {
-              slug: payload.course_slug,
-            },
-            include: {
-              enrollments: true,
-            },
-          });
-
-          // Validation Quiz
-          await this.validationQuiz({ data });
-        }
-
-        if (
-          payload?.generated_questions?.all_curriculum_questions ===
-          data?.option_generated?.all_curriculum
-        ) {
-          if (
-            data?.option_generated?.all_curriculum &&
-            data.questions.length >= 0
-          ) {
-            const questions = await tx.question.findMany({
+        if (data) {
+          if (data.is_active) {
+            const course = await tx.course.findFirst({
               where: {
-                quiz: {
-                  curriculum: {
-                    course: {
-                      slug: payload.course_slug,
-                    },
-                  },
-                  questions: {
-                    none: {
-                      quiz_id: quiz_uuid,
-                    },
-                  },
-                },
+                slug: payload.course_slug,
               },
               include: {
-                answer: true,
+                enrollments: true,
               },
             });
 
-            const newQuestions = questions.filter((question) => {
-              // If Title is same, then it's same question
-              return !data.questions.some(
-                (q) =>
-                  q.question.toLowerCase() == question.question.toLowerCase() &&
-                  q.curriculum_id == question.curriculum_id,
-              );
-            });
+            // Validation Quiz
+            await this.validationQuiz({ data });
+          }
 
-            await Promise.all(
-              newQuestions.map(async (question) => {
-                delete question.id;
-                delete question.quiz_id;
-
-                await tx.question.create({
-                  data: {
-                    level: question.level,
-                    option_a: question.option_a,
-                    option_b: question.option_b,
-                    option_c: question.option_c,
-                    option_d: question.option_d,
-                    option_e: question.option_e,
-                    question: question.question,
-                    question_type: question.question_type,
-                    answer: {
-                      createMany: {
-                        data: question.answer.map((answer) => ({
-                          answer: answer.answer,
-                        })),
+          if (
+            payload?.generated_questions?.all_curriculum_questions ===
+            data?.option_generated?.all_curriculum
+          ) {
+            if (
+              data?.option_generated?.all_curriculum &&
+              data.questions.length >= 0
+            ) {
+              const questions = await tx.question.findMany({
+                where: {
+                  quiz: {
+                    curriculum: {
+                      course: {
+                        slug: payload.course_slug,
                       },
                     },
-                    curriculum_id: question.curriculum_id,
-                    quiz_id: quiz_uuid,
+                    questions: {
+                      none: {
+                        quiz_id: quiz_uuid,
+                      },
+                    },
                   },
-                });
-              }),
-            );
-          } else {
-            await tx.question.deleteMany({
-              where: {
-                quiz_id: quiz_uuid,
-                curriculum_id: {
-                  not: null,
                 },
-              },
-            });
+                include: {
+                  answer: true,
+                },
+              });
+
+              const newQuestions = questions.filter((question) => {
+                // If Title is same, then it's same question
+                return !data.questions.some(
+                  (q) =>
+                    q.question.toLowerCase() ==
+                      question.question.toLowerCase() &&
+                    q.curriculum_id == question.curriculum_id,
+                );
+              });
+
+              await Promise.all(
+                newQuestions.map(async (question) => {
+                  delete question.id;
+                  delete question.quiz_id;
+
+                  await tx.question.create({
+                    data: {
+                      level: question.level,
+                      option_a: question.option_a,
+                      option_b: question.option_b,
+                      option_c: question.option_c,
+                      option_d: question.option_d,
+                      option_e: question.option_e,
+                      question: question.question,
+                      question_type: question.question_type,
+                      answer: {
+                        createMany: {
+                          data: question.answer.map((answer) => ({
+                            answer: answer.answer,
+                          })),
+                        },
+                      },
+                      curriculum_id: question.curriculum_id,
+                      quiz_id: quiz_uuid,
+                    },
+                  });
+                }),
+              );
+            } else {
+              await tx.question.deleteMany({
+                where: {
+                  quiz_id: quiz_uuid,
+                  curriculum_id: {
+                    not: null,
+                  },
+                },
+              });
+            }
           }
+
+          delete data.questions;
         }
 
-        delete data.questions;
-      }
-
-      return data;
-    });
+        return data;
+      },
+      {
+        maxWait: 30000,
+        timeout: 30000,
+      },
+    );
   }
 
   async deleteQuiz({ quiz_uuid }: { quiz_uuid: string }) {
