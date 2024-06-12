@@ -6,6 +6,7 @@ import {
 import * as csvParser from 'csv-parser';
 import { PrismaService } from 'nestjs-prisma';
 import { Readable } from 'stream';
+import { QuestionNotValid } from '../../courses/quiz/interface/QuestionNotValid';
 import {
   CreateQuizQuestionDto,
   UpdateQuizQuestionDto,
@@ -299,8 +300,40 @@ export class QuestionsService {
       throw new BadRequestException('File CSV tidak boleh kosong');
     }
 
+    const curriculumNotValid: QuestionNotValid[] = [];
+
+    const course = await this.prismaService.curriculum.findFirst({
+      where: {
+        quizzes: {
+          every: {
+            id: quiz_uuid,
+          },
+        },
+      },
+    });
+
     return await Promise.all(
       questions.map(async (question) => {
+        if (question['Kurikulum UUID'] === '') {
+          console.log('Kurikulum UUID tidak boleh kosong');
+          const checkCurriculum = await this.prismaService.curriculum.findFirst(
+            {
+              where: {
+                id: question['Kurikulum UUID'],
+              },
+            },
+          );
+
+          if (!checkCurriculum) {
+            curriculumNotValid.push({
+              id: question['Kurikulum UUID'],
+              message: `Kurikulum dengan UUID ${question['Kurikulum UUID']} tidak ditemukan`,
+            });
+
+            return;
+          }
+        }
+
         switch (question['Tipe Pertanyaan']) {
           case 'single_choice':
             return await this.createQuestion({
@@ -315,6 +348,7 @@ export class QuestionsService {
                 level: question['Level'],
                 question_type: 'single_choice',
                 right_answer: question['Jawaban Benar'].split(','),
+                curriculum_uuid: question['Kurikulum UUID'],
               },
             });
           case 'multiple_choice':
@@ -330,6 +364,7 @@ export class QuestionsService {
                 level: question['Level'],
                 question_type: 'multiple_choice',
                 right_answer: question['Jawaban Benar'].split(','),
+                curriculum_uuid: question['Kurikulum UUID'],
               },
             });
           default:
