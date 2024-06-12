@@ -288,8 +288,6 @@ export class QuizService {
         .add(quiz.duration, 'minutes')
         .toISOString();
 
-      console.log('duration', duration);
-
       if (moment().isAfter(duration)) {
         throw new ForbiddenException('Waktu Quiz sudah habis');
       }
@@ -301,8 +299,6 @@ export class QuizService {
 
       const sendNotificationBeforeEnd = setTimeout(
         async () => {
-          console.log(`Quiz ${quiz.title} for user ${user.id} is about to end`);
-
           const wording = notificationWording(
             NotificationType.exam_time_almost_up,
           );
@@ -332,11 +328,7 @@ export class QuizService {
 
       const timeOut = setTimeout(
         async () => {
-          console.log(`Quiz ${quiz.title} for user ${user.id} has ended`);
-
           await this.submitQuiz({ session_id: checkSession.id, user });
-
-          console.log(`Quiz ${quiz.title} for user ${user.id} has ended`);
         },
         moment(duration).diff(moment(), 'milliseconds'),
       );
@@ -404,8 +396,6 @@ export class QuizService {
         .add(quiz.duration, 'minutes')
         .toISOString();
 
-      console.log('duration', duration);
-
       // Get Duration 5 minutes before end
       const reminderDuration = moment(duration)
         .subtract(5, 'minutes')
@@ -413,8 +403,6 @@ export class QuizService {
 
       const sendNotificationBeforeEnd = setTimeout(
         async () => {
-          console.log(`Quiz ${quiz.title} for user ${user.id} is about to end`);
-
           const wording = notificationWording(
             NotificationType.exam_time_almost_up,
           );
@@ -442,8 +430,6 @@ export class QuizService {
 
       const timeOut = setTimeout(
         async () => {
-          console.log(`Quiz ${quiz.title} for user ${user.id} has ended`);
-
           await this.submitQuiz({ session_id: session.id, user });
         },
         moment(duration).diff(moment(), 'milliseconds'),
@@ -579,8 +565,6 @@ export class QuizService {
         },
       },
     });
-
-    console.log(`Submit Quiz for user ${user.id} with session ${session_id}`);
 
     if (!session) {
       throw new ForbiddenException('Session tidak ditemukan');
