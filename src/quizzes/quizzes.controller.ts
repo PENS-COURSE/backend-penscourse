@@ -16,6 +16,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Auth } from '../utils/decorators/auth.decorator';
+import { UUIDParam } from '../utils/decorators/uuid-param.decorator';
 import { CreateQuizDto, UpdateQuizDto } from './dto/payload-quiz.dto';
 import { QuizzesService } from './quizzes.service';
 
@@ -46,7 +47,7 @@ export class QuizzesController {
   @Patch(':quiz_uuid/update')
   async updateQuiz(
     @Body() payload: UpdateQuizDto,
-    @Param('quiz_uuid') quiz_uuid: string,
+    @UUIDParam('quiz_uuid') quiz_uuid: string,
   ) {
     const data = await this.quizzesService.updateQuiz({ payload, quiz_uuid });
 
@@ -61,7 +62,7 @@ export class QuizzesController {
   @ApiOkResponse()
   @HttpCode(200)
   @Delete(':quiz_uuid/remove')
-  async removeQuiz(@Param('quiz_uuid') quiz_uuid: string) {
+  async removeQuiz(@UUIDParam('quiz_uuid') quiz_uuid: string) {
     const data = await this.quizzesService.deleteQuiz({ quiz_uuid });
 
     return {
@@ -75,7 +76,7 @@ export class QuizzesController {
   @ApiOkResponse()
   @HttpCode(200)
   @Get(':quiz_uuid/enrolled')
-  async getQuizEnrolled(@Param('quiz_uuid') quiz_uuid: string) {
+  async getQuizEnrolled(@UUIDParam('quiz_uuid') quiz_uuid: string) {
     const data = await this.quizzesService.getQuizEnrolled({ quiz_uuid });
 
     return {
@@ -90,7 +91,7 @@ export class QuizzesController {
   @HttpCode(200)
   @Get(':quiz_uuid/reset/:user_id')
   async resetQuizEnrolled(
-    @Param('quiz_uuid') quiz_uuid: string,
+    @UUIDParam('quiz_uuid') quiz_uuid: string,
     @Param('user_id') user_id: number,
     // @CurrentUser() user: any,
   ) {

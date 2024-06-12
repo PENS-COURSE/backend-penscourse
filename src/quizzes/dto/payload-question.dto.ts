@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { $Enums } from '@prisma/client';
-import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 
 export class CreateQuizQuestionDto {
   @ApiProperty()
@@ -41,6 +41,7 @@ export class CreateQuizQuestionDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsUUID()
   curriculum_uuid?: string;
 }
 

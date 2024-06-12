@@ -19,6 +19,7 @@ import {
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unauthorized-request.decorator';
 import { Auth } from '../utils/decorators/auth.decorator';
+import { UUIDParam } from '../utils/decorators/uuid-param.decorator';
 import { WithoutModifiedResponse } from '../utils/decorators/without-modified-response.decorator';
 import { CertificatesService } from './certificates.service';
 import { GenerateCertificateDto } from './dto/generate-certificate.dto';
@@ -82,7 +83,7 @@ export class CertificatesController {
   @ApiOkResponse()
   @Get(':certificate_uuid')
   async getCertificateByUuid(
-    @Param('certificate_uuid') certificateUUID: string,
+    @UUIDParam('certificate_uuid') certificateUUID: string,
     @CurrentUser() user: any,
   ) {
     const data = await this.certificateService.getCertificateByUuid({
@@ -127,7 +128,7 @@ export class CertificatesController {
   @Header('Content-Type', 'application/pdf')
   @Get('download/:certificate_uuid')
   async requestDownloadCertificate(
-    @Param('certificate_uuid') certificate_uuid: string,
+    @UUIDParam('certificate_uuid') certificate_uuid: string,
     @CurrentUser() user: any,
   ) {
     return await this.certificateService.requestDownloadCertificate({

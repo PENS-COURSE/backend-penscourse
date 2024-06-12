@@ -19,6 +19,7 @@ import {
 import { CurrentUser } from '../../authentication/decorators/current-user.decorators';
 import { AllowUnauthorizedRequest } from '../../authentication/metadata/allow-unauthorized-request.decorator';
 import { Auth } from '../../utils/decorators/auth.decorator';
+import { UUIDParam } from '../../utils/decorators/uuid-param.decorator';
 import { CurriculumsService } from './curriculums.service';
 import { CreateCurriculumDto } from './dto/create-curriculum.dto';
 import { UpdateCurriculumDto } from './dto/update-curriculum.dto';
@@ -96,7 +97,7 @@ export class CurriculumsController {
   @HttpCode(200)
   @Get(':slug/curriculums/:uuid')
   async findOneByUUID(
-    @Param('uuid') uuid: string,
+    @UUIDParam('uuid') uuid: string,
     @Param('slug') slug: string,
   ) {
     const data = await this.curriculumsService.findOneByUUID(uuid, slug);
@@ -126,7 +127,7 @@ export class CurriculumsController {
   @HttpCode(200)
   @Patch(':slug/curriculums/:uuid/update')
   async update(
-    @Param('uuid') uuid: string,
+    @UUIDParam('uuid') uuid: string,
     @Body() payload: UpdateCurriculumDto,
     @Param('slug') slug: string,
   ) {
@@ -156,7 +157,7 @@ export class CurriculumsController {
   @ApiOkResponse()
   @HttpCode(200)
   @Delete(':slug/curriculums/:uuid')
-  async remove(@Param('uuid') uuid: string, @Param('slug') slug: string) {
+  async remove(@UUIDParam('uuid') uuid: string, @Param('slug') slug: string) {
     const data = await this.curriculumsService.remove(uuid, slug);
 
     return {

@@ -18,6 +18,7 @@ import {
 import { User } from '@prisma/client';
 import { CurrentUser } from '../../authentication/decorators/current-user.decorators';
 import { Auth } from '../../utils/decorators/auth.decorator';
+import { UUIDParam } from '../../utils/decorators/uuid-param.decorator';
 import { HasEnrolledGuard } from '../../utils/guards/has-enrolled.guard';
 import { AnswerQuizDto, AnswersQuizDto } from './dto/answer-quiz.dto';
 import { QuizEntity } from './entities/Quiz';
@@ -76,7 +77,7 @@ export class QuizController {
   @ApiOkResponse()
   @HttpCode(200)
   @Get('quiz/:quiz_uuid')
-  async findOneQuiz(@Param('quiz_uuid') quiz_uuid: string) {
+  async findOneQuiz(@UUIDParam('quiz_uuid') quiz_uuid: string) {
     const data = await this.quizSerice.findOneQuiz({
       quiz_uuid,
     });
@@ -107,7 +108,7 @@ export class QuizController {
   @Get(':course_slug/quiz/:quiz_uuid/enroll')
   async enrollQuiz(
     @Param('course_slug') course_slug: string,
-    @Param('quiz_uuid') quiz_uuid: string,
+    @UUIDParam('quiz_uuid') quiz_uuid: string,
     @CurrentUser() user: any,
   ) {
     const data = await this.quizSerice.takeQuiz({
@@ -187,7 +188,7 @@ export class QuizController {
   @ApiOkResponse()
   @Get('quiz/:quiz_uuid/result')
   async getResultQuiz(
-    @Param('quiz_uuid') quiz_uuid: string,
+    @UUIDParam('quiz_uuid') quiz_uuid: string,
     @CurrentUser() user: any,
   ) {
     const data = await this.quizSerice.getResultQuiz({

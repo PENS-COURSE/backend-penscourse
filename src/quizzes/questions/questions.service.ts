@@ -106,6 +106,16 @@ export class QuestionsService {
     }
 
     return await this.prismaService.$transaction(async (tx) => {
+      const curriculum = await tx.curriculum.findFirst({
+        where: {
+          id: payload.curriculum_uuid,
+        },
+      });
+
+      if (!curriculum) {
+        throw new NotFoundException('Kurikulum tidak ditemukan');
+      }
+
       return await tx.question.create({
         data: {
           question: payload.question,
@@ -117,7 +127,7 @@ export class QuestionsService {
           option_e: payload.option_e,
           quiz_id: checkQuiz.id,
           level: payload.level,
-          curriculum_id: payload.curriculum_uuid,
+          curriculum_id: curriculum.id,
           answer: {
             create: payload.right_answer.map((answer) => ({
               answer: answer.toLowerCase(),
@@ -179,6 +189,16 @@ export class QuestionsService {
       );
     }
 
+    const curriculum = await this.prismaService.curriculum.findFirst({
+      where: {
+        id: payload.curriculum_uuid,
+      },
+    });
+
+    if (!curriculum) {
+      throw new NotFoundException('Kurikulum tidak ditemukan');
+    }
+
     return await this.prismaService.question.update({
       where: {
         id: checkQuestion.id,
@@ -193,7 +213,7 @@ export class QuestionsService {
         option_e: payload.option_e,
         quiz_id: checkQuiz.id,
         level: payload.level,
-        curriculum_id: payload.curriculum_uuid,
+        curriculum_id: curriculum.id,
       },
     });
   }

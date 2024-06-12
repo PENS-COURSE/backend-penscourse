@@ -24,6 +24,7 @@ import {
 import { User } from '@prisma/client';
 import { CurrentUser } from '../../../authentication/decorators/current-user.decorators';
 import { Auth } from '../../../utils/decorators/auth.decorator';
+import { UUIDParam } from '../../../utils/decorators/uuid-param.decorator';
 import { HasEnrolledGuard } from '../../../utils/guards/has-enrolled.guard';
 import { AddFileContentDto } from './dto/add-file-content.dto';
 import { AddLiveClassDto } from './dto/add-live-class-content.dto';
@@ -66,9 +67,9 @@ export class SubjectsController {
     ':course_slug/curriculums/:curriculum_uuid/subjects/:subject_uuid/mark-completed',
   )
   async markSubjectCompletedBySubjectUUID(
-    @Param('curriculum_uuid') curriculum_uuid: string,
+    @UUIDParam('curriculum_uuid') curriculum_uuid: string,
     @Param('course_slug') course_slug: string,
-    @Param('subject_uuid') subject_uuid: string,
+    @UUIDParam('subject_uuid') subject_uuid: string,
     @CurrentUser() user: User,
   ) {
     const data = await this.subjectsService.markSubjectCompletedBySubjectUUID({
@@ -105,7 +106,7 @@ export class SubjectsController {
   async addFileContent(
     @Body() payload: AddFileContentDto,
     @UploadedFile() file: Express.Multer.File,
-    @Param('curriculum_uuid') curriculum_uuid: string,
+    @UUIDParam('curriculum_uuid') curriculum_uuid: string,
     @Param('course_slug') course_slug: string,
   ) {
     const data = await this.subjectsService.addFileContent({
@@ -139,7 +140,7 @@ export class SubjectsController {
   @Post(':course_slug/curriculums/:curriculum_uuid/subjects/video-content/add')
   async addVideoContent(
     @Body() payload: AddVideoContentDto,
-    @Param('curriculum_uuid') curriculum_uuid: string,
+    @UUIDParam('curriculum_uuid') curriculum_uuid: string,
     @Param('course_slug') course_slug: string,
   ) {
     const data = await this.subjectsService.addVideoContent({
@@ -172,7 +173,7 @@ export class SubjectsController {
   @Post(':course_slug/curriculums/:curriculum_uuid/subjects/live-class/add')
   async addLiveClass(
     @Body() payload: AddLiveClassDto,
-    @Param('curriculum_uuid') curriculum_uuid: string,
+    @UUIDParam('curriculum_uuid') curriculum_uuid: string,
     @Param('course_slug') course_slug: string,
   ) {
     const data = await this.subjectsService.addLiveClass({
@@ -210,9 +211,9 @@ export class SubjectsController {
   @HttpCode(200)
   @Get(':course_slug/curriculums/:curriculum_uuid/subjects/:subject_uuid')
   async findSubjectByUUID(
-    @Param('curriculum_uuid') curriculum_uuid: string,
+    @UUIDParam('curriculum_uuid') curriculum_uuid: string,
     @Param('course_slug') course_slug: string,
-    @Param('subject_uuid') subject_uuid: string,
+    @UUIDParam('subject_uuid') subject_uuid: string,
   ) {
     const data = await this.subjectsService.findOneByUUID({
       subject_uuid,
@@ -256,9 +257,9 @@ export class SubjectsController {
   async updateFileContent(
     @Body() payload: UpdateFileContentDto,
     @UploadedFile() file: Express.Multer.File,
-    @Param('curriculum_uuid') curriculum_uuid: string,
+    @UUIDParam('curriculum_uuid') curriculum_uuid: string,
     @Param('course_slug') course_slug: string,
-    @Param('subject_uuid') subject_uuid: string,
+    @UUIDParam('subject_uuid') subject_uuid: string,
   ) {
     const data = await this.subjectsService.updateFileContent({
       payload,
@@ -301,9 +302,9 @@ export class SubjectsController {
   )
   async updateVideoContent(
     @Body() payload: UpdateVideoContentDto,
-    @Param('curriculum_uuid') curriculum_uuid: string,
+    @UUIDParam('curriculum_uuid') curriculum_uuid: string,
     @Param('course_slug') course_slug: string,
-    @Param('subject_uuid') subject_uuid: string,
+    @UUIDParam('subject_uuid') subject_uuid: string,
   ) {
     const data = await this.subjectsService.updateVideoContent({
       payload,
@@ -345,9 +346,9 @@ export class SubjectsController {
   )
   async updateLiveClass(
     @Body() payload: UpdateLiveClassDto,
-    @Param('curriculum_uuid') curriculum_uuid: string,
+    @UUIDParam('curriculum_uuid') curriculum_uuid: string,
     @Param('course_slug') course_slug: string,
-    @Param('subject_uuid') subject_uuid: string,
+    @UUIDParam('subject_uuid') subject_uuid: string,
   ) {
     const data = await this.subjectsService.updateLiveClass({
       payload,
@@ -387,9 +388,9 @@ export class SubjectsController {
     ':course_slug/curriculums/:curriculum_uuid/subjects/:subject_uuid/remove',
   )
   async removeSubjectByUUID(
-    @Param('curriculum_uuid') curriculum_uuid: string,
+    @UUIDParam('curriculum_uuid') curriculum_uuid: string,
     @Param('course_slug') course_slug: string,
-    @Param('subject_uuid') subject_uuid: string,
+    @UUIDParam('subject_uuid') subject_uuid: string,
   ) {
     const data = await this.subjectsService.removeSubjectByUUID({
       subject_uuid,
