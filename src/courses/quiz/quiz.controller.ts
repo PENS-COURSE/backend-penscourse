@@ -19,7 +19,7 @@ import { User } from '@prisma/client';
 import { CurrentUser } from '../../authentication/decorators/current-user.decorators';
 import { Auth } from '../../utils/decorators/auth.decorator';
 import { HasEnrolledGuard } from '../../utils/guards/has-enrolled.guard';
-import { AnswerQuizDto } from './dto/answer-quiz.dto';
+import { AnswerQuizDto, AnswersQuizDto } from './dto/answer-quiz.dto';
 import { QuizEntity } from './entities/Quiz';
 import { QuizService } from './quiz.service';
 
@@ -132,6 +132,26 @@ export class QuizController {
     @CurrentUser() user: any,
   ) {
     const data = await this.quizSerice.updateAnswer({
+      payload,
+      user,
+    });
+
+    return {
+      message: 'Berhasil memperbarui jawaban',
+      data,
+    };
+  }
+
+  @Auth('user')
+  @ApiOperation({ summary: 'Update Answer Questions Quiz' })
+  @ApiOkResponse()
+  @HttpCode(200)
+  @Patch('quiz/update-answers')
+  async updateAnswerQuestions(
+    @Body() payload: AnswersQuizDto,
+    @CurrentUser() user: any,
+  ) {
+    const data = await this.quizSerice.updateAnswers({
       payload,
       user,
     });

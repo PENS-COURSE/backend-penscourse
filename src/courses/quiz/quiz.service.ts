@@ -19,7 +19,8 @@ import {
   notificationWording,
 } from '../../utils/wording.utils';
 import { CoursesService } from '../courses.service';
-import { AnswerQuizDto } from './dto/answer-quiz.dto';
+import { AnswerQuizDto, AnswersQuizDto } from './dto/answer-quiz.dto';
+import { QuestionNotValid } from './interface/QuestionNotValid';
 
 @Injectable()
 export class QuizService {
@@ -542,6 +543,131 @@ export class QuizService {
         },
       },
     });
+
+    return null;
+  }
+
+  async updateAnswers({
+    payload,
+    user,
+  }: {
+    payload: AnswersQuizDto;
+    user: User;
+  }) {
+    const session = await this.prisma.quizSession.findFirst({
+      where: {
+        id: payload.session_id,
+        user_id: user.id,
+      },
+      include: {
+        quiz: true,
+      },
+    });
+
+    if (!session) {
+      throw new ForbiddenException('Session tidak ditemukan');
+    }
+
+    if (session.is_ended) {
+      throw new ForbiddenException('Quiz sudah berakhir');
+    }
+
+    const duration = moment(session.created_at)
+      .add(session.quiz.duration, 'minutes')
+      .toISOString();
+
+    if (moment().isAfter(duration)) {
+      throw new ForbiddenException('Waktu Quiz sudah habis');
+    }
+
+    const answeredQuestion = await this.prisma.quizEnrolledQuestion.findMany({
+      where: {
+        quiz_session_id: payload.session_id,
+      },
+      include: {
+        question: true,
+      },
+    });
+
+    const questionsNotValid: QuestionNotValid[] = [];
+
+    await Promise.all(
+      payload.answers.map(async (answer) => {
+        if (
+          !answeredQuestion.find(
+            (question) => question.question.id === answer.question_id,
+          )
+        ) {
+          questionsNotValid.push({
+            id: answer.question_id,
+            message: 'Pertanyaan tidak ditemukan',
+          });
+
+          return null;
+        }
+
+        const rightAnswer = answer.answer;
+        const regex = new RegExp(/^[a-eA-E]+$/);
+        const checkRightAnswer = rightAnswer.every((answer) => {
+          if (typeof answer !== 'string') {
+            return false;
+          }
+
+          return regex.test(answer.toLowerCase());
+        });
+
+        if (!checkRightAnswer) {
+          questionsNotValid.push({
+            id: answer.question_id,
+            message: 'Jawaban hanya boleh berupa huruf A,B,C,D,E',
+          });
+
+          return null;
+        }
+
+        const question = answeredQuestion.find(
+          (question) => question.question.id === answer.question_id,
+        );
+
+        if (!question) {
+          questionsNotValid.push({
+            id: answer.question_id,
+            message: 'Pertanyaan tidak ditemukan',
+          });
+
+          return null;
+        }
+
+        if (question.question.question_type === 'single_choice') {
+          if (answer.answer.length !== 1) {
+            questionsNotValid.push({
+              id: answer.question_id,
+              message: 'Jumlah jawaban maximal 1 untuk tipe pertanyaan ini',
+            });
+          }
+        }
+
+        await this.prisma.quizEnrolledQuestion.update({
+          where: {
+            quiz_session_id_question_id: {
+              question_id: answer.question_id,
+              quiz_session_id: payload.session_id,
+            },
+          },
+          data: {
+            answer: {
+              set: answer.answer.map((answer) => answer.toLowerCase()),
+            },
+          },
+        });
+
+        return null;
+      }),
+    );
+
+    if (questionsNotValid.length > 0) {
+      throw new BadRequestException(questionsNotValid);
+    }
 
     return null;
   }
