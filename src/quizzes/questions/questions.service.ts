@@ -107,9 +107,8 @@ export class QuestionsService {
     }
 
     return await this.prismaService.$transaction(async (tx) => {
-      let curriculum = null;
       if (payload.curriculum_uuid) {
-        curriculum = await tx.curriculum.findFirst({
+        const curriculum = await tx.curriculum.findFirst({
           where: {
             id: payload.curriculum_uuid,
           },
@@ -118,27 +117,46 @@ export class QuestionsService {
         if (!curriculum) {
           throw new NotFoundException('Kurikulum tidak ditemukan');
         }
-      }
 
-      return await tx.question.create({
-        data: {
-          question: payload.question,
-          question_type: payload.question_type,
-          option_a: payload.option_a,
-          option_b: payload.option_b,
-          option_c: payload.option_c,
-          option_d: payload.option_d,
-          option_e: payload.option_e,
-          quiz_id: checkQuiz.id,
-          level: payload.level,
-          curriculum_id: curriculum.id || null,
-          answer: {
-            create: payload.right_answer.map((answer) => ({
-              answer: answer.toLowerCase(),
-            })),
+        return await tx.question.create({
+          data: {
+            question: payload.question,
+            question_type: payload.question_type,
+            option_a: payload.option_a,
+            option_b: payload.option_b,
+            option_c: payload.option_c,
+            option_d: payload.option_d,
+            option_e: payload.option_e,
+            quiz_id: checkQuiz.id,
+            level: payload.level,
+            curriculum_id: curriculum?.id,
+            answer: {
+              create: payload.right_answer.map((answer) => ({
+                answer: answer.toLowerCase(),
+              })),
+            },
           },
-        },
-      });
+        });
+      } else {
+        return await tx.question.create({
+          data: {
+            question: payload.question,
+            question_type: payload.question_type,
+            option_a: payload.option_a,
+            option_b: payload.option_b,
+            option_c: payload.option_c,
+            option_d: payload.option_d,
+            option_e: payload.option_e,
+            quiz_id: checkQuiz.id,
+            level: payload.level,
+            answer: {
+              create: payload.right_answer.map((answer) => ({
+                answer: answer.toLowerCase(),
+              })),
+            },
+          },
+        });
+      }
     });
   }
 
