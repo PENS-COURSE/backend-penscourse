@@ -348,7 +348,10 @@ export class QuestionsService {
                 level: question['Level'],
                 question_type: 'single_choice',
                 right_answer: question['Jawaban Benar'].split(','),
-                curriculum_uuid: question['Kurikulum UUID'],
+                curriculum_uuid:
+                  question['Kurikulum UUID'] != ''
+                    ? question['Kurikulum UUID']
+                    : null,
               },
             });
           case 'multiple_choice':
@@ -364,7 +367,10 @@ export class QuestionsService {
                 level: question['Level'],
                 question_type: 'multiple_choice',
                 right_answer: question['Jawaban Benar'].split(','),
-                curriculum_uuid: question['Kurikulum UUID'],
+                curriculum_uuid:
+                  question['Kurikulum UUID'] != ''
+                    ? question['Kurikulum UUID']
+                    : null,
               },
             });
           default:
