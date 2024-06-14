@@ -314,8 +314,7 @@ export class QuestionsService {
 
     return await Promise.all(
       questions.map(async (question) => {
-        if (question['Kurikulum UUID'] === '') {
-          console.log('Kurikulum UUID tidak boleh kosong');
+        if (question['Kurikulum UUID'] !== '') {
           const checkCurriculum = await this.prismaService.curriculum.findFirst(
             {
               where: {
