@@ -30,6 +30,13 @@ export class EnrollmentsService {
               include: {
                 user: true,
                 reviews: true,
+                department: {
+                  select: {
+                    name: true,
+                    icon: true,
+                    slug: true,
+                  },
+                },
               },
             },
           },
@@ -86,6 +93,13 @@ export class EnrollmentsService {
           include: {
             user: true,
             reviews: true,
+            department: {
+              select: {
+                name: true,
+                icon: true,
+                slug: true,
+              },
+            },
           },
           orderBy: [
             {
