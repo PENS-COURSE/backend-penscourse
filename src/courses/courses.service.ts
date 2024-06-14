@@ -98,6 +98,8 @@ export class CoursesService {
               user_id: user?.id,
             },
           },
+          curriculums: true,
+          department: true,
         },
         orderBy: [
           {
@@ -190,6 +192,7 @@ export class CoursesService {
       include: {
         curriculums: true,
         discount: true,
+        department: true,
       },
     });
 
@@ -216,6 +219,7 @@ export class CoursesService {
       },
       include: {
         curriculums: true,
+        department: true,
         discount: true,
         user: true,
         enrollments: {
