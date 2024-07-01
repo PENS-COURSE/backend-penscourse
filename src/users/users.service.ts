@@ -100,6 +100,16 @@ export class UsersService {
 
     delete updateUserDto.password_confirmation;
 
+    if (updateUserDto.password) {
+      if (updateUserDto.password !== updateUserDto.password_confirmation) {
+        throw new BadRequestException('Password confirmation does not match');
+      }
+
+      updateUserDto.password = await HashHelpers.hashPassword(
+        updateUserDto.password,
+      );
+    }
+
     const data = await this.prisma.user.update({
       where: {
         id: user.id,
