@@ -98,8 +98,6 @@ export class UsersService {
       updateUserDto.avatar = avatar.path;
     }
 
-    delete updateUserDto.password_confirmation;
-
     if (updateUserDto.password) {
       if (updateUserDto.password !== updateUserDto.password_confirmation) {
         throw new BadRequestException('Password confirmation does not match');
@@ -109,6 +107,8 @@ export class UsersService {
         updateUserDto.password,
       );
     }
+
+    delete updateUserDto.password_confirmation;
 
     const data = await this.prisma.user.update({
       where: {
