@@ -156,8 +156,9 @@ export class CurriculumsService {
                 const entity = new LiveClassEntity(
                   liveClass,
                   user,
-                  user.id === course.user_id,
+                  user?.id == course?.user_id,
                 );
+
                 const data = {
                   ...entity,
                   is_completed: isCompleted ? true : false,
