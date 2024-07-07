@@ -37,12 +37,15 @@ export class VideoContentEntity implements VideoContent {
 }
 
 export class LiveClassEntity implements LiveClass {
-  constructor(partial: Partial<LiveClassEntity>, user?: User) {
+  constructor(
+    partial: Partial<LiveClassEntity>,
+    user?: User,
+    isDosenRoom?: boolean,
+  ) {
     Object.assign(this, partial);
 
     if (user) {
-      const isDosen =
-        user.role === 'dosen' && user.id === this.room_moderator_id;
+      const isDosen = user.role === 'dosen' && isDosenRoom;
       const isAdmin = user.role === 'admin';
       const isUserOpen = user.role === 'user' && this.is_open;
 

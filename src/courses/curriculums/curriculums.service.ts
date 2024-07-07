@@ -153,7 +153,11 @@ export class CurriculumsService {
                     })
                   : null;
 
-                const entity = new LiveClassEntity(liveClass, user);
+                const entity = new LiveClassEntity(
+                  liveClass,
+                  user,
+                  user.id === course.user_id,
+                );
                 const data = {
                   ...entity,
                   is_completed: isCompleted ? true : false,
