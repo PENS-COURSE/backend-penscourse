@@ -392,8 +392,10 @@ export class SubjectsService {
       subject_uuid,
     });
 
-    if (subject.type !== 'video') {
-      throw new NotFoundException('Video not found');
+    if (subject.type !== 'live_class') {
+      throw new NotFoundException(
+        'Live class tidak ditemukan mohon cek kembali !',
+      );
     }
 
     return await this.prisma.liveClass.update({
