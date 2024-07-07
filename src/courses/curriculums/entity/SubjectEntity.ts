@@ -44,8 +44,9 @@ export class LiveClassEntity implements LiveClass {
   ) {
     Object.assign(this, partial);
 
+    console.log(`Debug isDosenRoom : ${isDosenRoom}`);
+
     if (user) {
-      console.log(`Debug isDosenRoom : ${isDosenRoom}`);
       const isDosen = user.role === 'dosen' && isDosenRoom;
       const isAdmin = user.role === 'admin';
       const isUserOpen = user.role === 'user' && this.is_open;
