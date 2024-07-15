@@ -66,7 +66,13 @@ export class CurriculumsService {
         video_contents: true,
         quizzes: {
           where: {
-            is_active: true,
+            is_active:
+              user?.role === 'user'
+                ? true
+                : user?.role === 'admin' ||
+                    (user?.role === 'dosen' && course.user_id === user?.id)
+                  ? undefined
+                  : true,
           },
         },
       },

@@ -23,6 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { CurrentUser } from '../../../authentication/decorators/current-user.decorators';
+import { CheckClassAuthorGuard } from '../../../authentication/guards/check-class-author.guard';
 import { Auth } from '../../../utils/decorators/auth.decorator';
 import { UUIDParam } from '../../../utils/decorators/uuid-param.decorator';
 import { HasEnrolledGuard } from '../../../utils/guards/has-enrolled.guard';
@@ -102,6 +103,7 @@ export class SubjectsController {
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiCreatedResponse()
+  @UseGuards(CheckClassAuthorGuard)
   @Post(':course_slug/curriculums/:curriculum_uuid/subjects/file-content/add')
   async addFileContent(
     @Body() payload: AddFileContentDto,
@@ -137,6 +139,7 @@ export class SubjectsController {
     description: 'Course Slug',
   })
   @ApiCreatedResponse()
+  @UseGuards(CheckClassAuthorGuard)
   @Post(':course_slug/curriculums/:curriculum_uuid/subjects/video-content/add')
   async addVideoContent(
     @Body() payload: AddVideoContentDto,
@@ -170,6 +173,7 @@ export class SubjectsController {
     description: 'Course Slug',
   })
   @ApiCreatedResponse()
+  @UseGuards(CheckClassAuthorGuard)
   @Post(':course_slug/curriculums/:curriculum_uuid/subjects/live-class/add')
   async addLiveClass(
     @Body() payload: AddLiveClassDto,
@@ -251,6 +255,7 @@ export class SubjectsController {
   @HttpCode(200)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
+  @UseGuards(CheckClassAuthorGuard)
   @Patch(
     ':course_slug/curriculums/:curriculum_uuid/subjects/:subject_uuid/file-content/update',
   )
@@ -297,6 +302,7 @@ export class SubjectsController {
   })
   @ApiOkResponse()
   @HttpCode(200)
+  @UseGuards(CheckClassAuthorGuard)
   @Patch(
     ':course_slug/curriculums/:curriculum_uuid/subjects/:subject_uuid/video-content/update',
   )
@@ -341,6 +347,7 @@ export class SubjectsController {
   })
   @ApiOkResponse()
   @HttpCode(200)
+  @UseGuards(CheckClassAuthorGuard)
   @Patch(
     ':course_slug/curriculums/:curriculum_uuid/subjects/:subject_uuid/live-class/update',
   )
@@ -384,6 +391,7 @@ export class SubjectsController {
     description: 'Subject UUID',
   })
   @ApiOkResponse()
+  @UseGuards(CheckClassAuthorGuard)
   @Delete(
     ':course_slug/curriculums/:curriculum_uuid/subjects/:subject_uuid/remove',
   )

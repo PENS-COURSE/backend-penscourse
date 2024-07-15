@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -17,6 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../../authentication/decorators/current-user.decorators';
+import { CheckClassAuthorGuard } from '../../authentication/guards/check-class-author.guard';
 import { AllowUnauthorizedRequest } from '../../authentication/metadata/allow-unauthorized-request.decorator';
 import { Auth } from '../../utils/decorators/auth.decorator';
 import { UUIDParam } from '../../utils/decorators/uuid-param.decorator';
@@ -40,6 +42,7 @@ export class CurriculumsController {
   @ApiBearerAuth()
   @ApiCreatedResponse()
   @HttpCode(201)
+  @UseGuards(CheckClassAuthorGuard)
   @Post(':slug/curriculums/create')
   async create(
     @Body() payload: CreateCurriculumDto,
@@ -125,6 +128,7 @@ export class CurriculumsController {
   @ApiBearerAuth()
   @ApiOkResponse()
   @HttpCode(200)
+  @UseGuards(CheckClassAuthorGuard)
   @Patch(':slug/curriculums/:uuid/update')
   async update(
     @UUIDParam('uuid') uuid: string,
@@ -156,6 +160,7 @@ export class CurriculumsController {
   @ApiBearerAuth()
   @ApiOkResponse()
   @HttpCode(200)
+  @UseGuards(CheckClassAuthorGuard)
   @Delete(':slug/curriculums/:uuid')
   async remove(@UUIDParam('uuid') uuid: string, @Param('slug') slug: string) {
     const data = await this.curriculumsService.remove(uuid, slug);

@@ -10,6 +10,7 @@ import {
   Post,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -25,6 +26,7 @@ import {
 } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { CurrentUser } from '../authentication/decorators/current-user.decorators';
+import { CheckClassAuthorGuard } from '../authentication/guards/check-class-author.guard';
 import { AllowUnauthorizedRequest } from '../authentication/metadata/allow-unauthorized-request.decorator';
 import { Auth } from '../utils/decorators/auth.decorator';
 import { CoursesService } from './courses.service';
@@ -77,6 +79,7 @@ export class CoursesController {
 
   @Auth()
   @AllowUnauthorizedRequest()
+  @UseGuards(CheckClassAuthorGuard)
   @ApiOperation({ summary: 'Find All Courses' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'name', required: false })
@@ -156,6 +159,7 @@ export class CoursesController {
   @HttpCode(200)
   @UseInterceptors(FileInterceptor('thumbnail'))
   @ApiConsumes('multipart/form-data')
+  @UseGuards(CheckClassAuthorGuard)
   @Patch(':slug/update')
   async update(
     @CurrentUser() user: any,
@@ -200,6 +204,7 @@ export class CoursesController {
   @ApiBearerAuth()
   @ApiOkResponse()
   @HttpCode(200)
+  @UseGuards(CheckClassAuthorGuard)
   @Delete(':slug/remove')
   async remove(@Param('slug') slug: string, @CurrentUser() user: any) {
     const data = await this.coursesService.remove({ slug, user });
