@@ -39,9 +39,10 @@ export class ProfileService {
     const userId = this.req.user['id'];
     const user = await this.usersService.findOneByID(userId);
 
-    if (payload.password_new !== payload.password_new_confirm) {
-      throw new BadRequestException('Password confirmation does not match');
-    }
+    if (payload.password_new !== payload.password_new_confirm)
+      throw new BadRequestException(
+        'Konfirmasi password baru tidak sama, silahkan cek kembali',
+      );
 
     const isOldPasswordValid = await HashHelpers.comparePassword(
       payload.password_old,
@@ -52,7 +53,8 @@ export class ProfileService {
       throw new BadRequestException('Invalid old password');
 
     await this.usersService.update(userId, {
-      password: await HashHelpers.hashPassword(payload.password_new),
+      password: payload.password_new,
+      password_confirmation: payload.password_new_confirm,
     });
 
     return null;
