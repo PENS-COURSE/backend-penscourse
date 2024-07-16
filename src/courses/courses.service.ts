@@ -238,15 +238,11 @@ export class CoursesService {
       isEnrolled = true;
     } else if (user?.role == 'admin') {
       isEnrolled = true;
-    } else if (user?.id == data.user_id) {
+    } else if (user?.role == 'dosen' && user?.id == data.user_id) {
       isEnrolled = true;
     } else {
       isEnrolled = false;
     }
-
-    console.log(`Is Enrolled: ${isEnrolled}`);
-    console.log(`User: ${user}`);
-    console.log(`Data: ${data.enrollments.length}`);
 
     const totalRating = data.reviews.reduce(
       (acc, review) => acc + review.rating,
