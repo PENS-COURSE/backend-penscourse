@@ -244,6 +244,10 @@ export class CoursesService {
       isEnrolled = false;
     }
 
+    console.log(`Is Enrolled: ${isEnrolled}`);
+    console.log(`User: ${user}`);
+    console.log(`Data: ${data.enrollments.length}`);
+
     const totalRating = data.reviews.reduce(
       (acc, review) => acc + review.rating,
       0,
