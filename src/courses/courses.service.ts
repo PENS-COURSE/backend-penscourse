@@ -260,7 +260,7 @@ export class CoursesService {
 
     const response = {
       ...data,
-      is_enrolled: isEnrolled ? true : false,
+      is_enrolled: isEnrolled,
       ratings: averageRating || 0,
       total_user_rating: totalUserRating,
       is_reviewed: isReviewed ? true : false,
